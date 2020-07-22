@@ -2,14 +2,23 @@ import discord
 from redbot.cogs.mod import Mod as ModClass
 from redbot.core import bank, commands
 from redbot.core.utils import AsyncIter
-from redbot.core.utils.chat_formatting import humanize_list, humanize_number
-from redbot.core.utils.common_filters import (
-    escape_spoilers_and_mass_mentions,
-    filter_invites,
-    filter_various_mentions,
-)
+from redbot.core.utils.chat_formatting import humanize_number
+from redbot.core.utils.common_filters import filter_invites
 
-from .flags import EMOJIS, discord_py
+EMOJIS = {
+    "staff": 706198524156706917,
+    "early_supporter": 706198530837970998,
+    "hypesquad_balance": 706198531538550886,
+    "hypesquad_bravery": 706198532998299779,
+    "hypesquad_brilliance": 706198535846101092,
+    "hypesquad": 706198537049866261,
+    "verified_bot_developer": 706198727953612901,
+    "bug_hunter": 706199712402898985,
+    "bug_hunter_level_2": 706199774616879125,
+    "partner": 706206032216457258,
+    "verified_bot": 706196603748483174,
+    "verified_bot2": 706196604197273640,
+}
 
 
 class Mod(ModClass):
@@ -177,7 +186,7 @@ class Mod(ModClass):
         data.title = f"{statusemoji} {name}"
         data.set_thumbnail(url=avatar)
 
-        flags = await discord_py(user)
+        flags = [f.name for f in user.public_flags.all()]
         badges = ""
         for badge in sorted(flags):
             if badge == "verified_bot":

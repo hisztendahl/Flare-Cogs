@@ -34,6 +34,14 @@ class Mod(ModClass):
     def __init__(self, bot):
         super().__init__(bot)
         self.bot = bot
+        self.emojis = self.bot.loop.create_task(self.init())
+
+    def cog_unload(self):
+        if self.emojis:
+            self.emojis.cancel()
+
+    async def init(self):
+        await self.bot.wait_until_ready()
         self.status_emojis = {
             "mobile": discord.utils.get(self.bot.emojis, id=725387684113023057),
             "online": discord.utils.get(self.bot.emojis, id=724950463417548890),
@@ -41,6 +49,20 @@ class Mod(ModClass):
             "dnd": discord.utils.get(self.bot.emojis, id=724950462499127338),
             "offline": discord.utils.get(self.bot.emojis, id=724950462746460271),
             "streaming": discord.utils.get(self.bot.emojis, id=724950551900717066),
+        }
+        self.badge_emojis = {
+            "staff": discord.utils.get(self.bot.emojis, id=706198524156706917),
+            "early_supporter": discord.utils.get(self.bot.emojis, id=706198530837970998),
+            "hypesquad_balance": discord.utils.get(self.bot.emojis, id=706198531538550886),
+            "hypesquad_bravery": discord.utils.get(self.bot.emojis, id=706198532998299779),
+            "hypesquad_brilliance": discord.utils.get(self.bot.emojis, id=706198535846101092),
+            "hypesquad": discord.utils.get(self.bot.emojis, id=706198537049866261),
+            "verified_bot_developer": discord.utils.get(self.bot.emojis, id=706198727953612901),
+            "bug_hunter": discord.utils.get(self.bot.emojis, id=706199712402898985),
+            "bug_hunter_level_2": discord.utils.get(self.bot.emojis, id=706199774616879125),
+            "partner": discord.utils.get(self.bot.emojis, id=706206032216457258),
+            "verified_bot": discord.utils.get(self.bot.emojis, id=706196603748483174),
+            "verified_bot2": discord.utils.get(self.bot.emojis, id=706196604197273640),
         }
 
     # Removes main userinfo command.
@@ -190,14 +212,14 @@ class Mod(ModClass):
         badges = ""
         for badge in sorted(flags):
             if badge == "verified_bot":
-                emoji1 = discord.utils.get(self.bot.emojis, id=EMOJIS["verified_bot"])
-                emoji2 = discord.utils.get(self.bot.emojis, id=EMOJIS["verified_bot2"])
+                emoji1 = self.badge_emojis["verified_bot"]
+                emoji2 = self.badge_emojis["verified_bot2"]
                 if emoji1:
                     emoji = f"{emoji1}{emoji2}"
                 else:
                     emoji = None
             else:
-                emoji = discord.utils.get(self.bot.emojis, id=EMOJIS[badge])
+                emoji = self.badge_emojis[badge]
             if emoji:
                 badges += f"{emoji} {badge.replace('_', ' ').title()}\n"
             else:

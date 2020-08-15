@@ -8,7 +8,7 @@ class StatsMixin(MixinMeta):
     """Stats Settings"""
 
     @commands.group(invoke_without_command=True)
-    async def stats(self, ctx, user: discord.Member = None):
+    async def leaguestats(self, ctx, user: discord.Member = None):
         """Sim League Statistics."""
         if user is not None:
             stats = await self.config.guild(ctx.guild).stats()

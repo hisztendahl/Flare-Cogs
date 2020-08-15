@@ -45,7 +45,7 @@ class SimLeague(
             "teams": {},
             "fixtures": [],
             "standings": {},
-            "stats": {
+            "leaguestats": {
                 "goals": {},
                 "yellows": {},
                 "reds": {},

@@ -33,7 +33,8 @@ class StatsMixin(MixinMeta):
                 "penalties scored",
             ]
             embed = discord.Embed(
-                color=ctx.author.color, title="Statistics for {}".format(user.display_name)
+                color=ctx.author.color, title="Statistics for {}".format(
+                    user.display_name)
             )
             for i, stat in enumerate(statistics):
                 if stat is not None:
@@ -45,12 +46,16 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send_help()
             stats = await self.config.guild(ctx.guild).stats()
-            goalscorer = sorted(stats["goals"], key=stats["goals"].get, reverse=True)
-            assists = sorted(stats["assists"], key=stats["assists"].get, reverse=True)
-            yellows = sorted(stats["yellows"], key=stats["yellows"].get, reverse=True)
+            goalscorer = sorted(
+                stats["goals"], key=stats["goals"].get, reverse=True)
+            assists = sorted(stats["assists"],
+                             key=stats["assists"].get, reverse=True)
+            yellows = sorted(stats["yellows"],
+                             key=stats["yellows"].get, reverse=True)
             reds = sorted(stats["reds"], key=stats["reds"].get, reverse=True)
             motms = sorted(stats["motm"], key=stats["motm"].get, reverse=True)
-            cleansheets = sorted(stats["cleansheets"], key=stats["cleansheets"].get, reverse=True)
+            cleansheets = sorted(
+                stats["cleansheets"], key=stats["cleansheets"].get, reverse=True)
             penscored = sorted(
                 stats["penalties"], key=lambda x: stats["penalties"][x]["scored"], reverse=True
             )
@@ -65,7 +70,8 @@ class StatsMixin(MixinMeta):
             msg += "**Penalties Scored**: {}\n".format(await self.statsmention(ctx, penscored))
             msg += "**Penalties Missed**: {}\n".format(await self.statsmention(ctx, penmissed))
             msg += "**MOTMs**: {}\n".format(await self.statsmention(ctx, motms))
-            msg += "**Cleansheets**: {}\n".format(cleansheets[0] if cleansheets else "None")
+            msg += "**Cleansheets**: {}\n".format(
+                cleansheets[0] if cleansheets else "None")
             await ctx.maybe_send_embed(msg)
 
     async def statsmention(self, ctx, stats):
@@ -77,7 +83,7 @@ class StatsMixin(MixinMeta):
         else:
             return "None"
 
-    @stats.command(name="goals", alias=["topscorer", "topscorers"])
+    @leaguestats.command(name="goals", alias=["topscorer", "topscorers"])
     async def _goals(self, ctx):
         """Players with the most goals."""
         stats = await self.config.guild(ctx.guild).stats()
@@ -86,7 +92,8 @@ class StatsMixin(MixinMeta):
             a = []
             for k in sorted(stats, key=stats.get, reverse=True):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                a.append(
+                    f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
             embed = discord.Embed(
                 title="Top Scorers", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -94,7 +101,7 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @stats.command(aliases=["yellowcards"])
+    @leaguestats.command(aliases=["yellowcards"])
     async def yellows(self, ctx):
         """Players with the most yellow cards."""
         stats = await self.config.guild(ctx.guild).stats()
@@ -103,7 +110,8 @@ class StatsMixin(MixinMeta):
             a = []
             for k in sorted(stats, key=stats.get, reverse=True):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                a.append(
+                    f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
             embed = discord.Embed(
                 title="Most Yellow Cards", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -111,7 +119,7 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @stats.command(alies=["redcards"])
+    @leaguestats.command(alies=["redcards"])
     async def reds(self, ctx):
         """Players with the most red cards."""
         stats = await self.config.guild(ctx.guild).stats()
@@ -120,7 +128,8 @@ class StatsMixin(MixinMeta):
             a = []
             for k in sorted(stats, key=stats.get, reverse=True):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                a.append(
+                    f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
             embed = discord.Embed(
                 title="Most Red Cards", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -128,7 +137,7 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @stats.command(alies=["motms"])
+    @leaguestats.command(alies=["motms"])
     async def motm(self, ctx):
         """Players with the most MOTMs."""
         stats = await self.config.guild(ctx.guild).stats()
@@ -137,7 +146,8 @@ class StatsMixin(MixinMeta):
             a = []
             for k in sorted(stats, key=stats.get, reverse=True):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                a.append(
+                    f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
             embed = discord.Embed(
                 title="Most MOTMs", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -145,7 +155,7 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @stats.command(name="cleansheets")
+    @leaguestats.command(name="cleansheets")
     async def _cleansheets(self, ctx):
         """Teams with the most cleansheets."""
         stats = await self.config.guild(ctx.guild).stats()
@@ -161,7 +171,7 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @stats.command()
+    @leaguestats.command()
     async def penalties(self, ctx):
         """Penalties scored and missed statistics."""
         stats = await self.config.guild(ctx.guild).stats()
@@ -186,7 +196,7 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @stats.command()
+    @leaguestats.command()
     async def assists(self, ctx):
         """Players with the most assists."""
         stats = await self.config.guild(ctx.guild).stats()
@@ -195,7 +205,8 @@ class StatsMixin(MixinMeta):
             a = []
             for k in sorted(stats, key=stats.get, reverse=True)[:10]:
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                a.append(
+                    f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
             embed = discord.Embed(
                 title="Assist Statistics", description="\n".join(a), colour=0xFF0000
             )

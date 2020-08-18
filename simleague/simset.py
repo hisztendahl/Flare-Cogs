@@ -3,6 +3,7 @@ from redbot.core import checks, commands
 from redbot.core.utils.chat_formatting import box
 
 from .abc import MixinMeta
+from datetime import datetime, timedelta
 
 
 class SimsetMixin(MixinMeta):
@@ -27,11 +28,14 @@ class SimsetMixin(MixinMeta):
             msg += "Game Time: 1m for every {}s.\n".format(gametime)
             msg += "Team Limit: {} players.\n".format(maxplayers)
             msg += "HT Break: {}s.\n".format(htbreak)
-            msg += "Red Card Modifier: {}% loss per red card.\n".format(redcardmodif)
+            msg += "Red Card Modifier: {}% loss per red card.\n".format(
+                redcardmodif)
             msg += "Posting Results: {}.\n".format("Yes" if results else "No")
-            msg += "Transfer Window: {}.\n".format("Open" if transfers else "Closed")
+            msg += "Transfer Window: {}.\n".format(
+                "Open" if transfers else "Closed")
             msg += "Accepting Bets: {}.\n".format("Yes" if bettoggle else "No")
-            msg += "Mentions on game start: {}.\n".format("Yes" if mentions else "No")
+            msg += "Mentions on game start: {}.\n".format(
+                "Yes" if mentions else "No")
 
             if bettoggle:
                 bettime = await self.config.guild(guild).bettime()
@@ -264,6 +268,56 @@ class SimsetMixin(MixinMeta):
             a.append(f"Week {k}\n----------")
             for i, game in enumerate(fixture, 1):
                 a.append(f"Game {i}: {game[0]} vs {game[1]}")
+            a.append("----------")
+        await self.config.guild(ctx.guild).fixtures.set(fixtures)
+        await ctx.tick()
+
+    async def scheduleGame(self, ctx, homeTeam, awayTeam, time):
+        query = "sim {homeTeam} {awayTeam} - -start-at {time}"
+        await ctx.invoke(self.bot.get_command('schedule'), query=query)
+
+    @simset.command()
+    async def createscheduledfixtures(self, ctx, day: int = 0, interval: int = 1):
+        """Create the fixtures for the current teams with scheduler."""
+        """Day is when to start schedule in days from today. ie 0 start gameweek today, 1 start it tomorrow, etc"""
+        """Interval is interval between two gameweeks"""
+        # TODO: Add breaks (ie no game wednesday)
+        gameInterval = 20
+        today = datetime.today() + timedelta(days=day)
+        # TODO: add starting time param 8pm will be default for every gameweek here
+        startDate = today.replace(hour=20, minute=0, second=0, microsecond=0)
+
+        teams = await self.config.guild(ctx.guild).teams()
+        teams = list(teams.keys())
+        if len(teams) % 2:
+            teams.append("DAY OFF")
+        n = len(teams)
+        matchs = []
+        fixtures = []
+        return_matchs = []
+        for fixture in range(1, n):
+            for i in range(n // 2):
+                matchs.append((teams[i], teams[n - 1 - i]))
+                return_matchs.append((teams[n - 1 - i], teams[i]))
+            teams.insert(1, teams.pop())
+            fixtures.insert(len(fixtures) // 2, matchs)
+            fixtures.append(return_matchs)
+            matchs = []
+            return_matchs = []
+
+        a = []
+        for k, fixture in enumerate(fixtures, 1):
+            date = startDate + timedelta(days=k * int)
+            formattedDate = date.strftime('%b %d %Y')
+            a.append(f"Week {k}\n{formattedDate}\n----------")
+            for i, game in enumerate(fixture, 1):
+                gameTime = startDate + timedelta(minutes=i * gameInterval)
+                formattedGameTime = gameTime.strftime('%X')
+                """ Running scheduler. This requires !scheduler cog"""
+                # TODO: Integrate scheduling tool to this cog to not rely on external package
+                await self.scheduleGame(ctx, game[0], game[1], gameTime)
+                a.append(
+                    f"Game {i}: {game[0]} vs {game[1]} ({formattedGameTime})")
             a.append("----------")
         await self.config.guild(ctx.guild).fixtures.set(fixtures)
         await ctx.tick()

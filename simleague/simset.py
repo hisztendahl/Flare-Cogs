@@ -3,7 +3,15 @@ from redbot.core import checks, commands
 from redbot.core.utils.chat_formatting import box
 
 from .abc import MixinMeta
+from .scheduler import Schedule
+
 from datetime import datetime, timedelta
+import pdb
+
+
+class Name:
+    title: str
+    parsed: str
 
 
 class SimsetMixin(MixinMeta):
@@ -272,9 +280,15 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).fixtures.set(fixtures)
         await ctx.tick()
 
-    async def scheduleGame(self, ctx, homeTeam, awayTeam, time):
-        query = "sim {homeTeam} {awayTeam} - -start-at {time}"
-        await ctx.invoke(self.bot.get_command('schedule'), query=query)
+    async def scheduleGame(self, ctx, week, homeTeam, awayTeam, time):
+        query = f"sim {homeTeam} {awayTeam} --start-at {time}"
+        event_name = Name()
+        event_name.parsed = f"{homeTeam}_{awayTeam}_W{week}"
+        scheduleCmd = self.bot.get_command('schedule')
+        await ctx.invoke(scheduleCmd, event_name=event_name, schedule=Schedule(time, query))
+
+        # TODO: Not sure whether we need to show this ?
+        await ctx.send(f"Game scheduled: {homeTeam} vs {awayTeam} - {time}\n")
 
     @simset.command()
     async def createscheduledfixtures(self, ctx, day: int = 0, interval: int = 1):
@@ -282,7 +296,7 @@ class SimsetMixin(MixinMeta):
         """Day is when to start schedule in days from today. ie 0 start gameweek today, 1 start it tomorrow, etc"""
         """Interval is interval between two gameweeks"""
         # TODO: Add breaks (ie no game wednesday)
-        gameInterval = 20
+        gameInterval = 10
         today = datetime.today() + timedelta(days=day)
         # TODO: add starting time param 8pm will be default for every gameweek here
         startDate = today.replace(hour=20, minute=0, second=0, microsecond=0)
@@ -305,29 +319,23 @@ class SimsetMixin(MixinMeta):
             matchs = []
             return_matchs = []
 
-        a = []
         for k, fixture in enumerate(fixtures, 1):
-            date = startDate + timedelta(days=k * int)
-            formattedDate = date.strftime('%b %d %Y')
-            a.append(f"Week {k}\n{formattedDate}\n----------")
+            startDate = startDate + timedelta(days=(interval))
             for i, game in enumerate(fixture, 1):
-                gameTime = startDate + timedelta(minutes=i * gameInterval)
-                formattedGameTime = gameTime.strftime('%X')
+                gameTime = startDate + timedelta(minutes=(i-1) * gameInterval)
                 """ Running scheduler. This requires !scheduler cog"""
                 # TODO: Integrate scheduling tool to this cog to not rely on external package
-                await self.scheduleGame(ctx, game[0], game[1], gameTime)
-                a.append(
-                    f"Game {i}: {game[0]} vs {game[1]} ({formattedGameTime})")
-            a.append("----------")
+                await self.scheduleGame(ctx, k, game[0], game[1], gameTime)
+
         await self.config.guild(ctx.guild).fixtures.set(fixtures)
         await ctx.tick()
 
-    @checks.guildowner()
-    @simset.group()
+    @ checks.guildowner()
+    @ simset.group()
     async def clear(self, ctx):
         """SimLeague Clear Settings"""
 
-    @clear.command(name="all")
+    @ clear.command(name="all")
     async def clear_all(self, ctx):
         """Clear all teams, stats etc."""
         await self.config.guild(ctx.guild).clear()
@@ -335,7 +343,7 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).stats.set({})
         await ctx.tick()
 
-    @clear.command(name="stats")
+    @ clear.command(name="stats")
     async def clear_stats(self, ctx):
         """Clear standings and player stats."""
         await self.config.guild(ctx.guild).standings.set({})

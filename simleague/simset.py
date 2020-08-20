@@ -330,12 +330,12 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).fixtures.set(fixtures)
         await ctx.tick()
 
-    @ checks.guildowner()
-    @ simset.group()
+    @checks.guildowner()
+    @simset.group()
     async def clear(self, ctx):
         """SimLeague Clear Settings"""
 
-    @ clear.command(name="all")
+    @clear.command(name="all")
     async def clear_all(self, ctx):
         """Clear all teams, stats etc."""
         await self.config.guild(ctx.guild).clear()
@@ -343,7 +343,7 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).stats.set({})
         await ctx.tick()
 
-    @ clear.command(name="stats")
+    @clear.command(name="stats")
     async def clear_stats(self, ctx):
         """Clear standings and player stats."""
         await self.config.guild(ctx.guild).standings.set({})

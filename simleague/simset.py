@@ -323,6 +323,12 @@ class SimsetMixin(MixinMeta):
             startDate = startDate + timedelta(days=(interval))
             for i, game in enumerate(fixture, 1):
                 gameTime = startDate + timedelta(minutes=(i-1) * gameInterval)
+                parsedGameDate = datetime.strftime(gameTime, '%x')
+                parsedGameTime = datetime.strftime(gameTime, "%I:%M %p")
+                """ Create new tuple to add game time so we can display it in !fixtures. """
+                newFixtureTuple = (
+                    game[0], game[1], parsedGameDate, parsedGameTime)
+                fixtures[k-1][0] = newFixtureTuple
                 """ Running scheduler. This requires !scheduler cog"""
                 # TODO: Integrate scheduling tool to this cog to not rely on external package
                 await self.scheduleGame(ctx, k, game[0], game[1], gameTime)

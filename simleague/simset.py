@@ -277,6 +277,7 @@ class SimsetMixin(MixinMeta):
             for i, game in enumerate(fixture, 1):
                 a.append(f"Game {i}: {game[0]} vs {game[1]}")
             a.append("----------")
+
         await self.config.guild(ctx.guild).fixtures.set(fixtures)
         await ctx.tick()
 
@@ -286,9 +287,6 @@ class SimsetMixin(MixinMeta):
         event_name.parsed = f"{homeTeam}_{awayTeam}_W{week}"
         scheduleCmd = self.bot.get_command('schedule')
         await ctx.invoke(scheduleCmd, event_name=event_name, schedule=Schedule(time, query))
-
-        # TODO: Not sure whether we need to show this ?
-        await ctx.send(f"Game scheduled: {homeTeam} vs {awayTeam} - {time}\n")
 
     @simset.command()
     async def createscheduledfixtures(self, ctx, day: int = 0, interval: int = 1):
@@ -319,21 +317,27 @@ class SimsetMixin(MixinMeta):
             matchs = []
             return_matchs = []
 
+        newFixtures = []
         for k, fixture in enumerate(fixtures, 1):
+            weekFixtures = []
             startDate = startDate + timedelta(days=(interval))
             for i, game in enumerate(fixture, 1):
                 gameTime = startDate + timedelta(minutes=(i-1) * gameInterval)
                 parsedGameDate = datetime.strftime(gameTime, '%x')
-                parsedGameTime = datetime.strftime(gameTime, "%I:%M %p")
-                """ Create new tuple to add game time so we can display it in !fixtures. """
+                parsedGameTime = datetime.strftime(gameTime, "%H:%M")
+                """Create new tuple to add game time so we can display it in !fixtures."""
                 newFixtureTuple = (
                     game[0], game[1], parsedGameDate, parsedGameTime)
-                fixtures[k-1][0] = newFixtureTuple
-                """ Running scheduler. This requires !scheduler cog"""
-                # TODO: Integrate scheduling tool to this cog to not rely on external package
+
+                """Append new fixtures to current week."""
+                weekFixtures.append(newFixtureTuple)
+
+                """Running scheduler. This requires !scheduler cog"""
                 await self.scheduleGame(ctx, k, game[0], game[1], gameTime)
 
-        await self.config.guild(ctx.guild).fixtures.set(fixtures)
+            newFixtures.append(weekFixtures)
+
+        await self.config.guild(ctx.guild).fixtures.set(newFixtures)
         await ctx.tick()
 
     @checks.guildowner()

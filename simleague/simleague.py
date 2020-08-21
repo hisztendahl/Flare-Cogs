@@ -17,7 +17,6 @@ from .functions import WEATHER
 from .simset import SimsetMixin
 from .stats import StatsMixin
 from .teamset import TeamsetMixin
-import pdb
 
 # THANKS TO https://code.sololearn.com/ci42wd5h0UQX/#py FOR THE SIMULATION AND FIXATOR/AIKATERNA/STEVY FOR THE PILLOW HELP/LEVELER
 
@@ -299,23 +298,31 @@ class SimLeague(
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
         if week is None:
-            embed = discord.Embed(color=0xFF0000)
             for i, fixture in enumerate(fixtures[:25]):
                 a = []
                 for game in fixture:
-                    a.append(f"{game[0]} vs {game[1]} ({game[3]})")
-                embed.add_field(
-                    name=f"Week {i+1} - [{game[2]}]", value=f"{game[2]}\n".join(a))
-            await ctx.send(embed=embed)
+                    if len(game) > 2:
+                        a.append(f"[{game[3]}] - {game[0]} vs {game[1]}")
+                    else:
+                        a.append(f"{game[0]} vs {game[1]}")
+
+                await ctx.send(f"**Week {i+1} - [{game[2]}]**")
+                await ctx.send("\n".join(a))
+                await ctx.send("-----\n")
+
             if len(fixtures) > 25:
-                embed = discord.Embed(color=0xFF0000)
                 for i, fixture in enumerate(fixtures[25:], 25):
                     a = []
                     for game in fixture:
-                        a.append(f"{game[0]} vs {game[1]} ({game[3]})")
-                    embed.add_field(name="Week {}".format(
-                        i + 1), value="\n".join(a))
-                await ctx.send(embed=embed)
+                        if len(game) > 2:
+                            a.append(f"[{game[3]}] - {game[0]} vs {game[1]}")
+                        else:
+                            a.append(f"{game[0]} vs {game[1]}")
+
+                    await ctx.send(f"**Week {i+1} - [{game[2]}]**")
+                    await ctx.send("\n".join(a))
+                    await ctx.send("-----\n")
+
         else:
             if week == 0:
                 return await ctx.send("Try starting with week 1.")
@@ -328,9 +335,14 @@ class SimLeague(
             except IndexError:
                 return await ctx.send("Invalid gameweek.")
             a = []
-            for fixture in games:
-                a.append(f"{fixture[0]} vs {fixture[1]}")
-            await ctx.maybe_send_embed("\n".join(a))
+            for game in games:
+                if len(game) > 2:
+                    a.append(f"[{game[3]}] - {game[0]} vs {game[1]}")
+                else:
+                    a.append(f"{game[0]} vs {game[1]}")
+
+            await ctx.send(f"**Week {week} - [{game[2]}]**")
+            await ctx.send("\n".join(a))
 
     @commands.command()
     async def standings(self, ctx, verbose: bool = False):

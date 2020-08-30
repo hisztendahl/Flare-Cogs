@@ -308,7 +308,6 @@ class SimLeague(
 
                 await ctx.send(f"**Week {i+1} - [{game[2]}]**")
                 await ctx.send("\n".join(a))
-                await ctx.send("-----\n")
 
             if len(fixtures) > 25:
                 for i, fixture in enumerate(fixtures[25:], 25):
@@ -321,7 +320,6 @@ class SimLeague(
 
                     await ctx.send(f"**Week {i+1} - [{game[2]}]**")
                     await ctx.send("\n".join(a))
-                    await ctx.send("-----\n")
 
         else:
             if week == 0:
@@ -386,20 +384,20 @@ class SimLeague(
                 t.append(
                     [
                         x,
-                        standings[x]["wins"],
-                        standings[x]["losses"],
-                        standings[x]["draws"],
                         standings[x]["played"],
-                        standings[x]["points"],
-                        standings[x]["gd"],
+                        standings[x]["wins"],
+                        standings[x]["draws"],
+                        standings[x]["losses"],
                         standings[x]["gf"],
                         standings[x]["ga"],
+                        standings[x]["points"],
+                        standings[x]["gd"],
                     ]
                 )
             tab = tabulate(
                 t,
-                headers=["Team", "Wins", "Losses", "Draws",
-                         "Played", "Points", "GD", "GF", "GA"],
+                headers=["Team", "Played", "W", "D", "L",
+                         "GF", "GA", "Pts", "GD", ],
             )
             await ctx.send(box(tab))
 
@@ -531,8 +529,8 @@ class SimLeague(
                 redst1 = 1
             if redst2 == 0:
                 redst2 = 1
-            total = ["A"] * int((t1totalxp // redst1)) + \
-                ["B"] * int((t2totalxp // redst2))
+            total = ["A"] * int(((1 - redst1) * 100) * t1totalxp) + \
+                ["B"] * int(((1 - redst2) * 100) * t2totalxp)
             rdmint = random.choice(total)
             if rdmint == "A":
                 return team1Stats

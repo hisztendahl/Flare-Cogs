@@ -3,6 +3,15 @@ from redbot.core import checks, commands
 from redbot.core.utils.chat_formatting import box
 
 from .abc import MixinMeta
+from .scheduler import Schedule
+
+from datetime import datetime, timedelta
+import pdb
+
+
+class Name:
+    title: str
+    parsed: str
 
 
 class SimsetMixin(MixinMeta):
@@ -27,11 +36,14 @@ class SimsetMixin(MixinMeta):
             msg += "Game Time: 1m for every {}s.\n".format(gametime)
             msg += "Team Limit: {} players.\n".format(maxplayers)
             msg += "HT Break: {}s.\n".format(htbreak)
-            msg += "Red Card Modifier: {}% loss per red card.\n".format(redcardmodif)
+            msg += "Red Card Modifier: {}% loss per red card.\n".format(
+                redcardmodif)
             msg += "Posting Results: {}.\n".format("Yes" if results else "No")
-            msg += "Transfer Window: {}.\n".format("Open" if transfers else "Closed")
+            msg += "Transfer Window: {}.\n".format(
+                "Open" if transfers else "Closed")
             msg += "Accepting Bets: {}.\n".format("Yes" if bettoggle else "No")
-            msg += "Mentions on game start: {}.\n".format("Yes" if mentions else "No")
+            msg += "Mentions on game start: {}.\n".format(
+                "Yes" if mentions else "No")
 
             if bettoggle:
                 bettime = await self.config.guild(guild).bettime()
@@ -265,7 +277,67 @@ class SimsetMixin(MixinMeta):
             for i, game in enumerate(fixture, 1):
                 a.append(f"Game {i}: {game[0]} vs {game[1]}")
             a.append("----------")
+
         await self.config.guild(ctx.guild).fixtures.set(fixtures)
+        await ctx.tick()
+
+    async def scheduleGame(self, ctx, week, homeTeam, awayTeam, time):
+        query = f"sim {homeTeam} {awayTeam} --start-at {time}"
+        event_name = Name()
+        event_name.parsed = f"{homeTeam}_{awayTeam}_W{week}"
+        scheduleCmd = self.bot.get_command('schedule')
+        await ctx.invoke(scheduleCmd, event_name=event_name, schedule=Schedule(time, query))
+
+    @simset.command()
+    async def createscheduledfixtures(self, ctx, day: int = 0, interval: int = 1):
+        """Create the fixtures for the current teams with scheduler."""
+        """Day is when to start schedule in days from today. ie 0 start gameweek today, 1 start it tomorrow, etc"""
+        """Interval is interval between two gameweeks"""
+        # TODO: Add breaks (ie no game wednesday)
+        gameInterval = 10
+        today = datetime.today() + timedelta(days=day)
+        # TODO: add starting time param 8pm will be default for every gameweek here
+        startDate = today.replace(hour=20, minute=0, second=0, microsecond=0)
+
+        teams = await self.config.guild(ctx.guild).teams()
+        teams = list(teams.keys())
+        if len(teams) % 2:
+            teams.append("DAY OFF")
+        n = len(teams)
+        matchs = []
+        fixtures = []
+        return_matchs = []
+        for fixture in range(1, n):
+            for i in range(n // 2):
+                matchs.append((teams[i], teams[n - 1 - i]))
+                return_matchs.append((teams[n - 1 - i], teams[i]))
+            teams.insert(1, teams.pop())
+            fixtures.insert(len(fixtures) // 2, matchs)
+            fixtures.append(return_matchs)
+            matchs = []
+            return_matchs = []
+
+        newFixtures = []
+        for k, fixture in enumerate(fixtures, 1):
+            weekFixtures = []
+            startDate = startDate + timedelta(days=(interval))
+            for i, game in enumerate(fixture, 1):
+                gameTime = startDate + timedelta(minutes=(i-1) * gameInterval)
+                parsedGameDate = datetime.strftime(gameTime, '%x')
+                parsedGameTime = datetime.strftime(gameTime, "%H:%M")
+                """Create new tuple to add game time so we can display it in !fixtures."""
+                newFixtureTuple = (
+                    game[0], game[1], parsedGameDate, parsedGameTime)
+
+                """Append new fixtures to current week."""
+                weekFixtures.append(newFixtureTuple)
+
+                """Running scheduler. This requires !scheduler cog"""
+                await self.scheduleGame(ctx, k, game[0], game[1], gameTime)
+
+            newFixtures.append(weekFixtures)
+
+        await self.config.guild(ctx.guild).fixtures.set(newFixtures)
         await ctx.tick()
 
     @checks.guildowner()

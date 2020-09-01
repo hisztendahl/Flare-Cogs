@@ -79,7 +79,8 @@ class SimLeague(
             "cupmode": False,
         }
         defaults_user = {"notify": True}
-        self.config = Config.get_conf(self, identifier=4268355870, force_registration=True)
+        self.config = Config.get_conf(
+            self, identifier=4268355870, force_registration=True)
         self.config.register_guild(**defaults)
         self.config.register_user(**defaults_user)
         self.bot = bot
@@ -198,7 +199,8 @@ class SimLeague(
                     embed.add_field(
                         name="Team {}".format(team),
                         value="{}**Members**:\n{}\n**Captain**: {}\n**Team Level**: ~{}{}{}".format(
-                            "**Full Name**:\n{}\n".format(teams[team]["fullname"])
+                            "**Full Name**:\n{}\n".format(
+                                teams[team]["fullname"])
                             if teams[team]["fullname"] is not None
                             else "",
                             "\n".join(mems),
@@ -219,7 +221,8 @@ class SimLeague(
         else:
             teamlen = max(*[len(str(i)) for i in teams], 5) + 3
             rolelen = max(*[len(str(teams[i]["role"])) for i in teams], 5) + 3
-            caplen = max(*[len(list(teams[i]["captain"].values())[0]) for i in teams], 5) + 3
+            caplen = max(*[len(list(teams[i]["captain"].values())[0])
+                           for i in teams], 5) + 3
             lvllen = 6
 
             msg = f"{'Team':{teamlen}} {'Level':{lvllen}} {'Captain':{caplen}} {'Role':{rolelen}} {'Members'}\n"
@@ -262,9 +265,12 @@ class SimLeague(
                 value="\n".join(list(teams[team]["members"].values())),
                 inline=True,
             )
-            embed.add_field(name="Captain:", value=list(teams[team]["captain"].values())[0])
-            embed.add_field(name="Level:", value=teams[team]["cachedlevel"], inline=True)
-            embed.add_field(name="Bonus %:", value=f"{teams[team]['bonus'] * 15}%", inline=True)
+            embed.add_field(name="Captain:", value=list(
+                teams[team]["captain"].values())[0])
+            embed.add_field(
+                name="Level:", value=teams[team]["cachedlevel"], inline=True)
+            embed.add_field(name="Bonus %:",
+                            value=f"{teams[team]['bonus'] * 15}%", inline=True)
             if teams[team]["role"] is not None:
                 embed.add_field(
                     name="Role:",
@@ -272,13 +278,15 @@ class SimLeague(
                     inline=True,
                 )
             if teams[team]["stadium"] is not None:
-                embed.add_field(name="Stadium:", value=teams[team]["stadium"], inline=True)
+                embed.add_field(name="Stadium:",
+                                value=teams[team]["stadium"], inline=True)
             if teams[team]["logo"] is not None:
                 embed.set_thumbnail(url=teams[team]["logo"])
             embeds.append(embed)
             for kit in teams[team]["kits"]:
                 if teams[team]["kits"][kit] is not None:
-                    embed = discord.Embed(title=f"{kit.title()} Kit", colour=ctx.author.colour)
+                    embed = discord.Embed(
+                        title=f"{kit.title()} Kit", colour=ctx.author.colour)
                     embed.set_image(url=teams[team]["kits"][kit])
                     embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
@@ -290,21 +298,29 @@ class SimLeague(
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
         if week is None:
-            embed = discord.Embed(color=0xFF0000)
             for i, fixture in enumerate(fixtures[:25]):
                 a = []
                 for game in fixture:
-                    a.append(f"{game[0]} vs {game[1]}")
-                embed.add_field(name="Week {}".format(i + 1), value="\n".join(a))
-            await ctx.send(embed=embed)
+                    if len(game) > 2:
+                        a.append(f"[{game[3]}] - {game[0]} vs {game[1]}")
+                    else:
+                        a.append(f"{game[0]} vs {game[1]}")
+
+                await ctx.send(f"**Week {i+1} - [{game[2]}]**")
+                await ctx.send("\n".join(a))
+
             if len(fixtures) > 25:
-                embed = discord.Embed(color=0xFF0000)
                 for i, fixture in enumerate(fixtures[25:], 25):
                     a = []
                     for game in fixture:
-                        a.append(f"{game[0]} vs {game[1]}")
-                    embed.add_field(name="Week {}".format(i + 1), value="\n".join(a))
-                await ctx.send(embed=embed)
+                        if len(game) > 2:
+                            a.append(f"[{game[3]}] - {game[0]} vs {game[1]}")
+                        else:
+                            a.append(f"{game[0]} vs {game[1]}")
+
+                    await ctx.send(f"**Week {i+1} - [{game[2]}]**")
+                    await ctx.send("\n".join(a))
+
         else:
             if week == 0:
                 return await ctx.send("Try starting with week 1.")
@@ -317,9 +333,14 @@ class SimLeague(
             except IndexError:
                 return await ctx.send("Invalid gameweek.")
             a = []
-            for fixture in games:
-                a.append(f"{fixture[0]} vs {fixture[1]}")
-            await ctx.maybe_send_embed("\n".join(a))
+            for game in games:
+                if len(game) > 2:
+                    a.append(f"[{game[3]}] - {game[0]} vs {game[1]}")
+                else:
+                    a.append(f"{game[0]} vs {game[1]}")
+
+            await ctx.send(f"**Week {week} - [{game[2]}]**")
+            await ctx.send("\n".join(a))
 
     @commands.command()
     async def standings(self, ctx, verbose: bool = False):
@@ -335,7 +356,8 @@ class SimLeague(
             t = []  # PrettyTable(["Team", "W", "L", "D", "PL", "PO"])
             for x in sorted(
                 standings,
-                key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
+                key=lambda x: (standings[x]["points"],
+                               standings[x]["gd"], standings[x]["gf"]),
                 reverse=True,
             ):
                 t.append(
@@ -348,31 +370,34 @@ class SimLeague(
                         standings[x]["points"],
                     ]
                 )
-            tab = tabulate(t, headers=["Team", "Wins", "Losses", "Draws", "Played", "Points"])
+            tab = tabulate(
+                t, headers=["Team", "Wins", "Losses", "Draws", "Played", "Points"])
             await ctx.send(box(tab))
         else:
             t = []
             for x in sorted(
                 standings,
-                key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
+                key=lambda x: (standings[x]["points"],
+                               standings[x]["gd"], standings[x]["gf"]),
                 reverse=True,
             ):
                 t.append(
                     [
                         x,
-                        standings[x]["wins"],
-                        standings[x]["losses"],
-                        standings[x]["draws"],
                         standings[x]["played"],
-                        standings[x]["points"],
-                        standings[x]["gd"],
+                        standings[x]["wins"],
+                        standings[x]["draws"],
+                        standings[x]["losses"],
                         standings[x]["gf"],
                         standings[x]["ga"],
+                        standings[x]["points"],
+                        standings[x]["gd"],
                     ]
                 )
             tab = tabulate(
                 t,
-                headers=["Team", "Wins", "Losses", "Draws", "Played", "Points", "GD", "GF", "GA"],
+                headers=["Team", "Played", "W", "D", "L",
+                         "GF", "GA", "Pts", "GD", ],
             )
             await ctx.send(box(tab))
 
@@ -500,11 +525,8 @@ class SimLeague(
             self.log.debug(f"Team 1: {t1totalxp} - Team 2: {t2totalxp}")
             redst1 = float(f"0.{reds1 * redcardmodifier}")
             redst2 = float(f"0.{reds2 * redcardmodifier}")
-            if redst1 == 0:
-                redst1 = 1
-            if redst2 == 0:
-                redst2 = 1
-            total = ["A"] * int((t1totalxp // redst1)) + ["B"] * int((t2totalxp // redst2))
+            total = ["A"] * int(((1 - redst1) * 100) * t1totalxp) + \
+                ["B"] * int(((1 - redst2) * 100) * t2totalxp)
             rdmint = random.choice(total)
             if rdmint == "A":
                 return team1Stats
@@ -668,9 +690,11 @@ class SimLeague(
                         events = True
                         async with self.config.guild(ctx.guild).stats() as stats:
                             if playerPenalty[1] not in stats["penalties"]:
-                                stats["penalties"][playerPenalty[1]] = {"scored": 0, "missed": 1}
+                                stats["penalties"][playerPenalty[1]] = {
+                                    "scored": 0, "missed": 1}
                             else:
-                                stats["penalties"][playerPenalty[1]]["missed"] += 1
+                                stats["penalties"][playerPenalty[1]
+                                                   ]["missed"] += 1
                         user = self.bot.get_user(int(playerPenalty[1]))
                         if user is None:
                             user = await self.bot.fetch_user(int(playerPenalty[1]))
@@ -694,9 +718,11 @@ class SimLeague(
                             else:
                                 stats["goals"][playerPenalty[1]] += 1
                             if playerPenalty[1] not in stats["penalties"]:
-                                stats["penalties"][playerPenalty[1]] = {"scored": 1, "missed": 0}
+                                stats["penalties"][playerPenalty[1]] = {
+                                    "scored": 1, "missed": 0}
                             else:
-                                stats["penalties"][playerPenalty[1]]["scored"] += 1
+                                stats["penalties"][playerPenalty[1]
+                                                   ]["scored"] += 1
                         events = True
                         user = self.bot.get_user(int(playerPenalty[1]))
                         if user is None:
@@ -761,7 +787,8 @@ class SimLeague(
                                 str(team2Stats[8]),
                                 None,
                                 str(
-                                    len(teams[str(str(playerYellow[0]))]["members"])
+                                    len(teams[str(str(playerYellow[0]))]
+                                        ["members"])
                                     - (int(teamStats[7]))
                                 ),
                             )
@@ -828,7 +855,8 @@ class SimLeague(
                             str(team2Stats[8]),
                             None,
                             str(
-                                len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7]))
+                                len(teams[str(str(playerRed[0]))]
+                                    ["members"]) - (int(teamStats[7]))
                             ),
                         )
                         await ctx.send(file=image)
@@ -915,7 +943,8 @@ class SimLeague(
                     events = False
                     ht = await self.config.guild(ctx.guild).htbreak()
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(
+                        team2Stats[8]), "HT", logo
                 )
                 await ctx.send(file=im)
                 await asyncio.sleep(ht)
@@ -1001,7 +1030,8 @@ class SimLeague(
                     await asyncio.sleep(gametime)
                     events = False
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "FT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(
+                        team2Stats[8]), "FT", logo
                 )
                 await timemsg.delete()
                 await ctx.send(file=im)
@@ -1062,14 +1092,16 @@ class SimLeague(
                 motmassists = 0
             try:
                 await bank.deposit_credits(
-                    self.bot.get_user(motmwinner.id), (75 * motmgoals) + (30 * motmassists)
+                    self.bot.get_user(motmwinner.id), (75 *
+                                                       motmgoals) + (30 * motmassists)
                 )
             except AttributeError:
                 pass
             im = await self.motmpic(
                 ctx,
                 motmwinner,
-                team1 if str(motmwinner.id) in teams[team1]["members"].keys() else team2,
+                team1 if str(
+                    motmwinner.id) in teams[team1]["members"].keys() else team2,
                 motmgoals,
                 motmassists,
             )
@@ -1144,7 +1176,8 @@ class SimLeague(
         for better in self.bets[guild.id]:
             for team, bet in self.bets[guild.id][better]["Bets"]:
                 if team == winner:
-                    bet_winners.append(f"{better.mention} - Winnings: {int(bet + (bet * odds))}")
+                    bet_winners.append(
+                        f"{better.mention} - Winnings: {int(bet + (bet * odds))}")
                     await bank.deposit_credits(better, int(bet + (bet * odds)))
         return "\n".join(bet_winners) if bet_winners else None
 

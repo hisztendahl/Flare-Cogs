@@ -1223,7 +1223,7 @@ class SimHelper(MixinMeta):
         currentteamindex = sortedstandings.index(team)
         transfers[sortedstandings[currentteamindex]]["ready"] = False
         currentteam = ctx.guild.get_role(teams[sortedstandings[currentteamindex]]["role"]).mention
-        if currentteamindex < len(sortedstandings):
+        if currentteamindex < len(sortedstandings) - 1:
             transfers[sortedstandings[currentteamindex + 1]]["ready"] = True
             nextteam = ctx.guild.get_role(
                 teams[sortedstandings[currentteamindex + 1]]["role"]
@@ -1261,7 +1261,7 @@ class SimHelper(MixinMeta):
                 await self.setnextteam(ctx, transfers, team1)
 
             async with self.config.guild(ctx.guild).transferred() as transferred:
-                transferred.append(member1.id)
+                transferred.append(member2.id)
 
             teams[team1]["members"][str(member2.id)] = member2.name
             del teams[team1]["members"][str(member1.id)]

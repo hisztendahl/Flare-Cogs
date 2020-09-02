@@ -375,57 +375,58 @@ class SimsetMixin(MixinMeta):
         scheduleCmd = self.bot.get_command('schedule')
         await ctx.invoke(scheduleCmd, event_name=event_name, schedule=Schedule(time, query))
 
-    @simset.command()
-    async def createscheduledfixtures(self, ctx, day: int = 0, interval: int = 1):
-        """Create the fixtures for the current teams with scheduler."""
-        """Day is when to start schedule in days from today. ie 0 start gameweek today, 1 start it tomorrow, etc"""
-        """Interval is interval between two gameweeks"""
-        # TODO: Add breaks (ie no game wednesday)
-        gameInterval = 10
-        today = datetime.today() + timedelta(days=day)
-        # TODO: add starting time param 8pm will be default for every gameweek here
-        startDate = today.replace(hour=20, minute=0, second=0, microsecond=0)
+    # @simset.command()
+    # async def createscheduledfixtures(self, ctx, day: int = 0, interval: int = 1):
+    #     """Create the fixtures for the current teams with scheduler."""
+    #     """Day is when to start schedule in days from today. ie 0 start gameweek today, 1 start it tomorrow, etc"""
+    #     """Interval is interval between two gameweeks"""
+    #     # TODO: Add breaks (ie no game wednesday)
+    #     gameInterval = 10
+    #     today = datetime.today() + timedelta(days=day)
+    #     # TODO: add starting time param 8pm will be default for every gameweek here
+    #     startDate = today.replace(hour=20, minute=0, second=0, microsecond=0)
 
-        teams = await self.config.guild(ctx.guild).teams()
-        teams = list(teams.keys())
-        if len(teams) % 2:
-            teams.append("DAY OFF")
-        n = len(teams)
-        matchs = []
-        fixtures = []
-        return_matchs = []
-        for fixture in range(1, n):
-            for i in range(n // 2):
-                matchs.append((teams[i], teams[n - 1 - i]))
-                return_matchs.append((teams[n - 1 - i], teams[i]))
-            teams.insert(1, teams.pop())
-            fixtures.insert(len(fixtures) // 2, matchs)
-            fixtures.append(return_matchs)
-            matchs = []
-            return_matchs = []
+    #     teams = await self.config.guild(ctx.guild).teams()
+    #     teams = list(teams.keys())
+    #     if len(teams) % 2:
+    #         teams.append("DAY OFF")
+    #     n = len(teams)
+    #     matchs = []
+    #     fixtures = []
+    #     return_matchs = []
+    #     for fixture in range(1, n):
+    #         for i in range(n // 2):
+    #             matchs.append((teams[i], teams[n - 1 - i]))
+    #             return_matchs.append((teams[n - 1 - i], teams[i]))
+    #         teams.insert(1, teams.pop())
+    #         fixtures.insert(len(fixtures) // 2, matchs)
+    #         fixtures.append(return_matchs)
+    #         matchs = []
+    #         return_matchs = []
 
-        newFixtures = []
-        for k, fixture in enumerate(fixtures, 1):
-            weekFixtures = []
-            startDate = startDate + timedelta(days=(interval))
-            for i, game in enumerate(fixture, 1):
-                gameTime = startDate + timedelta(minutes=(i-1) * gameInterval)
-                parsedGameDate = datetime.strftime(gameTime, '%x')
-                parsedGameTime = datetime.strftime(gameTime, "%H:%M")
-                """Create new tuple to add game time so we can display it in !fixtures."""
-                newFixtureTuple = (
-                    game[0], game[1], parsedGameDate, parsedGameTime)
+    #     newFixtures = []
+    #     for k, fixture in enumerate(fixtures, 1):
+    #         weekFixtures = []
+    #         startDate = startDate + timedelta(days=(interval))
+    #         for i, game in enumerate(fixture, 1):
+    #             gameTime = startDate + timedelta(minutes=(i-1) * gameInterval)
+    #             parsedGameDate = datetime.strftime(gameTime, '%x')
+    #             parsedGameTime = datetime.strftime(gameTime, "%H:%M")
+    #             """Create new tuple to add game time so we can display it in !fixtures."""
+    #             newFixtureTuple = (
+    #                 game[0], game[1], parsedGameDate, parsedGameTime)
 
-                """Append new fixtures to current week."""
-                weekFixtures.append(newFixtureTuple)
+    #             """Append new fixtures to current week."""
+    #             weekFixtures.append(newFixtureTuple)
 
-                """Running scheduler. This requires !scheduler cog"""
-                await self.scheduleGame(ctx, k, game[0], game[1], gameTime)
+    #             """Running scheduler. This requires !scheduler cog"""
+    #             if game[0] != "DAY OFF" and game[1] != "DAY OFF":
+    #                 await self.scheduleGame(ctx, k, game[0], game[1], gameTime)
 
-            newFixtures.append(weekFixtures)
+    #         newFixtures.append(weekFixtures)
 
-        await self.config.guild(ctx.guild).fixtures.set(newFixtures)
-        await ctx.tick()
+    #     await self.config.guild(ctx.guild).fixtures.set(newFixtures)
+    #     await ctx.tick()
 
     @checks.guildowner()
     @simset.group()
@@ -462,7 +463,7 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).stats.set({})
         await ctx.tick()
 
-    @commands.command(name="transfers")
+    @clear.command(name="transfers")
     async def clear_transfers(self, ctx):
         await self.config.guild(ctx.guild).transferred.set([])
         await ctx.tick()

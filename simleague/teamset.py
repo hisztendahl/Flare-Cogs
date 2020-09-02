@@ -17,15 +17,18 @@ class TeamsetMixin(MixinMeta):
     async def _swap(self, ctx, team1, player1: discord.Member, team2, player2: discord.Member):
         """Swap a player from your team with a player from another team."""
         teams = await self.config.guild(ctx.guild).teams()
-        cptid = list(teams[team1]["captain"].keys())[0]
+        cpt1id = list(teams[team1]["captain"].keys())[0]
+        cpt2id = list(teams[team2]["captain"].keys())[0]
         if not await self.config.guild(ctx.guild).transferwindow():
             return await ctx.send("The transfer window is currently closed.")
-        if ctx.author.id != int(cptid):
+        if ctx.author.id != int(cpt1id):
             return await ctx.send("You need to pick players from your team")
         transfers = await self.config.guild(ctx.guild).transfers()
         if not transfers[team1]["ready"]:
             return await ctx.send("Your team is not eligible for transfers yet.")
         transferred = await self.config.guild(ctx.guild).transferred()
+        if int(cpt1id) == player1.id or int(cpt2id) == player2.id:
+            return await ctx.send("You cannot transfer team captains.")
         if player1.id in transferred:
             return await ctx.send(
                 "You cannot pick this player as he has already been transferred during this window: {}.".format(
@@ -54,6 +57,8 @@ class TeamsetMixin(MixinMeta):
         transfers = await self.config.guild(ctx.guild).transfers()
         if not transfers[team1]["ready"]:
             return await ctx.send("Your team is not eligible for transfers yet.")
+        if int(cptid) == player1.id:
+            return await ctx.send("You cannot release team captains.")
         await self.sign(ctx, ctx.guild, team1, player1, player2)
         await ctx.tick()
 
@@ -107,6 +112,38 @@ class TeamsetMixin(MixinMeta):
         transfers = await self.config.guild(ctx.guild).transfers()
         eligibleteam = [team for team in transfers if transfers[team]["ready"] == True]
         await ctx.send(f"Current transferring team: {eligibleteam[0]}")
+
+    @transfer.command(name="list")
+    async def list(self, ctx):
+        """Shows players already transferred during this window."""
+        transferred = await self.config.guild(ctx.guild).transferred()
+        teams = await self.config.guild(ctx.guild).teams()
+        embed = discord.Embed(color=0x800080)
+        async with ctx.typing():
+            for team in teams:
+                av = []
+                unav = []
+                members = {k:v for (k,v) in teams[team]["members"].items() if k not in teams[team]["captain"]}
+                for m in members:
+                    if int(m) in transferred:
+                        unav.append(m)
+                        av.append("")
+                    else:
+                        av.append(m)
+                    
+                avmems = [members[x] if x != "" else "" for x in av]
+                unavmems = [members[x] if x != "" else "\n" for x in unav]
+                
+                embed.add_field(
+                    name="Team {}".format(team),
+                    value="\n**Available**:\n{}\n\n**Unavailable**:\n{}".format(
+                        "\n".join(avmems),
+                        "\n".join(unavmems),
+                    ),
+                    inline=True,
+                )
+        await ctx.send(embed=embed)
+
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.group(autohelp=True)

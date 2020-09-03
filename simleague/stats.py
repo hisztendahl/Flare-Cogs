@@ -1,11 +1,27 @@
 import discord
-from redbot.core import commands
+from redbot.core import checks, commands
 
 from .abc import MixinMeta
 
 
 class StatsMixin(MixinMeta):
     """Stats Settings"""
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def clearstats(self, ctx, user: discord.Member = None):
+        """Clear statistics for a user."""
+        if user is not None:
+            userid = str(user.id)
+            async with self.config.guild(ctx.guild).stats() as stats:
+                stats["goals"][userid] = 0
+                stats["assists"][userid] = 0
+                stats["yellows"][userid] = 0
+                stats["reds"][userid] = 0
+                stats["motm"][userid] = 0
+                stats["penalties"][userid]["missed"] = 0
+                stats["penalties"][userid]["scored"]= 0
+        await ctx.tick()
 
     @commands.group(invoke_without_command=True)
     async def leaguestats(self, ctx, user: discord.Member = None):

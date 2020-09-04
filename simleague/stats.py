@@ -2,6 +2,7 @@ import discord
 from redbot.core import checks, commands
 
 from .abc import MixinMeta
+from .utils import mergeDict
 
 
 class StatsMixin(MixinMeta):
@@ -14,13 +15,12 @@ class StatsMixin(MixinMeta):
         if user is not None:
             userid = str(user.id)
             async with self.config.guild(ctx.guild).stats() as stats:
-                stats["goals"][userid] = 0
-                stats["assists"][userid] = 0
-                stats["yellows"][userid] = 0
-                stats["reds"][userid] = 0
-                stats["motm"][userid] = 0
-                stats["penalties"][userid]["missed"] = 0
-                stats["penalties"][userid]["scored"]= 0
+                stats["goals"].pop(userid, None)
+                stats["assists"].pop(userid, None)
+                stats["yellows"].pop(userid, None)
+                stats["reds"].pop(userid, None)
+                stats["motm"].pop(userid, None)
+                stats["penalties"].pop(userid, None)
         await ctx.tick()
 
     @commands.group(invoke_without_command=True)
@@ -79,15 +79,17 @@ class StatsMixin(MixinMeta):
                 stats["penalties"], key=lambda x: stats["penalties"][x]["missed"], reverse=True
             )
             msg = ""
-            msg += "**Top Goalscorer**: {}\n".format(await self.statsmention(ctx, goalscorer))
-            msg += "**Most Assists**: {}\n".format(await self.statsmention(ctx, assists))
-            msg += "**Most Yellow Cards**: {}\n".format(await self.statsmention(ctx, yellows))
-            msg += "**Most Red Cards**: {}\n".format(await self.statsmention(ctx, reds))
-            msg += "**Penalties Scored**: {}\n".format(await self.statsmention(ctx, penscored))
-            msg += "**Penalties Missed**: {}\n".format(await self.statsmention(ctx, penmissed))
-            msg += "**MOTMs**: {}\n".format(await self.statsmention(ctx, motms))
-            msg += "**Cleansheets**: {}\n".format(
-                cleansheets[0] if cleansheets else "None")
+            msg += "**Top Goalscorer**: {} - {}\n".format(await self.statsmention(ctx, goalscorer), stats["goals"][goalscorer[0]])
+            msg += "**Most Assists**: {} - {}\n".format(await self.statsmention(ctx, assists), stats["assists"][assists[0]])
+            msg += "**Most Yellow Cards**: {} - {}\n".format(await self.statsmention(ctx, yellows), stats["yellows"][yellows[0]])
+            msg += "**Most Red Cards**: {} - {}\n".format(await self.statsmention(ctx, reds), stats["reds"][reds[0]])
+            msg += "**Penalties Scored**: {} - {}\n".format(await self.statsmention(ctx, penscored), stats["penalties"][penscored[0]]['scored'])
+            msg += "**Penalties Missed**: {} - {}\n".format(await self.statsmention(ctx, penmissed), stats["penalties"][penmissed[0]]['missed'])
+            msg += "**MOTMs**: {} - {}\n".format(await self.statsmention(ctx, motms), stats["motm"][motms[0]])
+            if cleansheets:
+                msg += "**Cleansheets**: {} - {}\n".format(cleansheets[0], stats["cleansheets"][cleansheets[0]])
+            else:
+                msg += "**Cleansheets**: {}\n".format(await self.statsmention(ctx, cleansheets))
             await ctx.maybe_send_embed(msg)
 
     async def statsmention(self, ctx, stats):
@@ -98,6 +100,27 @@ class StatsMixin(MixinMeta):
             return user.mention
         else:
             return "None"
+
+    @leaguestats.command(name="ga")
+    async def _goals_assists(self, ctx):
+        """Players with the most combined goals and assists."""
+        stats = await self.config.guild(ctx.guild).stats()
+        goals = stats["goals"]
+        assists = stats["assists"]
+        contributions = mergeDict(goals, assists)
+        stats = contributions
+        if contributions:
+            a = []
+            for k in sorted(stats, key=stats.get, reverse=True):
+                user = self.bot.get_user(int(k))
+                a.append(
+                    f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+            embed = discord.Embed(
+                title="Top goal involvements (goals + assists)", description="\n".join(a[:10]), colour=0xFF0000
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("No stats available.")
 
     @leaguestats.command(name="goals", alias=["topscorer", "topscorers"])
     async def _goals(self, ctx):

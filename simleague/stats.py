@@ -101,7 +101,7 @@ class StatsMixin(MixinMeta):
         else:
             return "None"
 
-    @leaguestats.command(name="ga")
+    @leaguestats.command(name="ga", alias=["ga", "contributions"])
     async def _goals_assists(self, ctx):
         """Players with the most combined goals and assists."""
         stats = await self.config.guild(ctx.guild).stats()

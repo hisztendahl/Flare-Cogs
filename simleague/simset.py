@@ -250,12 +250,27 @@ class SimsetMixin(MixinMeta):
     @commands.bot_has_permissions(manage_roles=True)
     async def createroles(self, ctx):
         """Create roles for teams"""
+        roles = await ctx.guild.fetch_roles()
+        cptrole = None
+        if not len([r for r in roles if r.name == "Sim Captain"]):
+            async with ctx.guild.create_role(name="Sim Captain") as cptrole:
+                roles.append(cptrole)
+                cptrole = cptrole
+
         async with self.config.guild(ctx.guild).teams() as teams:
             for team in teams:
                 if teams[team]["role"] is not None:
                     continue
                 role = await ctx.guild.create_role(name=team)
                 teams[team]["role"] = role.id
+
+                teamcaptain = teams[team]["captain"]
+                captainid = list(teamcaptain.keys())[0] 
+
+                member = ctx.guild.get_member(int(captainid))
+
+                captainrole = [r for r in roles if r.name == "Sim Captain"][0] if not cptrole else cptrole
+                await member.add_roles(captainrole)
             await ctx.tick()
 
     @simset.command()

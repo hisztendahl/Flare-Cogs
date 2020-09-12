@@ -8,6 +8,27 @@ from .abc import MixinMeta
 class TeamsetMixin(MixinMeta):
     """Teamset Settings"""
 
+    @commands.group(autohelp=True)
+    @commands.has_role("Sim Captain")
+    async def transfer(self, ctx):
+        """Team Settings."""
+    
+    @transfer.command(name="swap")
+    async def _swap(self, ctx, team1, player1: discord.Member, team2, player2: discord.Member):
+        """Swap two players."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        await self.swap(ctx, ctx.guild, team1, player1, team2, player2)
+        await ctx.tick()
+
+    @transfer.command(name="sign")
+    async def _sign(self, ctx, team1, player1: discord.Member, player2: discord.Member):
+        """Release a player and sign a free agent."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        await self.sign(ctx, ctx.guild, team1, player1, player2)
+        await ctx.tick()
+
     @checks.admin_or_permissions(manage_guild=True)
     @commands.group(autohelp=True)
     async def teamset(self, ctx):
@@ -133,22 +154,6 @@ class TeamsetMixin(MixinMeta):
             if team not in teams:
                 return await ctx.send("Not a valid team.")
             teams[team]["kits"]["third"] = kiturl
-        await ctx.tick()
-
-    @teamset.command(name="transfer")
-    async def _transfer(self, ctx, team1, player1: discord.Member, team2, player2: discord.Member):
-        """Transfer two players."""
-        if not await self.config.guild(ctx.guild).transferwindow():
-            return await ctx.send("The transfer window is currently closed.")
-        await self.transfer(ctx, ctx.guild, team1, player1, team2, player2)
-        await ctx.tick()
-
-    @teamset.command(name="sign")
-    async def _sign(self, ctx, team1, player1: discord.Member, player2: discord.Member):
-        """Release a player and sign a free agent."""
-        if not await self.config.guild(ctx.guild).transferwindow():
-            return await ctx.send("The transfer window is currently closed.")
-        await self.sign(ctx, ctx.guild, team1, player1, player2)
         await ctx.tick()
 
     @teamset.command(name="delete")

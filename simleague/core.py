@@ -1189,7 +1189,7 @@ class SimHelper(MixinMeta):
                     t2totalxp += 1
             teams[team2]["cachedlevel"] = t2totalxp
 
-    async def transfer(
+    async def swap(
         self, ctx, guild, team1, member1: discord.Member, team2, member2: discord.Member
     ):
         cog = self.bot.get_cog("SimLeague")
@@ -1251,6 +1251,10 @@ class SimHelper(MixinMeta):
                 return await ctx.send("Team was not found, ensure capitilization is correct.")
             async with cog.config.guild(ctx.guild).users() as users:
                 for uid in teams[team]["members"]:
+                    user = ctx.guild.get_member(int(uid))
+                    cptrole = [r for r in user.roles if r.name == "Sim Captain"][0]
+                    if cptrole:
+                        await user.remove_roles(cptrole)
                     users.remove(uid)
             del teams[team]
             async with cog.config.guild(ctx.guild).standings() as standings:

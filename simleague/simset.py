@@ -220,13 +220,63 @@ class SimsetMixin(MixinMeta):
 
 
     @simset.command()
+    async def transferchannel(self, ctx, channel: discord.TextChannel):
+        """Add a channel for automatic transfer posting."""
+        async with self.config.guild(ctx.guild).transferchannel() as channels:
+            if channel.id in channels:
+                await ctx.send("Transfers are already posted in this channel")
+                return
+
+            channels.append(channel.id)
+        await ctx.tick()
+
+    @simset.command()
+    async def transferchannels(self, ctx, option: str):
+        """Show or clear all transfer channels."""
+        if option == "clear":
+            await self.config.guild(ctx.guild).transferchannel.set([])
+            await ctx.tick()
+        elif option == "show":
+            async with self.config.guild(ctx.guild).transferchannel() as result:
+                a = []
+                for res in result:
+                    channel = ctx.guild.get_channel(res)
+                    if channel is not None:
+                        a.append(channel.name)
+                embed = discord.Embed(
+                    title="Transfer channels", description="\n".join(a), colour=0xFF0000
+                )
+                await ctx.send(embed=embed)
+        else:
+            await ctx.send("No parameter for transferchannels, you must choose 'show' or 'clear'")
+
+    @simset.command()
     async def window(self, ctx, status: str):
         """Open or close the transfer window."""
         if status.lower() not in ["open", "close"]:
             return await ctx.send("You must specify either 'open' or 'close'.")
         if status == "open":
+            standings = await self.config.guild(ctx.guild).standings()
+            sortedstandings = sorted(
+                standings,
+                key=lambda team: (
+                    standings[team]["points"],
+                    standings[team]["gd"],
+                    standings[team]["gf"],
+                ),
+            )
+            firstteam = None
+            for i, team in enumerate(sortedstandings):
+                async with self.config.guild(ctx.guild).transfers() as transfers:
+                    if i == 0:
+                        firstteam = team
+                    transfers[team] = {
+                        "ready": True if i == 0 else False,
+                        "swap": {"in": None, "out": None},
+                        "sign": {"in": None, "out": None},
+                    }
             await self.config.guild(ctx.guild).transferwindow.set(True)
-            await ctx.send("Window is now open.")
+            await ctx.send("Window is now open. Transfers will start with {}".format(firstteam))
         else:
             await self.config.guild(ctx.guild).transferwindow.set(False)
             await ctx.send("Window is now closed.")
@@ -249,7 +299,7 @@ class SimsetMixin(MixinMeta):
     @simset.command()
     @commands.bot_has_permissions(manage_roles=True)
     async def createroles(self, ctx):
-        """Create roles for teams"""
+        """Create roles for teams and captains."""
         roles = await ctx.guild.fetch_roles()
         cptrole = None
         if not len([r for r in roles if r.name == "Sim Captain"]):
@@ -259,19 +309,18 @@ class SimsetMixin(MixinMeta):
 
         async with self.config.guild(ctx.guild).teams() as teams:
             for team in teams:
-                if teams[team]["role"] is not None:
-                    continue
-                role = await ctx.guild.create_role(name=team)
-                teams[team]["role"] = role.id
+                if teams[team]["role"] is None:
+                    role = await ctx.guild.create_role(name=team)
+                    teams[team]["role"] = role.id
 
                 teamcaptain = teams[team]["captain"]
-                captainid = list(teamcaptain.keys())[0] 
-
+                captainid = list(teamcaptain.keys())[0]
                 member = ctx.guild.get_member(int(captainid))
-
-                captainrole = [r for r in roles if r.name == "Sim Captain"][0] if not cptrole else cptrole
+                captainrole = (
+                    [r for r in roles if r.name == "Sim Captain"][0] if not cptrole else cptrole
+                )
                 await member.add_roles(captainrole)
-            await ctx.tick()
+        await ctx.tick()
 
     @simset.command()
     @commands.bot_has_permissions(manage_roles=True)
@@ -389,6 +438,8 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).clear()
         await self.config.guild(ctx.guild).standings.set({})
         await self.config.guild(ctx.guild).stats.set({})
+        await self.config.guild(ctx.guild).transfers.set({})
+        await self.config.guild(ctx.guild).transferred.set([])
         await ctx.tick()
 
     @clear.command(name="stats")
@@ -409,4 +460,9 @@ class SimsetMixin(MixinMeta):
                     "draws": 0,
                 }
         await self.config.guild(ctx.guild).stats.set({})
+        await ctx.tick()
+
+    @commands.command(name="transfers")
+    async def clear_transfers(self, ctx):
+        await self.config.guild(ctx.guild).transferred.set([])
         await ctx.tick()

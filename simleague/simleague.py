@@ -56,6 +56,7 @@ class SimLeague(
             },
             "users": [],
             "resultchannel": [],
+            "transferchannel": [],
             "gametime": 1,
             "bettime": 180,
             "htbreak": 5,
@@ -75,6 +76,8 @@ class SimLeague(
             "active": False,
             "started": False,
             "betteams": [],
+            "transfers": {},
+            "transferred": [],
             "transferwindow": False,
             "cupmode": False,
         }

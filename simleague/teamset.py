@@ -12,22 +12,101 @@ class TeamsetMixin(MixinMeta):
     @commands.has_role("Sim Captain")
     async def transfer(self, ctx):
         """Team Settings."""
-    
+
     @transfer.command(name="swap")
     async def _swap(self, ctx, team1, player1: discord.Member, team2, player2: discord.Member):
-        """Swap two players."""
+        """Swap a player from your team with a player from another team."""
+        teams = await self.config.guild(ctx.guild).teams()
+        cptid = list(teams[team1]["captain"].keys())[0]
         if not await self.config.guild(ctx.guild).transferwindow():
             return await ctx.send("The transfer window is currently closed.")
+        if ctx.author.id != int(cptid):
+            return await ctx.send("You need to pick players from your team")
+        transfers = await self.config.guild(ctx.guild).transfers()
+        if not transfers[team1]["ready"]:
+            return await ctx.send("Your team is not eligible for transfers yet.")
+        transferred = await self.config.guild(ctx.guild).transferred()
+        if player1.id in transferred:
+            return await ctx.send(
+                "You cannot pick this player as he has already been transferred during this window: {}.".format(
+                    player1.name
+                )
+            )
+        if player2.id in transferred:
+            return await ctx.send(
+                "You cannot pick this player as he has already been transferred during this window: {}.".format(
+                    player2.name
+                )
+            )
+
         await self.swap(ctx, ctx.guild, team1, player1, team2, player2)
         await ctx.tick()
 
     @transfer.command(name="sign")
     async def _sign(self, ctx, team1, player1: discord.Member, player2: discord.Member):
         """Release a player and sign a free agent."""
+        teams = await self.config.guild(ctx.guild).teams()
+        cptid = list(teams[team1]["captain"].keys())[0]
         if not await self.config.guild(ctx.guild).transferwindow():
             return await ctx.send("The transfer window is currently closed.")
+        if ctx.author.id != int(cptid):
+            return await ctx.send("You need to pick players from your team")
+        transfers = await self.config.guild(ctx.guild).transfers()
+        if not transfers[team1]["ready"]:
+            return await ctx.send("Your team is not eligible for transfers yet.")
         await self.sign(ctx, ctx.guild, team1, player1, player2)
         await ctx.tick()
+
+    @transfer.command(name="pass")
+    async def _pass(self, ctx):
+        """End your transfer window."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+
+        teams = await self.config.guild(ctx.guild).teams()
+        team = None
+        for t in teams:
+            if int(list(teams[t]["captain"])[0]) == ctx.author.id:
+                team = t
+
+        if team is not None:
+            standings = await self.config.guild(ctx.guild).standings()
+            async with self.config.guild(ctx.guild).transfers() as transfers:
+                if not transfers[team]["ready"]:
+                    return await ctx.send("Transfers are not available for your team yet.")
+                sortedstandings = sorted(
+                    standings,
+                    key=lambda team: (
+                        standings[team]["points"],
+                        standings[team]["gd"],
+                        standings[team]["gf"],
+                    ),
+                    reverse=False,
+                )
+                currentteamindex = sortedstandings.index(team)
+                transfers[sortedstandings[currentteamindex]]["ready"] = False
+                if currentteamindex < len(sortedstandings):
+                    transfers[sortedstandings[currentteamindex + 1]]["ready"] = True
+                    currentteam = ctx.guild.get_role(
+                        teams[sortedstandings[currentteamindex]]["role"]
+                    ).mention
+                    nextteam = ctx.guild.get_role(
+                        teams[sortedstandings[currentteamindex + 1]]["role"]
+                    ).mention
+                    await ctx.send(
+                        "Transfers done for {}, now turn for: {}".format(currentteam, nextteam)
+                    )
+        await ctx.tick()
+
+    @transfer.command(name="turn")
+    async def turn(self, ctx):
+        """List team currently eligible to make transfers."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+
+        transfers = await self.config.guild(ctx.guild).transfers()
+        eligibleteam = [team for team in transfers if transfers[team]["ready"] == True]
+        await ctx.send(f"Current transferring team: {eligibleteam[0]}")
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.group(autohelp=True)

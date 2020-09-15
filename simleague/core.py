@@ -1116,6 +1116,24 @@ class SimHelper(MixinMeta):
                                         "Failed to remove role from {}".format(member.name)
                                     )
 
+    async def posttransfer(self, ctx, title, member1, fromteam, toteam):
+        embed = discord.Embed(color=0xCCFFCC)
+        embed.title = title
+        embed.set_thumbnail(url=member1.avatar_url)
+        embed.description = f"{member1.name}\n"
+        embed.description += f"**From**: {fromteam}\n"
+        embed.description += f"**To**: {toteam}\n"
+        cog = self.bot.get_cog("SimLeague")
+
+        transferchannels = await cog.config.guild(ctx.guild).transferchannel()
+        if transferchannels:
+            for channel in transferchannels:
+                channel = self.bot.get_channel(channel)
+                if channel is not None:
+                    await channel.send(embed=embed)
+        else:
+            await ctx.send(embed=embed)
+
     async def yCardChance(self, guild, probability):
         rdmint = random.randint(0, 100)
         if rdmint > probability["yellowchance"]:  # 98 default
@@ -1189,6 +1207,31 @@ class SimHelper(MixinMeta):
                     t2totalxp += 1
             teams[team2]["cachedlevel"] = t2totalxp
 
+    async def setnextteam(self, ctx, transfers, team):
+        # Set next team as ready to make transfers
+        standings = await self.config.guild(ctx.guild).standings()
+        teams = await self.config.guild(ctx.guild).teams()
+        sortedstandings = sorted(
+            standings,
+            key=lambda team: (
+                standings[team]["points"],
+                standings[team]["gd"],
+                standings[team]["gf"],
+            ),
+            reverse=False,
+        )
+        currentteamindex = sortedstandings.index(team)
+        transfers[sortedstandings[currentteamindex]]["ready"] = False
+        currentteam = ctx.guild.get_role(teams[sortedstandings[currentteamindex]]["role"]).mention
+        if currentteamindex < len(sortedstandings):
+            transfers[sortedstandings[currentteamindex + 1]]["ready"] = True
+            nextteam = ctx.guild.get_role(
+                teams[sortedstandings[currentteamindex + 1]]["role"]
+            ).mention
+            await ctx.send("Transfers done for {}, now turn for: {}".format(currentteam, nextteam))
+        else:
+            await ctx.send("Transfers done for {}".format(currentteam))
+
     async def swap(
         self, ctx, guild, team1, member1: discord.Member, team2, member2: discord.Member
     ):
@@ -1213,10 +1256,20 @@ class SimHelper(MixinMeta):
             if str(member2.id) in teams[team2]["captain"]:
                 teams[team2]["captain"] = {}
                 teams[team2]["captain"][str(member1.id)] = member1.name
+            async with self.config.guild(ctx.guild).transfers() as transfers:
+                transfers[team1]["swap"] = {"in": member2.name, "out": member1.name}
+                await self.setnextteam(ctx, transfers, team1)
+
+            async with self.config.guild(ctx.guild).transferred() as transferred:
+                transferred.append(member1.id)
+
             teams[team1]["members"][str(member2.id)] = member2.name
             del teams[team1]["members"][str(member1.id)]
             teams[team2]["members"][str(member1.id)] = member1.name
             del teams[team2]["members"][str(member2.id)]
+
+            await self.posttransfer(ctx, "New transfer!", member1, team1, team2)
+            await self.posttransfer(ctx, "New transfer!", member2, team2, team1)
 
     async def sign(self, ctx, guild, team1, member1: discord.Member, member2: discord.Member):
         cog = self.bot.get_cog("SimLeague")
@@ -1234,11 +1287,20 @@ class SimHelper(MixinMeta):
             if str(member1.id) in teams[team1]["captain"]:
                 teams[team1]["captain"] = {}
                 teams[team1]["captain"] = {str(member2.id): member2.name}
+            async with self.config.guild(ctx.guild).transfers() as transfers:
+                transfers[team1]["sign"] = {"in": member2.name, "out": member1.name}
+                await self.setnextteam(ctx, transfers, team1)
+
+            async with self.config.guild(ctx.guild).transferred() as transferred:
+                transferred.append(member2.id)
             teams[team1]["members"][str(member2.id)] = member2.name
             del teams[team1]["members"][str(member1.id)]
         async with cog.config.guild(guild).users() as users:
             users.remove(str(member1.id))
             users.append(str(member2.id))
+
+        await self.posttransfer(ctx, "Player released!", member1, team1, "(free agent)")
+        await self.posttransfer(ctx, "New signing!!", member2, "(free agent)", team1)
 
     async def team_delete(self, ctx, team):
         cog = self.bot.get_cog("SimLeague")

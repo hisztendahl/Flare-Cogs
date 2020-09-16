@@ -311,8 +311,9 @@ class SimsetMixin(MixinMeta):
                 teamcaptain = teams[team]["captain"]
                 captainid = list(teamcaptain.keys())[0]
                 member = ctx.guild.get_member(int(captainid))
-                await ctx.send(f"Assigning {cptrole.name} to {member.name}")
-                await member.add_roles(cptrole)
+                if member is not None:
+                    await ctx.send(f"Assigning {cptrole.name} to {member.name}")
+                    await member.add_roles(cptrole)
         await ctx.tick()
 
     @simset.command()

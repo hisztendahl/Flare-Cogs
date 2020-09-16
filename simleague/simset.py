@@ -299,8 +299,8 @@ class SimsetMixin(MixinMeta):
     async def createroles(self, ctx):
         """Create roles for teams and captains."""
         roles = await ctx.guild.fetch_roles()
-        if not len([r for r in roles if r.name == "Sim Captain"]):
-            cptrole = await ctx.guild.create_role(name="Sim Captain")
+        cptrole = [r for r in roles if r.name == "Sim Captain"]
+        cptrole = await ctx.guild.create_role(name="Sim Captain") if not cptrole else cptrole[0]
 
         async with self.config.guild(ctx.guild).teams() as teams:
             for team in teams:
@@ -311,6 +311,7 @@ class SimsetMixin(MixinMeta):
                 teamcaptain = teams[team]["captain"]
                 captainid = list(teamcaptain.keys())[0]
                 member = ctx.guild.get_member(int(captainid))
+                await ctx.send(f"Assigning {cptrole.name} to {member.name}")
                 await member.add_roles(cptrole)
         await ctx.tick()
 

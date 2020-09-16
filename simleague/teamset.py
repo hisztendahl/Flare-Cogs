@@ -223,7 +223,7 @@ class TeamsetMixin(MixinMeta):
         async with self.config.guild(ctx.guild).teams() as teams:
             if team not in teams:
                 return await ctx.send("Not a valid team.")
-            if captain.id not in teams[team]["members"]:
+            if str(captain.id) not in teams[team]["members"]:
                 return await ctx.send("He is not a member of that team.")
             teams[team]["captain"] = {}
             teams[team]["captain"] = {str(captain.id): captain.name}

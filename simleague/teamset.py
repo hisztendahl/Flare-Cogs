@@ -123,27 +123,29 @@ class TeamsetMixin(MixinMeta):
             for team in teams:
                 av = []
                 unav = []
-                members = {k:v for (k,v) in teams[team]["members"].items() if k not in teams[team]["captain"]}
+                members = {
+                    k: v
+                    for (k, v) in teams[team]["members"].items()
+                    if k not in teams[team]["captain"]
+                }
                 for m in members:
                     if int(m) in transferred:
                         unav.append(m)
                         av.append("")
                     else:
                         av.append(m)
-                    
+
                 avmems = [members[x] if x != "" else "" for x in av]
                 unavmems = [members[x] if x != "" else "\n" for x in unav]
-                
+
                 embed.add_field(
                     name="Team {}".format(team),
                     value="\n**Available**:\n{}\n\n**Unavailable**:\n{}".format(
-                        "\n".join(avmems),
-                        "\n".join(unavmems),
+                        "\n".join(avmems), "\n".join(unavmems),
                     ),
                     inline=True,
                 )
         await ctx.send(embed=embed)
-
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.group(autohelp=True)

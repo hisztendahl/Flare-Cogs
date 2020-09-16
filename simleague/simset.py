@@ -35,14 +35,11 @@ class SimsetMixin(MixinMeta):
             msg += "Game Time: 1m for every {}s.\n".format(gametime)
             msg += "Team Limit: {} players.\n".format(maxplayers)
             msg += "HT Break: {}s.\n".format(htbreak)
-            msg += "Red Card Modifier: {}% loss per red card.\n".format(
-                redcardmodif)
+            msg += "Red Card Modifier: {}% loss per red card.\n".format(redcardmodif)
             msg += "Posting Results: {}.\n".format("Yes" if results else "No")
-            msg += "Transfer Window: {}.\n".format(
-                "Open" if transfers else "Closed")
+            msg += "Transfer Window: {}.\n".format("Open" if transfers else "Closed")
             msg += "Accepting Bets: {}.\n".format("Yes" if bettoggle else "No")
-            msg += "Mentions on game start: {}.\n".format(
-                "Yes" if mentions else "No")
+            msg += "Mentions on game start: {}.\n".format("Yes" if mentions else "No")
 
             if bettoggle:
                 bettime = await self.config.guild(guild).bettime()
@@ -194,7 +191,7 @@ class SimsetMixin(MixinMeta):
         channels = await self.config.guild(ctx.guild).resultchannel()
         for c in channels:
             if c == channel.id:
-                await ctx.send('Results are already posted in this channel')
+                await ctx.send("Results are already posted in this channel")
                 return
 
         channels.append(channel.id)
@@ -213,11 +210,12 @@ class SimsetMixin(MixinMeta):
                 for res in result:
                     channel = ctx.guild.get_channel(res).name
                     a.append(channel)
-                embed = discord.Embed(title="Result channels", description="\n".join(a), colour=0xFF0000)
+                embed = discord.Embed(
+                    title="Result channels", description="\n".join(a), colour=0xFF0000
+                )
                 await ctx.send(embed=embed)
         else:
             await ctx.send("No parameter for resultchannels, you must choose 'show' or 'clear'")
-
 
     @simset.command()
     async def transferchannel(self, ctx, channel: discord.TextChannel):
@@ -366,7 +364,7 @@ class SimsetMixin(MixinMeta):
         query = f"sim {homeTeam} {awayTeam} --start-at {time}"
         event_name = Name()
         event_name.parsed = f"{homeTeam}_{awayTeam}_W{week}"
-        scheduleCmd = self.bot.get_command('schedule')
+        scheduleCmd = self.bot.get_command("schedule")
         await ctx.invoke(scheduleCmd, event_name=event_name, schedule=Schedule(time, query))
 
     # @simset.command()

@@ -36,11 +36,8 @@ class Schedule:
         else:
             command = None
 
-        parser = NoExitParser(
-            description="Scheduler event parsing", add_help=False)
-        parser.add_argument(
-            "-q", "--quiet", action="store_true", dest="quiet", default=False
-        )
+        parser = NoExitParser(description="Scheduler event parsing", add_help=False)
+        parser.add_argument("-q", "--quiet", action="store_true", dest="quiet", default=False)
         parser.add_argument("--every", nargs="*", dest="every", default=[])
         if not command:
             parser.add_argument("command", nargs="*")
@@ -54,8 +51,7 @@ class Schedule:
             raise BadArgument() from exc
 
         if not (vals["at"] or vals["in"]):
-            raise BadArgument(
-                "You must provide one of `--start-in` or `--start-at`")
+            raise BadArgument("You must provide one of `--start-in` or `--start-at`")
 
         if not command and not vals["command"]:
             raise BadArgument("You have to provide a command to run")
@@ -66,8 +62,7 @@ class Schedule:
             if vals[delta]:
                 parsed = parse_timedelta(" ".join(vals[delta]))
                 if not parsed:
-                    raise BadArgument(
-                        "I couldn't understand that time interval")
+                    raise BadArgument("I couldn't understand that time interval")
 
                 if delta == "in":
                     start = datetime.now(timezone.utc) + parsed
@@ -83,7 +78,6 @@ class Schedule:
             try:
                 start = parse_time(" ".join(vals["at"]))
             except Exception:
-                raise BadArgument(
-                    "I couldn't understand that starting time.") from None
+                raise BadArgument("I couldn't understand that starting time.") from None
 
         return cls(command=command, start=start, recur=recur, quiet=vals["quiet"])

@@ -75,32 +75,46 @@ class TeamsetMixin(MixinMeta):
                 team = t
 
         if team is not None:
-            standings = await self.config.guild(ctx.guild).standings()
-            async with self.config.guild(ctx.guild).transfers() as transfers:
-                if not transfers[team]["ready"]:
-                    return await ctx.send("Transfers are not available for your team yet.")
-                sortedstandings = sorted(
-                    standings,
-                    key=lambda team: (
-                        standings[team]["points"],
-                        standings[team]["gd"],
-                        standings[team]["gf"],
-                    ),
-                    reverse=False,
+            await self.skipcurrentteam(ctx, teams, team, True)
+        await ctx.tick()
+
+    async def skipcurrentteam(self, ctx, teams, team, check=False):
+        standings = await self.config.guild(ctx.guild).standings()
+        async with self.config.guild(ctx.guild).transfers() as transfers:
+            if check and not transfers[team]["ready"]:
+                return await ctx.send("Transfers are not available for your team yet.")
+            sortedstandings = sorted(
+                standings,
+                key=lambda team: (
+                    standings[team]["points"],
+                    standings[team]["gd"],
+                    standings[team]["gf"],
+                ),
+                reverse=False,
+            )
+            currentteamindex = sortedstandings.index(team)
+            transfers[sortedstandings[currentteamindex]]["ready"] = False
+            if currentteamindex < len(sortedstandings):
+                transfers[sortedstandings[currentteamindex + 1]]["ready"] = True
+                currentteam = ctx.guild.get_role(
+                    teams[sortedstandings[currentteamindex]]["role"]
+                ).mention
+                nextteam = ctx.guild.get_role(
+                    teams[sortedstandings[currentteamindex + 1]]["role"]
+                ).mention
+                await ctx.send(
+                    "Transfers done for {}, now turn for: {}".format(currentteam, nextteam)
                 )
-                currentteamindex = sortedstandings.index(team)
-                transfers[sortedstandings[currentteamindex]]["ready"] = False
-                if currentteamindex < len(sortedstandings):
-                    transfers[sortedstandings[currentteamindex + 1]]["ready"] = True
-                    currentteam = ctx.guild.get_role(
-                        teams[sortedstandings[currentteamindex]]["role"]
-                    ).mention
-                    nextteam = ctx.guild.get_role(
-                        teams[sortedstandings[currentteamindex + 1]]["role"]
-                    ).mention
-                    await ctx.send(
-                        "Transfers done for {}, now turn for: {}".format(currentteam, nextteam)
-                    )
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @transfer.command(name="skip")
+    async def _skip(self, ctx, team):
+        """End transfer window for a given team."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+
+        teams = await self.config.guild(ctx.guild).teams()
+        await self.skipcurrentteam(ctx, teams, team)
         await ctx.tick()
 
     @transfer.command(name="turn")
@@ -224,7 +238,7 @@ class TeamsetMixin(MixinMeta):
             if team not in teams:
                 return await ctx.send("Not a valid team.")
             if str(captain.id) not in teams[team]["members"]:
-                return await ctx.send("He is not a member of that team.")
+                return await ctx.send("{} is not a member of {}.".format(captain.name, team))
             teams[team]["captain"] = {}
             teams[team]["captain"] = {str(captain.id): captain.name}
 

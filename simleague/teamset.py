@@ -9,10 +9,10 @@ class TeamsetMixin(MixinMeta):
     """Teamset Settings"""
 
     @commands.group(autohelp=True)
-    @commands.has_role("Sim Captain")
     async def transfer(self, ctx):
         """Team Settings."""
 
+    @commands.has_role("Sim Captain")
     @transfer.command(name="swap")
     async def _swap(self, ctx, team1, player1: discord.Member, team2, player2: discord.Member):
         """Swap a player from your team with a player from another team."""
@@ -45,6 +45,7 @@ class TeamsetMixin(MixinMeta):
         await self.swap(ctx, ctx.guild, team1, player1, team2, player2)
         await ctx.tick()
 
+    @commands.has_role("Sim Captain")
     @transfer.command(name="sign")
     async def _sign(self, ctx, team1, player1: discord.Member, player2: discord.Member):
         """Release a player and sign a free agent."""
@@ -62,6 +63,7 @@ class TeamsetMixin(MixinMeta):
         await self.sign(ctx, ctx.guild, team1, player1, player2)
         await ctx.tick()
 
+    @commands.has_role("Sim Captain")
     @transfer.command(name="pass")
     async def _pass(self, ctx):
         """End your transfer window."""
@@ -116,9 +118,10 @@ class TeamsetMixin(MixinMeta):
         teams = await self.config.guild(ctx.guild).teams()
         await self.skipcurrentteam(ctx, teams, team)
 
+    @commands.has_role("Sim Captain")
     @transfer.command(name="turn")
     async def turn(self, ctx):
-        """List team currently eligible to make transfers."""
+        """Shows the team currently eligible to make transfers."""
         if not await self.config.guild(ctx.guild).transferwindow():
             return await ctx.send("The transfer window is currently closed.")
 

@@ -75,14 +75,13 @@ class TeamsetMixin(MixinMeta):
                 team = t
 
         if team is not None:
-            await self.skipcurrentteam(ctx, teams, team, True)
-        await ctx.tick()
+            await self.skipcurrentteam(ctx, teams, team)
 
-    async def skipcurrentteam(self, ctx, teams, team, check=False):
+    async def skipcurrentteam(self, ctx, teams, team):
         standings = await self.config.guild(ctx.guild).standings()
         async with self.config.guild(ctx.guild).transfers() as transfers:
-            if check and not transfers[team]["ready"]:
-                return await ctx.send("Transfers are not available for your team yet.")
+            if not transfers[team]["ready"]:
+                return await ctx.send("Transfers are not available for {} yet.".format(team))
             sortedstandings = sorted(
                 standings,
                 key=lambda team: (
@@ -105,6 +104,7 @@ class TeamsetMixin(MixinMeta):
                 await ctx.send(
                     "Transfers done for {}, now turn for: {}".format(currentteam, nextteam)
                 )
+                await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)
     @transfer.command(name="skip")
@@ -115,7 +115,6 @@ class TeamsetMixin(MixinMeta):
 
         teams = await self.config.guild(ctx.guild).teams()
         await self.skipcurrentteam(ctx, teams, team)
-        await ctx.tick()
 
     @transfer.command(name="turn")
     async def turn(self, ctx):

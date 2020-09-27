@@ -4,6 +4,9 @@ from redbot.core.utils.chat_formatting import box
 
 from .abc import MixinMeta
 from .scheduler import Schedule
+import math
+import random
+import asyncio
 
 from datetime import datetime, timedelta
 
@@ -362,6 +365,190 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).fixtures.set(fixtures)
         await ctx.tick()
 
+    @simset.command()
+    async def drawcupround(self, ctx):
+        """Draws the current round of Sim Cup."""
+        teams = await self.config.guild(ctx.guild).teams()
+        cupgames = await self.config.guild(ctx.guild).cupgames()
+        async with ctx.typing():
+            if len(cupgames):
+                keys = list(cupgames.keys())
+                if [keys[len(keys) - 1]][0] == "2":
+                    return await ctx.send("There is no more game to draw!")
+                lastround = cupgames[keys[len(keys) - 1]]
+                unplayedgames = [
+                    game
+                    for game in lastround
+                    if (game["score1"] + game["penscore1"]) == (game["score2"] + game["penscore2"])
+                    and game["team2"] != "BYE"
+                ]
+                isroundover = False if len(unplayedgames) else True
+                if not isroundover:
+                    return await ctx.send(
+                        "You need to finish the current round before drawing the next."
+                    )
+                winners = [
+                    game["team1"]
+                    if (game["score1"] + game["penscore1"]) > (game["score2"] + game["penscore2"])
+                    or game["team2"] == "BYE"
+                    else game["team2"]
+                    for game in lastround
+                ]
+                teams = {k: v for k, v in teams.items() if k in winners}
+                if len(teams):
+                    roundsize = 2 ** math.ceil(math.log2(len(teams)))
+                    drawables = [x for x in teams]
+
+                    n = len(drawables)
+                    fixtures = []
+                    for i in range(n // 2):
+                        draw = []
+                        msg = await ctx.send("Game {}:".format(i + 1))
+                        rdteam1 = random.choice(drawables)
+                        drawables = [x for x in drawables if x is not rdteam1]
+                        rdteam1mention = ctx.guild.get_role(teams[rdteam1]["role"]).mention
+                        await msg.edit(content="Game {}: {} vs ...".format(i + 1, rdteam1mention))
+                        rdteam2 = random.choice(drawables)
+                        rdteam2mention = ctx.guild.get_role(teams[rdteam2]["role"]).mention
+                        await asyncio.sleep(5)
+                        await msg.edit(
+                            content="Game {}: {} vs {}!".format(
+                                i + 1, rdteam1mention, rdteam2mention
+                            )
+                        )
+                        draw.append(
+                            {
+                                "team1": rdteam1,
+                                "score1": 0,
+                                "penscore1": 0,
+                                "team2": rdteam2,
+                                "score2": 0,
+                                "penscore2": 0,
+                            }
+                        )
+                        fixtures.append(
+                            {
+                                "team1": rdteam1,
+                                "score1": 0,
+                                "penscore1": 0,
+                                "team2": rdteam2,
+                                "score2": 0,
+                                "penscore2": 0,
+                            }
+                        )
+                        drawables = [x for x in drawables if x is not rdteam2]
+                        await asyncio.sleep(5)
+
+                    async with self.config.guild(ctx.guild).cupgames() as cupgames:
+                        cupgames[str(roundsize)] = fixtures
+            else:
+                # Get seeds and start draw
+                standings = await self.config.guild(ctx.guild).standings()
+                sortedstandings = sorted(
+                    standings,
+                    key=lambda team: (
+                        standings[team]["points"],
+                        standings[team]["gd"],
+                        standings[team]["gf"],
+                    ),
+                    reverse=True,
+                )
+                if len(teams):
+                    roundsize = 2 ** math.ceil(math.log2(len(teams)))
+                    byes = []
+                    drawables = []
+                    for idx, team in enumerate(sortedstandings):
+                        if idx < (roundsize - len(teams)):
+                            byes.append(team)
+                        else:
+                            drawables.append(team)
+
+                    n = len(drawables)
+                    fixtures = []
+                    byementions = []
+                    for bye in byes:
+                        fixtures.append(
+                            {
+                                "team1": bye,
+                                "score1": 0,
+                                "penscore1": 0,
+                                "team2": "BYE",
+                                "score2": 0,
+                                "penscore2": 0,
+                            }
+                        )
+                        byemention = ctx.guild.get_role(teams[bye]["role"]).mention
+                        byementions.append(byemention)
+
+                    if len(bye):
+                        await ctx.send(
+                            "Teams directly qualified for the next round: {}".format(
+                                ", ".join(byementions)
+                            )
+                        )
+                        await asyncio.sleep(5)
+
+                    for i in range(n // 2):
+                        draw = []
+                        msg = await ctx.send("Game {}:".format(i + 1))
+                        rdteam1 = random.choice(drawables)
+                        drawables = [x for x in drawables if x is not rdteam1]
+                        rdteam1mention = ctx.guild.get_role(teams[rdteam1]["role"]).mention
+                        await msg.edit(content="Game {}: {} vs ...".format(i + 1, rdteam1mention))
+                        rdteam2 = random.choice(drawables)
+                        rdteam2mention = ctx.guild.get_role(teams[rdteam2]["role"]).mention
+                        await asyncio.sleep(5)
+                        await msg.edit(
+                            content="Game {}: {} vs {}!".format(
+                                i + 1, rdteam1mention, rdteam2mention
+                            )
+                        )
+                        draw.append(
+                            {
+                                "team1": rdteam1,
+                                "score1": 0,
+                                "penscore1": 0,
+                                "team2": rdteam2,
+                                "score2": 0,
+                                "penscore2": 0,
+                            }
+                        )
+                        fixtures.append(
+                            {
+                                "team1": rdteam1,
+                                "score1": 0,
+                                "penscore1": 0,
+                                "team2": rdteam2,
+                                "score2": 0,
+                                "penscore2": 0,
+                            }
+                        )
+                        drawables = [x for x in drawables if x is not rdteam2]
+                        await asyncio.sleep(5)
+
+                    async with self.config.guild(ctx.guild).cupgames() as cupgames:
+                        cupgames[str(roundsize)] = fixtures
+
+            embed = discord.Embed(color=0xFF0000)
+            a = []
+            for fixture in fixtures:
+                if fixture["team2"] == "BYE":
+                    a.append(f"**{fixture['team1']}** _(qualified directly)_")
+                else:
+                    a.append(f"{fixture['team1']} vs {fixture['team2']}")
+            title = ""
+            if roundsize >= 16:
+                title = "Round of {}".format(roundsize)
+            elif roundsize == 8:
+                title = "Quarter Finals"
+            elif roundsize == 4:
+                title = "Semi Finals"
+            else:
+                title = "Final"
+            embed.add_field(name=title, value="\n".join(a))
+        await ctx.send(embed=embed)
+        await ctx.tick()
+
     async def scheduleGame(self, ctx, week, homeTeam, awayTeam, time):
         query = f"sim {homeTeam} {awayTeam} --start-at {time}"
         event_name = Name()
@@ -457,7 +644,19 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).stats.set({})
         await ctx.tick()
 
+    @clear.command(name="cupstats")
+    async def clear_cupstats(self, ctx):
+        """Clear cup stats."""
+        await self.config.guild(ctx.guild).cupstats.set({})
+        await ctx.tick()
+
     @clear.command(name="transfers")
     async def clear_transfers(self, ctx):
         await self.config.guild(ctx.guild).transferred.set([])
+        await ctx.tick()
+
+    @clear.command(name="cup")
+    async def clear_cup(self, ctx):
+        await self.config.guild(ctx.guild).cupgames.set({})
+        await self.config.guild(ctx.guild).cupstats.set({})
         await ctx.tick()

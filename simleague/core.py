@@ -30,6 +30,8 @@ class SimHelper(MixinMeta):
         score2,
         assister=None,
         men: int = None,
+        penscore1=None,
+        penscore2=None,
     ):
         maps = {
             "goal": "GOALLLLL!",
@@ -87,9 +89,15 @@ class SimHelper(MixinMeta):
         title_height = 22
         gap = 3
 
+        penfill = (230, 230, 230, 230)
+
+        if event == "penscore":
+            penfill = (0, 200, 0, 200)
+        if event == "penmiss":
+            penfill = (200, 0, 0, 200)
+
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
-            fill=(230, 230, 230, 230),
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=penfill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -180,9 +188,16 @@ class SimHelper(MixinMeta):
         )  # Level #
         left_text_align = 130
         grey_color = (110, 110, 110, 255)
+        white_color = (255, 255, 255, 255)
+        goal_text_color = white_color if event == "penscore" or event == "penmiss" else grey_color
         # goal text
         _write_unicode(
-            maps[event], left_text_align - 12, vert_pos + 3, name_fnt, header_u_fnt, grey_color
+            maps[event],
+            left_text_align - 12,
+            vert_pos + 3,
+            name_fnt,
+            header_u_fnt,
+            goal_text_color,
         )
         white_text = (240, 240, 240, 255)
         dark_text = (35, 35, 35, 230)
@@ -201,12 +216,22 @@ class SimHelper(MixinMeta):
                 font=general_info_fnt,
                 fill=label_text_color,
             )
-            draw.text(
-                (label_align, 78),
-                "{} {} : {} {}".format(team1.upper()[:3], score1, score2, team2.upper()[:3]),
-                font=general_info_fnt,
-                fill=label_text_color,
-            )
+            if penscore1 is not None:
+                draw.text(
+                    (label_align, 78),
+                    "{} {} ({}) : ({}) {} {}".format(
+                        team1.upper()[:3], score1, penscore1, penscore2, score2, team2.upper()[:3]
+                    ),
+                    font=general_info_fnt,
+                    fill=label_text_color,
+                )
+            else:
+                draw.text(
+                    (label_align, 78),
+                    "{} {} : {} {}".format(team1.upper()[:3], score1, score2, team2.upper()[:3]),
+                    font=general_info_fnt,
+                    fill=label_text_color,
+                )
         else:
             draw.text(
                 (label_align, 38),
@@ -292,9 +317,12 @@ class SimHelper(MixinMeta):
         start_pos = start + ((dist - width) / 2)
         return int(start_pos)
 
-    async def timepic(self, ctx, team1, team2, score1, score2, time, logo):
+    async def timepic(
+        self, ctx, team1, team2, score1, score2, time, logo, penscore1=None, penscore2=None
+    ):
         font_bold_file = f"{bundled_data_path(self)}/LeagueSpartan-Bold.otf"
         name_fnt = ImageFont.truetype(font_bold_file, 20)
+        name_fnt_pen = ImageFont.truetype(font_bold_file, 14)
         # set canvas
         width = 360
         height = 100
@@ -313,8 +341,11 @@ class SimHelper(MixinMeta):
         team1 = team1[:3].upper()
         team2 = team2[:3].upper()
         score = f"{score1} - {score2}"
+        penscore = f"({penscore1}) pen. ({penscore2})"
         draw.text((115, 40), team1, font=name_fnt, fill=(0, 0, 0, 0))
         draw.text((195, 40), score, font=name_fnt, fill=(255, 255, 255, 255))
+        if penscore1 is not None and penscore1 != penscore2:
+            draw.text((180, 70), penscore, font=name_fnt_pen, fill=(255, 255, 255, 255))
         draw.text((205, 5), time, font=name_fnt, fill=(255, 255, 255, 255))
         draw.text((295, 40), team2, font=name_fnt, fill=(0, 0, 0, 0))
 
@@ -490,7 +521,12 @@ class SimHelper(MixinMeta):
             draw.text((330, 90), time, font=name_fnt2, fill=(255, 0, 0, 255))
         else:
             draw.text((360, 90), time, font=name_fnt2, fill=(255, 0, 0, 255))
-        draw.text((290, 295), f"{time} added minute(s)", font=name_fnt, fill=(255, 255, 255, 255))
+        if time == "15":
+            draw.text((290, 295), "Extra time", font=name_fnt, fill=(255, 255, 255, 255))
+        else:
+            draw.text(
+                (290, 295), f"{time} added minute(s)", font=name_fnt, fill=(255, 255, 255, 255)
+            )
 
         result = Image.alpha_composite(result, process)
         file = BytesIO()
@@ -1025,7 +1061,7 @@ class SimHelper(MixinMeta):
                         except discord.Forbidden:
                             self.log.info("Failed to remove role from {}".format(member.name))
 
-    async def postresults(self, ctx, team1, team2, score1, score2):
+    async def postresults(self, ctx, team1, team2, score1, score2, penscore1=None, penscore2=None):
         cog = self.bot.get_cog("SimLeague")
         results = await cog.config.guild(ctx.guild).resultchannel()
         role1 = False
@@ -1058,7 +1094,18 @@ class SimHelper(MixinMeta):
                                     )
             else:
                 result += team1
-            result += f" {score1}:{score2} "
+            if penscore1 is not None and penscore1 != penscore2:
+                if penscore1 > penscore2:
+                    result += f" {score1} **({penscore1})**:({penscore2}) {score2} "
+                else:
+                    result += f" {score1} ({penscore1}):**({penscore2})** {score2} "
+            else:
+                if score1 > score2:
+                    result += f" **{score1}**:{score2} "
+                elif score1 < score2:
+                    result += f" {score1}:**{score2}** "
+                else:
+                    result += f" {score1}:{score2} "
             if teams[team2]["role"]:
                 role_obj = ctx.guild.get_role(teams[team2]["role"])
                 if role_obj is not None:

@@ -16,6 +16,7 @@ from .core import SimHelper
 from .functions import WEATHER
 from .simset import SimsetMixin
 from .stats import StatsMixin
+from .cupstats import CupStatsMixin
 from .teamset import TeamsetMixin
 
 # THANKS TO https://code.sololearn.com/ci42wd5h0UQX/#py FOR THE SIMULATION AND FIXATOR/AIKATERNA/STEVY FOR THE PILLOW HELP/LEVELER
@@ -27,7 +28,13 @@ class CompositeMetaClass(type(commands.Cog), type(ABC)):
 
 
 class SimLeague(
-    SimHelper, TeamsetMixin, StatsMixin, SimsetMixin, commands.Cog, metaclass=CompositeMetaClass
+    SimHelper,
+    TeamsetMixin,
+    StatsMixin,
+    CupStatsMixin,
+    SimsetMixin,
+    commands.Cog,
+    metaclass=CompositeMetaClass,
 ):
     """SimLeague"""
 
@@ -44,6 +51,16 @@ class SimLeague(
             "levels": {},
             "teams": {},
             "fixtures": [],
+            "cupgames": {},
+            "cupstats": {
+                "goals": {},
+                "yellows": {},
+                "reds": {},
+                "penalties": {},
+                "assists": {},
+                "motm": {},
+                "cleansheets": {},
+            },
             "standings": {},
             "stats": {
                 "goals": {},
@@ -285,6 +302,52 @@ class SimLeague(
                     embed.set_image(url=teams[team]["kits"][kit])
                     embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
+
+    @commands.command()
+    async def cupfixtures(self, ctx, cupround: Optional[int] = None):
+        """Show all cup fixtures."""
+        cupgames = await self.config.guild(ctx.guild).cupgames()
+
+        if not cupgames:
+            return await ctx.send("No cup fixtures have been made.")
+        if cupround is None:
+            embed = discord.Embed(color=0xFF0000)
+            for rd in cupgames:
+                fixtures = cupgames[rd]
+                a = []
+                for fixture in fixtures:
+                    if fixture["team2"] == "BYE":
+                        a.append(f"**{fixture['team1']}** _(qualified directly)_")
+                    elif fixture["score1"] == fixture["score2"]:
+                        if fixture["penscore1"] == fixture["penscore2"]:
+                            a.append(f"{fixture['team1']} vs {fixture['team2']}")
+                        elif fixture["penscore1"] > fixture["penscore2"]:
+                            a.append(
+                                f"**{fixture['team1']} {fixture['score1']} ({fixture['penscore1']})**-({fixture['penscore2']}) {fixture['score2']} {fixture['team2']}"
+                            )
+                        else:
+                            a.append(
+                                f"{fixture['team1']} {fixture['score1']} ({fixture['penscore1']})-**({fixture['penscore2']}) {fixture['score2']} {fixture['team2']}**"
+                            )
+                    elif fixture["score1"] > fixture["score2"]:
+                        a.append(
+                            f"**{fixture['team1']} {fixture['score1']}**-{fixture['score2']} {fixture['team2']}"
+                        )
+                    else:
+                        a.append(
+                            f"{fixture['team1']} {fixture['score1']}-**{fixture['score2']} {fixture['team2']}**"
+                        )
+                title = ""
+                if int(rd) >= 16:
+                    title = "Round of {}".format(rd)
+                elif rd == "8":
+                    title = "Quarter Finals"
+                elif rd == "4":
+                    title = "Semi Finals"
+                else:
+                    title = "Final"
+                embed.add_field(name=title, value="\n".join(a))
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def fixtures(self, ctx, week: Optional[int] = None):
@@ -1078,6 +1141,1035 @@ class SimLeague(
                     stats["motm"][str(motmwinner.id)] = 1
                 else:
                     stats["motm"][str(motmwinner.id)] += 1
+            await ctx.send(file=im)
+        if t is not None:
+            await ctx.send("Bet Winners:\n" + t)
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.cooldown(rate=1, per=30, type=commands.BucketType.guild)
+    @commands.max_concurrency(1, per=commands.BucketType.guild)
+    @commands.command(aliases=["playsimcup", "simulatecup"])
+    async def simcup(self, ctx, team1: str, team2: str, cupmode=False):
+        """Simulate a cup game between two teams."""
+        teams = await self.config.guild(ctx.guild).teams()
+        cupgames = await self.config.guild(ctx.guild).cupgames()
+        if len(cupgames):
+            keys = list(cupgames.keys())
+            lastround = cupgames[keys[len(keys) - 1]]
+            unplayedgames = [
+                game
+                for game in lastround
+                if game["score1"] == game["score2"] and game["team2"] != "BYE"
+            ]
+            playedgames = [x for x in lastround if x not in unplayedgames]
+            isroundover = False if len(unplayedgames) else True
+            if isroundover:
+                return await ctx.send("There is no game left to play!")
+            doesgameexist = [
+                game for game in unplayedgames if game["team1"] == team1 and game["team2"] == team2
+            ]
+            isgameplayed = [
+                game for game in playedgames if game["team1"] == team1 and game["team2"] == team2
+            ]
+            if len(isgameplayed):
+                return await ctx.send("This game has already been played.")
+            if not len(doesgameexist):
+                return await ctx.send("This game does not exist.")
+        if team1 not in teams or team2 not in teams:
+            return await ctx.send("One of those teams do not exist.")
+        if team1 == team2:
+            return await ctx.send("You can't sim two of the same teams silly.")
+        msg = await ctx.send("Updating cached levels...")
+        await self.updatecachegame(ctx.guild, team1, team2)
+        await msg.delete()
+        await asyncio.sleep(2)
+        teams = await self.config.guild(ctx.guild).teams()
+        lvl1 = 1
+        lvl2 = 1
+        bonuslvl1 = 1
+        bonuslvl2 = 1
+        homewin = lvl2 / lvl1
+        awaywin = lvl1 / lvl2
+        try:
+            draw = homewin / awaywin
+        except ZeroDivisionError:
+            draw = 0.5
+        await self.config.guild(ctx.guild).active.set(True)
+        await self.config.guild(ctx.guild).betteams.set([team1, team2])
+        goals = {}
+        assists = {}
+        reds = {team1: 0, team2: 0}
+        bettime = await self.config.guild(ctx.guild).bettime()
+        stadium = teams[team1]["stadium"] if teams[team1]["stadium"] is not None else None
+
+        weather = random.choice(WEATHER)
+        im = await self.matchinfo(ctx, [team1, team2], weather, stadium, homewin, awaywin, draw)
+        await ctx.send(file=im)
+
+        await self.matchnotif(ctx, team1, team2)
+        bet = await ctx.send(
+            "Betting is now open, game will commence in {} seconds.\nUsage: {}bet <amount> <team>".format(
+                bettime, ctx.prefix
+            )
+        )
+        for i in range(1, bettime):
+            if i % 5 == 0:
+                await bet.edit(
+                    content="Betting is now open, game will commence in {} seconds.\nUsage: {}bet <amount> <team>".format(
+                        bettime - i, ctx.prefix
+                    )
+                )
+            await asyncio.sleep(1)
+        await bet.delete()
+        probability = await self.config.guild(ctx.guild).probability()
+        await self.config.guild(ctx.guild).started.set(True)
+        redcardmodifier = await self.config.guild(ctx.guild).redcardmodifier()
+        team1players = list(teams[team1]["members"].keys())
+        team2players = list(teams[team2]["members"].keys())
+        logos = ["sky", "bt", "bein", "bbc"]
+        yellowcards = []
+        logo = random.choice(logos)
+        motm = {}
+        events = False
+
+        # Team 1 stuff
+        yC_team1 = []
+        rC_team1 = []
+        injury_team1 = []
+        sub_in_team1 = []
+        sub_out_team1 = []
+        sub_count1 = 0
+        rc_count1 = 0
+        score_count1 = 0
+        penalty_count1 = 0
+        injury_count1 = 0
+        team1Stats = [
+            team1,
+            yC_team1,
+            rC_team1,
+            injury_team1,
+            sub_in_team1,
+            sub_out_team1,
+            sub_count1,
+            rc_count1,
+            score_count1,
+            injury_count1,
+            penalty_count1,
+        ]
+
+        # Team 2 stuff
+        yC_team2 = []
+        rC_team2 = []
+        injury_team2 = []
+        sub_in_team2 = []
+        sub_out_team2 = []
+        sub_count2 = 0
+        rc_count2 = 0
+        score_count2 = 0
+        penalty_count2 = 0
+        injury_count2 = 0
+        team2Stats = [
+            team2,
+            yC_team2,
+            rC_team2,
+            injury_team2,
+            sub_in_team2,
+            sub_out_team2,
+            sub_count2,
+            rc_count2,
+            score_count2,
+            injury_count2,
+            penalty_count2,
+        ]
+
+        async def TeamWeightChance(
+            ctx, t1totalxp, t2totalxp, reds1: int, reds2: int, team1bonus: int, team2bonus: int
+        ):
+            if t1totalxp < 2:
+                t1totalxp = 1
+            if t2totalxp < 2:
+                t2totalxp = 1
+            team1bonus = team1bonus * 15
+            team2bonus = team2bonus * 15
+            t1totalxp = t1totalxp * float(f"1.{team1bonus}")
+            t2totalxp = t2totalxp * float(f"1.{team2bonus}")
+            self.log.debug(f"Team 1: {t1totalxp} - Team 2: {t2totalxp}")
+            redst1 = float(f"0.{reds1 * redcardmodifier}")
+            redst2 = float(f"0.{reds2 * redcardmodifier}")
+            total = ["A"] * int(((1 - redst1) * 100) * t1totalxp) + ["B"] * int(
+                ((1 - redst2) * 100) * t2totalxp
+            )
+            rdmint = random.choice(total)
+            if rdmint == "A":
+                return team1Stats
+            else:
+                return team2Stats
+
+        async def TeamChance():
+            rndint = random.randint(1, 10)
+            if rndint >= 5:
+                return team1Stats
+            else:
+                return team2Stats
+
+        async def PlayerGenerator(event, team, yc, rc):
+            random.shuffle(team1players)
+            random.shuffle(team2players)
+            output = []
+            if team == team1:
+                fs_players = team1players
+                yc = yC_team1
+                rc = rC_team1
+            elif team == team2:
+                fs_players = team2players
+                yc = yC_team2
+                rc = rC_team2
+            if event == 0:
+                rosterUpdate = [i for i in fs_players if i not in rc]
+                if len(rosterUpdate) == 0:
+                    return await ctx.send(
+                        "Game abandoned, no score recorded due to no players remaining."
+                    )
+                isassist = False
+                assist = random.randint(0, 100)
+                if assist > 20:
+                    isassist = True
+                if len(rosterUpdate) < 3:
+                    isassist = False
+                if isassist:
+                    player = random.choice(rosterUpdate)
+                    rosterUpdate.remove(player)
+                    assister = random.choice(rosterUpdate)
+                    output = [team, player, assister]
+                else:
+                    player = random.choice(rosterUpdate)
+                    output = [team, player]
+                return output
+            elif event == 1:
+                rosterUpdate = [i for i in fs_players if i not in rc]
+                if len(rosterUpdate) == 1:
+                    return None
+                player = random.choice(rosterUpdate)
+                if player in yc or player in yellowcards:
+                    output = [team, player, 2]
+                    return output
+                else:
+                    output = [team, player]
+                    return output
+            elif event == 2 or event == 3:
+                rosterUpdate = [i for i in fs_players if i not in rc]
+                if len(rosterUpdate) == 1 and event == 2:
+                    return None
+                player_out = random.choice(rosterUpdate)
+                output = [team, player_out]
+                return output
+
+        # Start of Simulation!
+        im = await self.walkout(ctx, team1, "home")
+        im2 = await self.walkout(ctx, team2, "away")
+        await ctx.send("Teams:", file=im)
+        await ctx.send(file=im2)
+        timemsg = await ctx.send("Kickoff!")
+        gametime = await self.config.guild(ctx.guild).gametime()
+        for min in range(1, 91):
+            await asyncio.sleep(gametime)
+            if min % 5 == 0:
+                await timemsg.edit(content="Minute: {}".format(min))
+            if events is False:
+                gC = await self.goalChance(ctx.guild, probability)
+                if gC is True:
+                    teamStats = await TeamWeightChance(
+                        ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                    )
+                    playerGoal = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+                    teamStats[8] += 1
+                    async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                        if playerGoal[1] not in cupstats["goals"]:
+                            cupstats["goals"][playerGoal[1]] = 1
+                        else:
+                            cupstats["goals"][playerGoal[1]] += 1
+                        if len(playerGoal) == 3:
+                            if playerGoal[2] not in cupstats["assists"]:
+                                cupstats["assists"][playerGoal[2]] = 1
+                            else:
+                                cupstats["assists"][playerGoal[2]] += 1
+                    events = True
+                    if len(playerGoal) == 3:
+                        user2 = self.bot.get_user(int(playerGoal[2]))
+                        if user2 is None:
+                            user2 = await self.bot.fetch_user(int(playerGoal[2]))
+                        if user2 not in motm:
+                            motm[user2] = 1
+                        else:
+                            motm[user2] += 1
+                        if user2.id not in assists:
+                            assists[user2.id] = 1
+                        else:
+                            assists[user2.id] += 1
+                    user = self.bot.get_user(int(playerGoal[1]))
+                    if user is None:
+                        user = await self.bot.fetch_user(int(playerGoal[1]))
+                    if user not in motm:
+                        motm[user] = 2
+                    else:
+                        motm[user] += 2
+                    if user.id not in goals:
+                        goals[user.id] = 1
+                    else:
+                        goals[user.id] += 1
+                    if len(playerGoal) == 3:
+                        image = await self.simpic(
+                            ctx,
+                            str(min),
+                            "goal",
+                            user,
+                            team1,
+                            team2,
+                            str(playerGoal[0]),
+                            str(team1Stats[8]),
+                            str(team2Stats[8]),
+                            user2,
+                        )
+                    else:
+                        image = await self.simpic(
+                            ctx,
+                            str(min),
+                            "goal",
+                            user,
+                            team1,
+                            team2,
+                            str(playerGoal[0]),
+                            str(team1Stats[8]),
+                            str(team2Stats[8]),
+                        )
+                    await ctx.send(file=image)
+            if events is False:
+                pC = await self.penaltyChance(ctx.guild, probability)
+                if pC is True:
+                    teamStats = await TeamWeightChance(
+                        ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                    )
+                    playerPenalty = await PlayerGenerator(
+                        3, teamStats[0], teamStats[1], teamStats[2]
+                    )
+                    user = self.bot.get_user(int(playerPenalty[1]))
+                    if user is None:
+                        user = await self.bot.fetch_user(int(playerPenalty[1]))
+                    image = await self.penaltyimg(ctx, str(playerPenalty[0]), str(min), user)
+                    await ctx.send(file=image)
+                    pB = await self.penaltyBlock(ctx.guild, probability)
+                    if pB is True:
+                        events = True
+                        async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                            if playerPenalty[1] not in cupstats["penalties"]:
+                                cupstats["penalties"][playerPenalty[1]] = {
+                                    "scored": 0,
+                                    "missed": 1,
+                                }
+                            else:
+                                cupstats["penalties"][playerPenalty[1]]["missed"] += 1
+                        user = self.bot.get_user(int(playerPenalty[1]))
+                        if user is None:
+                            user = await self.bot.fetch_user(int(playerPenalty[1]))
+                        image = await self.simpic(
+                            ctx,
+                            str(min),
+                            "penmiss",
+                            user,
+                            team1,
+                            team2,
+                            str(playerPenalty[0]),
+                            str(team1Stats[8]),
+                            str(team2Stats[8]),
+                        )
+                        await ctx.send(file=image)
+                    else:
+                        teamStats[8] += 1
+                        async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                            if playerPenalty[1] not in cupstats["goals"]:
+                                cupstats["goals"][playerPenalty[1]] = 1
+                            else:
+                                cupstats["goals"][playerPenalty[1]] += 1
+                            if playerPenalty[1] not in cupstats["penalties"]:
+                                cupstats["penalties"][playerPenalty[1]] = {
+                                    "scored": 1,
+                                    "missed": 0,
+                                }
+                            else:
+                                cupstats["penalties"][playerPenalty[1]]["scored"] += 1
+                        events = True
+                        user = self.bot.get_user(int(playerPenalty[1]))
+                        if user is None:
+                            user = await self.bot.fetch_user(int(playerPenalty[1]))
+                        if user not in motm:
+                            motm[user] = 2
+                        else:
+                            motm[user] += 2
+                        if user.id not in goals:
+                            goals[user.id] = 1
+                        else:
+                            goals[user.id] += 1
+                        image = await self.simpic(
+                            ctx,
+                            str(min),
+                            "penscore",
+                            user,
+                            team1,
+                            team2,
+                            str(playerPenalty[0]),
+                            str(team1Stats[8]),
+                            str(team2Stats[8]),
+                        )
+                        await ctx.send(file=image)
+            if events is False:
+                yC = await self.yCardChance(ctx.guild, probability)
+                if yC is True:
+                    teamStats = await TeamChance()
+                    playerYellow = await PlayerGenerator(
+                        1, teamStats[0], teamStats[1], teamStats[2]
+                    )
+                    if playerYellow is not None:
+                        if len(playerYellow) == 3:
+                            teamStats[7] += 1
+                            teamStats[2].append(playerYellow[1])
+                            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                reds[str(playerYellow[0])] += 1
+                                if playerYellow[1] not in cupstats["reds"]:
+                                    cupstats["reds"][playerYellow[1]] = 1
+                                    cupstats["yellows"][playerYellow[1]] += 1
+                                else:
+
+                                    cupstats["yellows"][playerYellow[1]] += 1
+                                    cupstats["reds"][playerYellow[1]] += 1
+                            events = True
+                            user = self.bot.get_user(int(playerYellow[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerYellow[1]))
+                            if user not in motm:
+                                motm[user] = -2
+                            else:
+                                motm[user] += -2
+                            image = await self.simpic(
+                                ctx,
+                                str(min),
+                                "2yellow",
+                                user,
+                                team1,
+                                team2,
+                                str(playerYellow[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                                None,
+                                str(
+                                    len(teams[str(str(playerYellow[0]))]["members"])
+                                    - (int(teamStats[7]))
+                                ),
+                            )
+                            await ctx.send(file=image)
+                        else:
+                            teamStats[1].append(playerYellow[1])
+                            yellowcards.append(str(playerYellow[1]))
+                            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                if playerYellow[1] not in cupstats["yellows"]:
+                                    cupstats["yellows"][playerYellow[1]] = 1
+                                else:
+                                    cupstats["yellows"][playerYellow[1]] += 1
+                            events = True
+                            user = self.bot.get_user(int(playerYellow[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerYellow[1]))
+                            if user not in motm:
+                                motm[user] = -1
+                            else:
+                                motm[user] += -1
+                            image = await self.simpic(
+                                ctx,
+                                str(min),
+                                "yellow",
+                                user,
+                                team1,
+                                team2,
+                                str(playerYellow[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                            )
+                            await ctx.send(file=image)
+            if events is False:
+                rC = await self.rCardChance(ctx.guild, probability)
+                if rC is True:
+                    teamStats = await TeamChance()
+                    playerRed = await PlayerGenerator(2, teamStats[0], teamStats[1], teamStats[2])
+                    if playerRed is not None:
+                        teamStats[7] += 1
+                        async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                            if playerRed[1] not in cupstats["reds"]:
+                                cupstats["reds"][playerRed[1]] = 1
+                            else:
+                                cupstats["reds"][playerRed[1]] += 1
+                        reds[str(playerRed[0])] += 1
+                        teamStats[2].append(playerRed[1])
+                        events = True
+                        user = self.bot.get_user(int(playerRed[1]))
+                        if user is None:
+                            user = await self.bot.fetch_user(int(playerRed[1]))
+                        if user not in motm:
+                            motm[user] = -2
+                        else:
+                            motm[user] += -2
+                        image = await self.simpic(
+                            ctx,
+                            str(min),
+                            "red",
+                            user,
+                            team1,
+                            team2,
+                            str(playerRed[0]),
+                            str(team1Stats[8]),
+                            str(team2Stats[8]),
+                            None,
+                            str(
+                                len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7]))
+                            ),
+                        )
+                        await ctx.send(file=image)
+            if events is False:
+                pass
+            events = False
+            if min == 45:
+                added = random.randint(1, 5)
+                im = await self.extratime(ctx, added)
+                await ctx.send(file=im)
+                s = 45
+                for i in range(added):
+                    s += 1
+                    gC = await self.goalChance(ctx.guild, probability)
+                    if gC is True:
+                        teamStats = await TeamWeightChance(
+                            ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                        )
+                        playerGoal = await PlayerGenerator(
+                            0, teamStats[0], teamStats[1], teamStats[2]
+                        )
+                        teamStats[8] += 1
+                        async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                            if playerGoal[1] not in cupstats["goals"]:
+                                cupstats["goals"][playerGoal[1]] = 1
+                            else:
+                                cupstats["goals"][playerGoal[1]] += 1
+                            if len(playerGoal) == 3:
+                                if playerGoal[2] not in cupstats["assists"]:
+                                    cupstats["assists"][playerGoal[2]] = 1
+                                else:
+                                    cupstats["assists"][playerGoal[2]] += 1
+                        if len(playerGoal) == 3:
+                            user2 = self.bot.get_user(int(playerGoal[2]))
+                            if user2 is None:
+                                user2 = await self.bot.fetch_user(int(playerGoal[2]))
+                            if user2 not in motm:
+                                motm[user2] = 1
+                            else:
+                                motm[user2] += 1
+                            if user2.id not in assists:
+                                assists[user2.id] = 1
+                            else:
+                                assists[user2.id] += 1
+                        events = True
+                        user = self.bot.get_user(int(playerGoal[1]))
+                        if user is None:
+                            user = await self.bot.fetch_user(int(playerGoal[1]))
+                        if user not in motm:
+                            motm[user] = 2
+                        else:
+                            motm[user] += 2
+                        if user.id not in goals:
+                            goals[user.id] = 1
+                        else:
+                            goals[user.id] += 1
+                        if len(playerGoal) == 3:
+                            image = await self.simpic(
+                                ctx,
+                                str(min) + "+" + str(i + 1),
+                                "goal",
+                                user,
+                                team1,
+                                team2,
+                                str(playerGoal[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                                user2,
+                            )
+                        else:
+                            image = await self.simpic(
+                                ctx,
+                                str(min) + "+" + str(i + 1),
+                                "goal",
+                                user,
+                                team1,
+                                team2,
+                                str(playerGoal[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                            )
+                        await ctx.send(file=image)
+                    await asyncio.sleep(gametime)
+                    events = False
+                    ht = await self.config.guild(ctx.guild).htbreak()
+                im = await self.timepic(
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
+                )
+                await ctx.send(file=im)
+                await asyncio.sleep(ht)
+                await timemsg.delete()
+                timemsg = await ctx.send("Second Half!")
+
+            if min == 90:
+                added = random.randint(1, 5)
+                im = await self.extratime(ctx, added)
+                await ctx.send(file=im)
+                s = 90
+                for i in range(added):
+                    s += 1
+                    gC = await self.goalChance(ctx.guild, probability)
+                    if gC is True:
+                        teamStats = await TeamWeightChance(
+                            ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                        )
+                        playerGoal = await PlayerGenerator(
+                            0, teamStats[0], teamStats[1], teamStats[2]
+                        )
+                        teamStats[8] += 1
+                        async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                            if playerGoal[1] not in cupstats["goals"]:
+                                cupstats["goals"][playerGoal[1]] = 1
+                            else:
+                                cupstats["goals"][playerGoal[1]] += 1
+                            if len(playerGoal) == 3:
+                                if playerGoal[2] not in cupstats["assists"]:
+                                    cupstats["assists"][playerGoal[2]] = 1
+                                else:
+                                    cupstats["assists"][playerGoal[2]] += 1
+                        if len(playerGoal) == 3:
+                            user2 = self.bot.get_user(int(playerGoal[2]))
+                            if user2 is None:
+                                user2 = await self.bot.fetch_user(int(playerGoal[2]))
+                            if user2 not in motm:
+                                motm[user2] = 1
+                            else:
+                                motm[user2] += 1
+                            if user2.id not in assists:
+                                assists[user2.id] = 1
+                            else:
+                                assists[user2.id] += 1
+                        events = True
+                        user = self.bot.get_user(int(playerGoal[1]))
+                        if user is None:
+                            user = await self.bot.fetch_user(int(playerGoal[1]))
+                        if user not in motm:
+                            motm[user] = 2
+                        else:
+                            motm[user] += 2
+                        if user.id not in goals:
+                            goals[user.id] = 1
+                        else:
+                            goals[user.id] += 1
+                        if len(playerGoal) == 3:
+                            image = await self.simpic(
+                                ctx,
+                                str(min) + "+" + str(i + 1),
+                                "goal",
+                                user,
+                                team1,
+                                team2,
+                                str(playerGoal[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                                user2,
+                            )
+                        else:
+                            image = await self.simpic(
+                                ctx,
+                                str(min) + "+" + str(i + 1),
+                                "goal",
+                                user,
+                                team1,
+                                team2,
+                                str(playerGoal[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                            )
+                        await ctx.send(file=image)
+                    await asyncio.sleep(gametime)
+                    events = False
+                im = await self.timepic(
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "FT", logo
+                )
+                await timemsg.delete()
+                await ctx.send(file=im)
+                if team1Stats[8] > team2Stats[8]:
+                    t = await self.payout(ctx.guild, team1, homewin)
+                if team1Stats[8] < team2Stats[8]:
+                    t = await self.payout(ctx.guild, team2, awaywin)
+
+                # Handle extra time
+                if team1Stats[8] == team2Stats[8]:
+                    added = 15
+                    ht = await self.config.guild(ctx.guild).htbreak()
+                    im = await self.extratime(ctx, added)
+                    await ctx.send(file=im)
+                    await asyncio.sleep(ht)
+                    timemsg = await ctx.send("Extra Time First Half!")
+
+                    for emin in range(90, 106):
+                        await asyncio.sleep(gametime)
+                        if emin % 5 == 0:
+                            await timemsg.edit(content="Minute: {}".format(emin))
+                        gC = await self.goalChance(ctx.guild, probability)
+                        if gC is True:
+                            teamStats = await TeamWeightChance(
+                                ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                            )
+                            playerGoal = await PlayerGenerator(
+                                0, teamStats[0], teamStats[1], teamStats[2]
+                            )
+                            teamStats[8] += 1
+                            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                if playerGoal[1] not in cupstats["goals"]:
+                                    cupstats["goals"][playerGoal[1]] = 1
+                                else:
+                                    cupstats["goals"][playerGoal[1]] += 1
+                                if len(playerGoal) == 3:
+                                    if playerGoal[2] not in cupstats["assists"]:
+                                        cupstats["assists"][playerGoal[2]] = 1
+                                    else:
+                                        cupstats["assists"][playerGoal[2]] += 1
+                            if len(playerGoal) == 3:
+                                user2 = self.bot.get_user(int(playerGoal[2]))
+                                if user2 is None:
+                                    user2 = await self.bot.fetch_user(int(playerGoal[2]))
+                                if user2 not in motm:
+                                    motm[user2] = 1
+                                else:
+                                    motm[user2] += 1
+                                if user2.id not in assists:
+                                    assists[user2.id] = 1
+                                else:
+                                    assists[user2.id] += 1
+                            events = True
+                            user = self.bot.get_user(int(playerGoal[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerGoal[1]))
+                            if user not in motm:
+                                motm[user] = 2
+                            else:
+                                motm[user] += 2
+                            if user.id not in goals:
+                                goals[user.id] = 1
+                            else:
+                                goals[user.id] += 1
+                            if len(playerGoal) == 3:
+                                image = await self.simpic(
+                                    ctx,
+                                    str(emin),
+                                    "goal",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerGoal[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                    user2,
+                                )
+                            else:
+                                image = await self.simpic(
+                                    ctx,
+                                    str(emin),
+                                    "goal",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerGoal[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                )
+                            await ctx.send(file=image)
+                        await asyncio.sleep(gametime)
+                        events = False
+                    im = await self.timepic(
+                        ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
+                    )
+                    await timemsg.delete()
+
+                    # Extra time second half
+                    added = 15
+                    ht = await self.config.guild(ctx.guild).htbreak()
+                    im = await self.extratime(ctx, added)
+                    await ctx.send(file=im)
+                    await asyncio.sleep(ht)
+                    timemsg = await ctx.send("Extra Time Second Half!")
+                    for emin in range(105, 121):
+                        await asyncio.sleep(gametime)
+                        if emin % 5 == 0:
+                            await timemsg.edit(content="Minute: {}".format(emin))
+                        gC = await self.goalChance(ctx.guild, probability)
+                        if gC is True:
+                            teamStats = await TeamWeightChance(
+                                ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                            )
+                            playerGoal = await PlayerGenerator(
+                                0, teamStats[0], teamStats[1], teamStats[2]
+                            )
+                            teamStats[8] += 1
+                            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                if playerGoal[1] not in cupstats["goals"]:
+                                    cupstats["goals"][playerGoal[1]] = 1
+                                else:
+                                    cupstats["goals"][playerGoal[1]] += 1
+                                if len(playerGoal) == 3:
+                                    if playerGoal[2] not in cupstats["assists"]:
+                                        cupstats["assists"][playerGoal[2]] = 1
+                                    else:
+                                        cupstats["assists"][playerGoal[2]] += 1
+                            if len(playerGoal) == 3:
+                                user2 = self.bot.get_user(int(playerGoal[2]))
+                                if user2 is None:
+                                    user2 = await self.bot.fetch_user(int(playerGoal[2]))
+                                if user2 not in motm:
+                                    motm[user2] = 1
+                                else:
+                                    motm[user2] += 1
+                                if user2.id not in assists:
+                                    assists[user2.id] = 1
+                                else:
+                                    assists[user2.id] += 1
+                            events = True
+                            user = self.bot.get_user(int(playerGoal[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerGoal[1]))
+                            if user not in motm:
+                                motm[user] = 2
+                            else:
+                                motm[user] += 2
+                            if user.id not in goals:
+                                goals[user.id] = 1
+                            else:
+                                goals[user.id] += 1
+                            if len(playerGoal) == 3:
+                                image = await self.simpic(
+                                    ctx,
+                                    str(emin),
+                                    "goal",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerGoal[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                    user2,
+                                )
+                            else:
+                                image = await self.simpic(
+                                    ctx,
+                                    str(emin),
+                                    "goal",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerGoal[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                )
+                            await ctx.send(file=image)
+                        await asyncio.sleep(gametime)
+                        events = False
+                    im = await self.timepic(
+                        ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "FT", logo
+                    )
+                    await timemsg.delete()
+                    await ctx.send(file=im)
+
+                    # Handle penalty shootout
+                    if team1Stats[8] == team2Stats[8]:
+                        roster1Update = [i for i in team1players if i not in team1Stats[2]]
+                        roster2Update = [i for i in team2players if i not in team2Stats[2]]
+
+                        async def penaltyshoutout(rosterUpdate, teamPlayers, teamStats):
+                            if not len(rosterUpdate):
+                                rosterUpdate = [i for i in teamPlayers if i not in teamStats[2]]
+                            playerPenalty = await PlayerGenerator(
+                                3, teamStats[0], teamStats[1], teamStats[2]
+                            )
+                            rosterUpdate.pop(rosterUpdate.index(playerPenalty[1]))
+                            user = self.bot.get_user(int(playerPenalty[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerPenalty[1]))
+                            image = await self.penaltyimg(
+                                ctx, str(playerPenalty[0]), str(emin), user
+                            )
+                            await ctx.send(file=image)
+                            pB = await self.penaltyBlock(ctx.guild, probability)
+                            if pB is True:
+                                user = self.bot.get_user(int(playerPenalty[1]))
+                                if user is None:
+                                    user = await self.bot.fetch_user(int(playerPenalty[1]))
+                                image = await self.simpic(
+                                    ctx,
+                                    str(emin),
+                                    "penmiss",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerPenalty[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                    None,
+                                    None,
+                                    str(team1Stats[10]),
+                                    str(team2Stats[10]),
+                                )
+                                await ctx.send(file=image)
+                                return [rosterUpdate, teamStats]
+                            else:
+                                if teamStats[10] is None:
+                                    teamStats[10] = 1
+                                else:
+                                    teamStats[10] += 1
+                                user = self.bot.get_user(int(playerPenalty[1]))
+                                if user is None:
+                                    user = await self.bot.fetch_user(int(playerPenalty[1]))
+                                image = await self.simpic(
+                                    ctx,
+                                    str(emin),
+                                    "penscore",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerPenalty[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                    None,
+                                    None,
+                                    str(team1Stats[10]),
+                                    str(team2Stats[10]),
+                                )
+                                await ctx.send(file=image)
+                                return [rosterUpdate, teamStats]
+
+                        # Generate penalties
+                        for i in range(0, 5):
+                            penalty = await penaltyshoutout(
+                                roster1Update, team1players, team1Stats
+                            )
+                            roster1Update = penalty[0]
+                            team1Stats = penalty[1]
+
+                            penalty = await penaltyshoutout(
+                                roster2Update, team2players, team2Stats
+                            )
+                            roster2Update = penalty[0]
+                            team2Stats = penalty[1]
+
+                        # If tied after 5 penalties
+                        if team1Stats[10] == team2Stats[10]:
+                            extrapenalties = True
+                            while extrapenalties:
+                                penalty1 = await penaltyshoutout(
+                                    roster1Update, team1players, team1Stats
+                                )
+                                roster1Update = penalty1[0]
+                                team1Stats = penalty1[1]
+
+                                penalty2 = await penaltyshoutout(
+                                    roster2Update, team2players, team2Stats
+                                )
+                                roster2Update = penalty2[0]
+                                team2Stats = penalty2[1]
+
+                                if team1Stats[10] != team2Stats[10]:
+                                    extrapenalties = False
+
+                    im = await self.timepic(
+                        ctx,
+                        team1,
+                        team2,
+                        str(team1Stats[8]),
+                        str(team2Stats[8]),
+                        "FT",
+                        logo,
+                        str(team1Stats[10]),
+                        str(team2Stats[10]),
+                    )
+                    await ctx.send(file=im)
+                    if (team1Stats[8] + team1Stats[10]) > (team2Stats[8] + team2Stats[10]):
+                        t = await self.payout(ctx.guild, team1, homewin)
+                    if (team1Stats[8] + team1Stats[10]) < (team2Stats[8] + team2Stats[10]):
+                        t = await self.payout(ctx.guild, team2, awaywin)
+
+                async with self.config.guild(ctx.guild).cupgames() as cupgames:
+                    keys = list(cupgames.keys())
+                    lastround = cupgames[keys[len(keys) - 1]]
+                    fixture = [
+                        item
+                        for item in lastround
+                        if item["team1"] == team1 or item["team2"] == team1
+                    ][0]
+                    idx = lastround.index(fixture)
+                    if fixture["team1"] == team1:
+                        score1 = team1Stats[8]
+                        penscore1 = team1Stats[10]
+                        score2 = team2Stats[8]
+                        penscore2 = team2Stats[10]
+                        fixture["score1"] = score1
+                        fixture["penscore1"] = penscore1
+                        fixture["score2"] = score2
+                        fixture["penscore2"] = penscore2
+                    else:
+                        score1 = team2Stats[8]
+                        penscore1 = team2Stats[10]
+                        score2 = team1Stats[8]
+                        penscore2 = team1Stats[10]
+                        fixture["score1"] = score1
+                        fixture["penscore1"] = penscore1
+                        fixture["score2"] = score2
+                        fixture["penscore2"] = penscore2
+                    lastround[idx] = fixture
+
+        await self.postresults(
+            ctx, team1, team2, team1Stats[8], team2Stats[8], team1Stats[10], team2Stats[10]
+        )
+        await self.config.guild(ctx.guild).active.set(False)
+        await self.config.guild(ctx.guild).started.set(False)
+        await self.config.guild(ctx.guild).betteams.set([])
+        if ctx.guild.id in self.bets:
+            self.bets[ctx.guild.id] = {}
+        if motm:
+            motmwinner = sorted(motm, key=motm.get, reverse=True)[0]
+            if motmwinner.id in goals:
+                motmgoals = goals[motmwinner.id]
+            else:
+                motmgoals = 0
+            if motmwinner.id in assists:
+                motmassists = assists[motmwinner.id]
+            else:
+                motmassists = 0
+            try:
+                await bank.deposit_credits(
+                    self.bot.get_user(motmwinner.id), (75 * motmgoals) + (30 * motmassists)
+                )
+            except AttributeError:
+                pass
+            im = await self.motmpic(
+                ctx,
+                motmwinner,
+                team1 if str(motmwinner.id) in teams[team1]["members"].keys() else team2,
+                motmgoals,
+                motmassists,
+            )
+            if not cupmode:
+                async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                    if str(motmwinner.id) not in cupstats["motm"]:
+                        cupstats["motm"][str(motmwinner.id)] = 1
+                    else:
+                        cupstats["motm"][str(motmwinner.id)] += 1
             await ctx.send(file=im)
         if t is not None:
             await ctx.send("Bet Winners:\n" + t)

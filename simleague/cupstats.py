@@ -5,16 +5,16 @@ from .abc import MixinMeta
 from .utils import mergeDict
 
 
-class StatsMixin(MixinMeta):
+class CupStatsMixin(MixinMeta):
     """Stats Settings"""
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()
-    async def clearstats(self, ctx, user: discord.Member = None):
+    async def clearcupstats(self, ctx, user: discord.Member = None):
         """Clear statistics for a user."""
         if user is not None:
             userid = str(user.id)
-            async with self.config.guild(ctx.guild).stats() as stats:
+            async with self.config.guild(ctx.guild).cupstats() as stats:
                 stats["goals"].pop(userid, None)
                 stats["assists"].pop(userid, None)
                 stats["yellows"].pop(userid, None)
@@ -24,10 +24,10 @@ class StatsMixin(MixinMeta):
         await ctx.tick()
 
     @commands.group(invoke_without_command=True)
-    async def leaguestats(self, ctx, user: discord.Member = None):
-        """Sim League Statistics."""
+    async def cupstats(self, ctx, user: discord.Member = None):
+        """Sim Cup Statistics."""
         if user is not None:
-            stats = await self.config.guild(ctx.guild).stats()
+            stats = await self.config.guild(ctx.guild).cupstats()
             userid = str(user.id)
             pens = stats["penalties"].get(userid)
             statistics = [
@@ -60,7 +60,7 @@ class StatsMixin(MixinMeta):
 
         else:
             await ctx.send_help()
-            stats = await self.config.guild(ctx.guild).stats()
+            stats = await self.config.guild(ctx.guild).cupstats()
             goalscorer = sorted(stats["goals"], key=stats["goals"].get, reverse=True)
             assists = sorted(stats["assists"], key=stats["assists"].get, reverse=True)
             yellows = sorted(stats["yellows"], key=stats["yellows"].get, reverse=True)
@@ -117,10 +117,10 @@ class StatsMixin(MixinMeta):
         else:
             return "None"
 
-    @leaguestats.command(name="ga", alias=["ga", "contributions"])
-    async def _goals_assists(self, ctx):
+    @cupstats.command(name="ga", alias=["ga", "contributions"])
+    async def _cupgoals_assists(self, ctx):
         """Players with the most combined goals and assists."""
-        stats = await self.config.guild(ctx.guild).stats()
+        stats = await self.config.guild(ctx.guild).cupstats()
         goals = stats["goals"]
         assists = stats["assists"]
         contributions = mergeDict(goals, assists)
@@ -139,10 +139,10 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @leaguestats.command(name="goals", alias=["topscorer", "topscorers"])
-    async def _goals(self, ctx):
+    @cupstats.command(name="goals", alias=["topscorer", "topscorers"])
+    async def _cupgoals(self, ctx):
         """Players with the most goals."""
-        stats = await self.config.guild(ctx.guild).stats()
+        stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["goals"]
         if stats:
             a = []
@@ -156,10 +156,10 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @leaguestats.command(aliases=["yellowcards"])
-    async def yellows(self, ctx):
+    @cupstats.command(name="yellows", aliases=["yellowcards"])
+    async def _yellows(self, ctx):
         """Players with the most yellow cards."""
-        stats = await self.config.guild(ctx.guild).stats()
+        stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["yellows"]
         if stats:
             a = []
@@ -173,10 +173,10 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @leaguestats.command(alies=["redcards"])
-    async def reds(self, ctx):
+    @cupstats.command(name="reds", aliases=["redcards"])
+    async def _reds(self, ctx):
         """Players with the most red cards."""
-        stats = await self.config.guild(ctx.guild).stats()
+        stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["reds"]
         if stats:
             a = []
@@ -190,10 +190,10 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @leaguestats.command(alies=["motms"])
-    async def motm(self, ctx):
+    @cupstats.command(name="motms", alias=["motms"])
+    async def _motm(self, ctx):
         """Players with the most MOTMs."""
-        stats = await self.config.guild(ctx.guild).stats()
+        stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["motm"]
         if stats:
             a = []
@@ -207,10 +207,10 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @leaguestats.command(name="cleansheets")
+    @cupstats.command(name="cleansheets")
     async def _cleansheets(self, ctx):
         """Teams with the most cleansheets."""
-        stats = await self.config.guild(ctx.guild).stats()
+        stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["cleansheets"]
         if stats:
             a = []
@@ -223,10 +223,10 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @leaguestats.command()
-    async def penalties(self, ctx):
+    @cupstats.command(name="penalties")
+    async def _penalties(self, ctx):
         """Penalties scored and missed statistics."""
-        stats = await self.config.guild(ctx.guild).stats()
+        stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["penalties"]
         if stats:
             a = []
@@ -248,10 +248,10 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @leaguestats.command()
-    async def assists(self, ctx):
+    @cupstats.command(name="assists")
+    async def _assists(self, ctx):
         """Players with the most assists."""
-        stats = await self.config.guild(ctx.guild).stats()
+        stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["assists"]
         if stats:
             a = []

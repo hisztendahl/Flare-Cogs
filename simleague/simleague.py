@@ -303,7 +303,7 @@ class SimLeague(
                     embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
-    @commands.command()
+    @commands.command(name="cupfixtures")
     async def cupfixtures(self, ctx, cupround: Optional[int] = None):
         """Show all cup fixtures."""
         cupgames = await self.config.guild(ctx.guild).cupgames()
@@ -1892,12 +1892,101 @@ class SimLeague(
                                     str(team2Stats[8]),
                                 )
                             await ctx.send(file=image)
-                        await asyncio.sleep(gametime)
-                        events = False
-                    im = await self.timepic(
-                        ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
-                    )
-                    await timemsg.delete()
+
+                        if emin == 105:
+                            added = random.randint(1, 5)
+                            im = await self.extratime(ctx, added)
+                            await ctx.send(file=im)
+                            s = 45
+                            for i in range(added):
+                                s += 1
+                                gC = await self.goalChance(ctx.guild, probability)
+                                if gC is True:
+                                    teamStats = await TeamWeightChance(
+                                        ctx,
+                                        lvl1,
+                                        lvl2,
+                                        reds[team1],
+                                        reds[team2],
+                                        bonuslvl1,
+                                        bonuslvl2,
+                                    )
+                                    playerGoal = await PlayerGenerator(
+                                        0, teamStats[0], teamStats[1], teamStats[2]
+                                    )
+                                    teamStats[8] += 1
+                                    async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                        if playerGoal[1] not in cupstats["goals"]:
+                                            cupstats["goals"][playerGoal[1]] = 1
+                                        else:
+                                            cupstats["goals"][playerGoal[1]] += 1
+                                        if len(playerGoal) == 3:
+                                            if playerGoal[2] not in cupstats["assists"]:
+                                                cupstats["assists"][playerGoal[2]] = 1
+                                            else:
+                                                cupstats["assists"][playerGoal[2]] += 1
+                                    if len(playerGoal) == 3:
+                                        user2 = self.bot.get_user(int(playerGoal[2]))
+                                        if user2 is None:
+                                            user2 = await self.bot.fetch_user(int(playerGoal[2]))
+                                        if user2 not in motm:
+                                            motm[user2] = 1
+                                        else:
+                                            motm[user2] += 1
+                                        if user2.id not in assists:
+                                            assists[user2.id] = 1
+                                        else:
+                                            assists[user2.id] += 1
+                                    events = True
+                                    user = self.bot.get_user(int(playerGoal[1]))
+                                    if user is None:
+                                        user = await self.bot.fetch_user(int(playerGoal[1]))
+                                    if user not in motm:
+                                        motm[user] = 2
+                                    else:
+                                        motm[user] += 2
+                                    if user.id not in goals:
+                                        goals[user.id] = 1
+                                    else:
+                                        goals[user.id] += 1
+                                    if len(playerGoal) == 3:
+                                        image = await self.simpic(
+                                            ctx,
+                                            str(min) + "+" + str(i + 1),
+                                            "goal",
+                                            user,
+                                            team1,
+                                            team2,
+                                            str(playerGoal[0]),
+                                            str(team1Stats[8]),
+                                            str(team2Stats[8]),
+                                            user2,
+                                        )
+                                    else:
+                                        image = await self.simpic(
+                                            ctx,
+                                            str(min) + "+" + str(i + 1),
+                                            "goal",
+                                            user,
+                                            team1,
+                                            team2,
+                                            str(playerGoal[0]),
+                                            str(team1Stats[8]),
+                                            str(team2Stats[8]),
+                                        )
+                                    await ctx.send(file=image)
+                            im = await self.timepic(
+                                ctx,
+                                team1,
+                                team2,
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                                "HT",
+                                logo,
+                            )
+                            await ctx.send(file=im)
+                            await asyncio.sleep(ht)
+                            await timemsg.delete()
 
                     # Extra time second half
                     added = 15
@@ -1979,13 +2068,101 @@ class SimLeague(
                                     str(team2Stats[8]),
                                 )
                             await ctx.send(file=image)
-                        await asyncio.sleep(gametime)
-                        events = False
-                    im = await self.timepic(
-                        ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "FT", logo
-                    )
-                    await timemsg.delete()
-                    await ctx.send(file=im)
+
+                        if emin == 120:
+                            added = random.randint(1, 5)
+                            im = await self.extratime(ctx, added)
+                            await ctx.send(file=im)
+                            s = 45
+                            for i in range(added):
+                                s += 1
+                                gC = await self.goalChance(ctx.guild, probability)
+                                if gC is True:
+                                    teamStats = await TeamWeightChance(
+                                        ctx,
+                                        lvl1,
+                                        lvl2,
+                                        reds[team1],
+                                        reds[team2],
+                                        bonuslvl1,
+                                        bonuslvl2,
+                                    )
+                                    playerGoal = await PlayerGenerator(
+                                        0, teamStats[0], teamStats[1], teamStats[2]
+                                    )
+                                    teamStats[8] += 1
+                                    async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                        if playerGoal[1] not in cupstats["goals"]:
+                                            cupstats["goals"][playerGoal[1]] = 1
+                                        else:
+                                            cupstats["goals"][playerGoal[1]] += 1
+                                        if len(playerGoal) == 3:
+                                            if playerGoal[2] not in cupstats["assists"]:
+                                                cupstats["assists"][playerGoal[2]] = 1
+                                            else:
+                                                cupstats["assists"][playerGoal[2]] += 1
+                                    if len(playerGoal) == 3:
+                                        user2 = self.bot.get_user(int(playerGoal[2]))
+                                        if user2 is None:
+                                            user2 = await self.bot.fetch_user(int(playerGoal[2]))
+                                        if user2 not in motm:
+                                            motm[user2] = 1
+                                        else:
+                                            motm[user2] += 1
+                                        if user2.id not in assists:
+                                            assists[user2.id] = 1
+                                        else:
+                                            assists[user2.id] += 1
+                                    events = True
+                                    user = self.bot.get_user(int(playerGoal[1]))
+                                    if user is None:
+                                        user = await self.bot.fetch_user(int(playerGoal[1]))
+                                    if user not in motm:
+                                        motm[user] = 2
+                                    else:
+                                        motm[user] += 2
+                                    if user.id not in goals:
+                                        goals[user.id] = 1
+                                    else:
+                                        goals[user.id] += 1
+                                    if len(playerGoal) == 3:
+                                        image = await self.simpic(
+                                            ctx,
+                                            str(min) + "+" + str(i + 1),
+                                            "goal",
+                                            user,
+                                            team1,
+                                            team2,
+                                            str(playerGoal[0]),
+                                            str(team1Stats[8]),
+                                            str(team2Stats[8]),
+                                            user2,
+                                        )
+                                    else:
+                                        image = await self.simpic(
+                                            ctx,
+                                            str(min) + "+" + str(i + 1),
+                                            "goal",
+                                            user,
+                                            team1,
+                                            team2,
+                                            str(playerGoal[0]),
+                                            str(team1Stats[8]),
+                                            str(team2Stats[8]),
+                                        )
+                                    await ctx.send(file=image)
+                            im = await self.timepic(
+                                ctx,
+                                team1,
+                                team2,
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                                "FT",
+                                logo,
+                            )
+                            await ctx.send(file=im)
+                            await timemsg.delete()
+                            await asyncio.sleep(gametime)
 
                     # Handle penalty shootout
                     if team1Stats[8] == team2Stats[8]:

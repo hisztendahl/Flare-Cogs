@@ -508,6 +508,7 @@ class SimHelper(MixinMeta):
         svn = f"{bundled_data_path(self)}/Seven-Segment.ttf"
         name_fnt = ImageFont.truetype(font_bold_file, 20)
         name_fnt2 = ImageFont.truetype(svn, 160)
+        name_fnt3 = ImageFont.truetype(svn, 100)
         # set canvas
         width = 745
         height = 387
@@ -517,13 +518,13 @@ class SimHelper(MixinMeta):
         process = Image.new("RGBA", (width, height), bg_color)
         process.paste(scorebg, (0, 0))
         draw = ImageDraw.Draw(process)
-        if time != "1":
-            draw.text((330, 90), time, font=name_fnt2, fill=(255, 0, 0, 255))
-        else:
+        if time == "1":
             draw.text((360, 90), time, font=name_fnt2, fill=(255, 0, 0, 255))
-        if time == "15":
-            draw.text((290, 295), "Extra time", font=name_fnt, fill=(255, 255, 255, 255))
+        elif time == "15":
+            draw.text((130, 130), "EXTRA TIME", font=name_fnt3, fill=(255, 0, 0, 255))
         else:
+            draw.text((330, 90), time, font=name_fnt2, fill=(255, 0, 0, 255))
+        if time != "15":
             draw.text(
                 (290, 295), f"{time} added minute(s)", font=name_fnt, fill=(255, 255, 255, 255)
             )

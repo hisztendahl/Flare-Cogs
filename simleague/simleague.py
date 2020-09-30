@@ -1897,7 +1897,7 @@ class SimLeague(
                             added = random.randint(1, 5)
                             im = await self.extratime(ctx, added)
                             await ctx.send(file=im)
-                            s = 45
+                            s = 105
                             for i in range(added):
                                 s += 1
                                 gC = await self.goalChance(ctx.guild, probability)
@@ -1952,7 +1952,7 @@ class SimLeague(
                                     if len(playerGoal) == 3:
                                         image = await self.simpic(
                                             ctx,
-                                            str(min) + "+" + str(i + 1),
+                                            str(emin) + "+" + str(i + 1),
                                             "goal",
                                             user,
                                             team1,
@@ -1965,7 +1965,7 @@ class SimLeague(
                                     else:
                                         image = await self.simpic(
                                             ctx,
-                                            str(min) + "+" + str(i + 1),
+                                            str(emin) + "+" + str(i + 1),
                                             "goal",
                                             user,
                                             team1,
@@ -1975,6 +1975,8 @@ class SimLeague(
                                             str(team2Stats[8]),
                                         )
                                     await ctx.send(file=image)
+                                await asyncio.sleep(ht)
+                                events = False
                             im = await self.timepic(
                                 ctx,
                                 team1,
@@ -1984,17 +1986,15 @@ class SimLeague(
                                 "HT",
                                 logo,
                             )
-                            await ctx.send(file=im)
-                            await asyncio.sleep(ht)
                             await timemsg.delete()
+                            await ctx.send(file=im)
 
                     # Extra time second half
+                    timemsg = await ctx.send("Half Time!")
                     added = 15
                     ht = await self.config.guild(ctx.guild).htbreak()
-                    im = await self.extratime(ctx, added)
-                    await ctx.send(file=im)
                     await asyncio.sleep(ht)
-                    timemsg = await ctx.send("Extra Time Second Half!")
+                    await timemsg.edit(content="Extra Time Second Half!")
                     for emin in range(105, 121):
                         await asyncio.sleep(gametime)
                         if emin % 5 == 0:
@@ -2073,7 +2073,7 @@ class SimLeague(
                             added = random.randint(1, 5)
                             im = await self.extratime(ctx, added)
                             await ctx.send(file=im)
-                            s = 45
+                            s = 120
                             for i in range(added):
                                 s += 1
                                 gC = await self.goalChance(ctx.guild, probability)
@@ -2128,7 +2128,7 @@ class SimLeague(
                                     if len(playerGoal) == 3:
                                         image = await self.simpic(
                                             ctx,
-                                            str(min) + "+" + str(i + 1),
+                                            str(emin) + "+" + str(i + 1),
                                             "goal",
                                             user,
                                             team1,
@@ -2141,7 +2141,7 @@ class SimLeague(
                                     else:
                                         image = await self.simpic(
                                             ctx,
-                                            str(min) + "+" + str(i + 1),
+                                            str(emin) + "+" + str(i + 1),
                                             "goal",
                                             user,
                                             team1,
@@ -2151,6 +2151,8 @@ class SimLeague(
                                             str(team2Stats[8]),
                                         )
                                     await ctx.send(file=image)
+                                await asyncio.sleep(gametime)
+                                events = False
                             im = await self.timepic(
                                 ctx,
                                 team1,
@@ -2160,34 +2162,32 @@ class SimLeague(
                                 "FT",
                                 logo,
                             )
-                            await ctx.send(file=im)
                             await timemsg.delete()
-                            await asyncio.sleep(gametime)
+                            await ctx.send(file=im)
 
                     # Handle penalty shootout
                     if team1Stats[8] == team2Stats[8]:
+                        await ctx.send("Penalty Shootout!")
+                        await asyncio.sleep(gametime)
                         roster1Update = [i for i in team1players if i not in team1Stats[2]]
                         roster2Update = [i for i in team2players if i not in team2Stats[2]]
 
-                        async def penaltyshoutout(rosterUpdate, teamPlayers, teamStats):
-                            if not len(rosterUpdate):
-                                rosterUpdate = [i for i in teamPlayers if i not in teamStats[2]]
-                            playerPenalty = await PlayerGenerator(
-                                3, teamStats[0], teamStats[1], teamStats[2]
-                            )
-                            rosterUpdate.pop(rosterUpdate.index(playerPenalty[1]))
-                            user = self.bot.get_user(int(playerPenalty[1]))
+                        async def penaltyshoutout(roster, teamPlayers, teamStats):
+                            if not len(roster):
+                                roster = [i for i in teamPlayers if i not in teamStats[2]]
+                            playerPenalty = random.choice(roster)
+                            user = self.bot.get_user(int(playerPenalty))
                             if user is None:
-                                user = await self.bot.fetch_user(int(playerPenalty[1]))
-                            image = await self.penaltyimg(
-                                ctx, str(playerPenalty[0]), str(emin), user
-                            )
+                                user = await self.bot.fetch_user(int(playerPenalty))
+                            image = await self.penaltyimg(ctx, str(teamStats[0]), str(emin), user)
                             await ctx.send(file=image)
+                            pendelay = random.randint(2, 5)
+                            await asyncio.sleep(pendelay)
                             pB = await self.penaltyBlock(ctx.guild, probability)
                             if pB is True:
-                                user = self.bot.get_user(int(playerPenalty[1]))
+                                user = self.bot.get_user(int(playerPenalty))
                                 if user is None:
-                                    user = await self.bot.fetch_user(int(playerPenalty[1]))
+                                    user = await self.bot.fetch_user(int(playerPenalty))
                                 image = await self.simpic(
                                     ctx,
                                     str(emin),
@@ -2195,7 +2195,7 @@ class SimLeague(
                                     user,
                                     team1,
                                     team2,
-                                    str(playerPenalty[0]),
+                                    str(teamStats[0]),
                                     str(team1Stats[8]),
                                     str(team2Stats[8]),
                                     None,
@@ -2204,15 +2204,16 @@ class SimLeague(
                                     str(team2Stats[10]),
                                 )
                                 await ctx.send(file=image)
-                                return [rosterUpdate, teamStats]
+                                await asyncio.sleep(5)
+                                return [playerPenalty, teamStats]
                             else:
                                 if teamStats[10] is None:
                                     teamStats[10] = 1
                                 else:
                                     teamStats[10] += 1
-                                user = self.bot.get_user(int(playerPenalty[1]))
+                                user = self.bot.get_user(int(playerPenalty))
                                 if user is None:
-                                    user = await self.bot.fetch_user(int(playerPenalty[1]))
+                                    user = await self.bot.fetch_user(int(playerPenalty))
                                 image = await self.simpic(
                                     ctx,
                                     str(emin),
@@ -2220,7 +2221,7 @@ class SimLeague(
                                     user,
                                     team1,
                                     team2,
-                                    str(playerPenalty[0]),
+                                    str(teamStats[0]),
                                     str(team1Stats[8]),
                                     str(team2Stats[8]),
                                     None,
@@ -2229,21 +2230,22 @@ class SimLeague(
                                     str(team2Stats[10]),
                                 )
                                 await ctx.send(file=image)
-                                return [rosterUpdate, teamStats]
+                                await asyncio.sleep(5)
+                                return [playerPenalty, teamStats]
 
                         # Generate penalties
                         for i in range(0, 5):
-                            penalty = await penaltyshoutout(
+                            penalty1 = await penaltyshoutout(
                                 roster1Update, team1players, team1Stats
                             )
-                            roster1Update = penalty[0]
-                            team1Stats = penalty[1]
+                            roster1Update = [p for p in roster1Update if p != penalty1[0]]
+                            team1Stats = penalty1[1]
 
-                            penalty = await penaltyshoutout(
+                            penalty2 = await penaltyshoutout(
                                 roster2Update, team2players, team2Stats
                             )
-                            roster2Update = penalty[0]
-                            team2Stats = penalty[1]
+                            roster2Update = [p for p in roster2Update if p != penalty2[0]]
+                            team2Stats = penalty2[1]
 
                         # If tied after 5 penalties
                         if team1Stats[10] == team2Stats[10]:
@@ -2252,30 +2254,30 @@ class SimLeague(
                                 penalty1 = await penaltyshoutout(
                                     roster1Update, team1players, team1Stats
                                 )
-                                roster1Update = penalty1[0]
+                                roster1Update = [p for p in roster1Update if p != penalty1[0]]
                                 team1Stats = penalty1[1]
 
                                 penalty2 = await penaltyshoutout(
                                     roster2Update, team2players, team2Stats
                                 )
-                                roster2Update = penalty2[0]
+                                roster2Update = [p for p in roster2Update if p != penalty2[0]]
                                 team2Stats = penalty2[1]
 
                                 if team1Stats[10] != team2Stats[10]:
                                     extrapenalties = False
 
-                    im = await self.timepic(
-                        ctx,
-                        team1,
-                        team2,
-                        str(team1Stats[8]),
-                        str(team2Stats[8]),
-                        "FT",
-                        logo,
-                        str(team1Stats[10]),
-                        str(team2Stats[10]),
-                    )
-                    await ctx.send(file=im)
+                        im = await self.timepic(
+                            ctx,
+                            team1,
+                            team2,
+                            str(team1Stats[8]),
+                            str(team2Stats[8]),
+                            "FT",
+                            logo,
+                            str(team1Stats[10]),
+                            str(team2Stats[10]),
+                        )
+                        await ctx.send(file=im)
                     if (team1Stats[8] + team1Stats[10]) > (team2Stats[8] + team2Stats[10]):
                         t = await self.payout(ctx.guild, team1, homewin)
                     if (team1Stats[8] + team1Stats[10]) < (team2Stats[8] + team2Stats[10]):

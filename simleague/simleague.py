@@ -1159,7 +1159,8 @@ class SimLeague(
             unplayedgames = [
                 game
                 for game in lastround
-                if game["score1"] == game["score2"] and game["team2"] != "BYE"
+                if (game["score1"] + game["penscore1"]) == (game["score2"] + game["penscore2"])
+                and game["team2"] != "BYE"
             ]
             playedgames = [x for x in lastround if x not in unplayedgames]
             isroundover = False if len(unplayedgames) else True

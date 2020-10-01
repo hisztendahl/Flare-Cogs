@@ -9,12 +9,37 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from redbot.core.data_manager import bundled_data_path
 
 from .abc import MixinMeta
+import textwrap
 
 client = AsyncIOMotorClient()
 db = client["leveler"]
 
 DEFAULT_URL = "https://i.imgur.com/pQMaU8U.png"
+COMMENT_TYPES = ["CHANCE!", "FOUL!"]
 
+FOULS = [
+    "Foul by {} ({}).",
+    "Late tackle from {} ({}).",
+    "{} ({}) wins a free kick in the attacking half.",
+    "{} ({}) wins a free kick in the defensive half.",
+    "{} ({}) wins a free kick on the left wing.",
+    "{} ({}) wins a free kick on the right wing."
+    ]
+
+CHANCE_TYPE = ["saved", "missed", "blocked"]
+SAVED_CHANCE = "Attempt saved.\n{} ({}) {} footed shot from {} the box is saved in the {} {} of the goal."
+MISSED_CHANCE = "Attempt missed.\n{} ({}) {} footed shot from {} the box {}."
+MISSED_DIST = [
+    "is close, but misses to the right",
+    "is close, but misses to the left",
+    "is too high"
+    ]
+BLOCKED_CHANCE = "Attempt blocked.\n{} ({}) {} footed shot from {} the box is blocked."
+
+FOOT = ["left", "right"]
+DISTANCE = ["outside", "the center of"]
+HEIGHT = ["top", "middle", "bottom"]
+SIDE = ["left", "center", "right"]
 
 class SimHelper(MixinMeta):
     async def simpic(
@@ -91,7 +116,7 @@ class SimHelper(MixinMeta):
 
         penfill = (230, 230, 230, 230)
 
-        if event == "penscore":
+        if event == "penscore" or event == "goal":
             penfill = (0, 200, 0, 200)
         if event == "penmiss":
             penfill = (200, 0, 0, 200)
@@ -189,7 +214,7 @@ class SimHelper(MixinMeta):
         left_text_align = 130
         grey_color = (110, 110, 110, 255)
         white_color = (255, 255, 255, 255)
-        goal_text_color = white_color if event == "penscore" or event == "penmiss" else grey_color
+        goal_text_color = white_color if event == "goal" or event == "penscore" or event == "penmiss" else grey_color
         # goal text
         _write_unicode(
             maps[event],
@@ -500,6 +525,163 @@ class SimHelper(MixinMeta):
         result.save(file, "PNG", quality=100)
         file.seek(0)
         image = discord.File(file, filename="pikaleague.png")
+        return image
+
+    async def commentimg(self, ctx, teamevent, time, player):
+        font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
+        name_fnt = ImageFont.truetype(font_bold_file, 22)
+        header_u_fnt = ImageFont.truetype(font_bold_file, 18)
+        general_u_font = ImageFont.truetype(font_bold_file, 18)
+        level_label_fnt = ImageFont.truetype(font_bold_file, 22, encoding="utf-8")
+        cog = self.bot.get_cog("SimLeague")
+        teams = await cog.config.guild(ctx.guild).teams()
+        server_icon = await self.getimg(
+            teams[teamevent]["logo"] if teams[teamevent]["logo"] is not None else DEFAULT_URL
+        )
+
+        try:
+            server_icon_image = Image.open(server_icon).convert("RGBA")
+        except:
+            server_icon = await self.getimg(DEFAULT_URL)
+            server_icon_image = Image.open(server_icon).convert("RGBA")
+
+        # set canvas
+        width = 360
+        height = 100
+        bg_color = (255, 255, 255, 0)
+        result = Image.new("RGBA", (width, height), bg_color)
+        process = Image.new("RGBA", (width, height), bg_color)
+
+        # draw
+        draw = ImageDraw.Draw(process)
+
+        # draw transparent overlay
+        vert_pos = 5
+        left_pos = 13
+        right_pos = width - vert_pos
+        title_height = 22
+        gap = 3
+
+        draw.rectangle(
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
+            fill=(230, 230, 230, 230),
+        )  # title box
+
+        content_top = vert_pos + title_height + gap
+        content_bottom = 100 - vert_pos
+
+        info_color = (30, 30, 30, 160)
+
+        # draw level circle
+        multiplier = 6
+        lvl_circle_dia = 94
+        raw_length = lvl_circle_dia * multiplier
+
+        # create mask
+        mask = Image.new("L", (raw_length, raw_length), 0)
+        draw_thumb = ImageDraw.Draw(mask)
+        draw_thumb.ellipse((0, 0) + (raw_length, raw_length), fill=255, outline=0)
+
+        # draws mask
+        total_gap = 10
+        profile_size = lvl_circle_dia - total_gap
+        raw_length = profile_size * multiplier
+        # put in profile picture
+
+        # put in server picture
+        server_size = content_bottom - content_top - 10
+        server_border_size = server_size + 4
+        radius = 20
+        light_border = (150, 150, 150, 180)
+        dark_border = (90, 90, 90, 180)
+        border_color = self._contrast(info_color, light_border, dark_border)
+
+        draw_server_border = Image.new(
+            "RGBA",
+            (server_border_size * multiplier, server_border_size * multiplier),
+            border_color,
+        )
+        draw_server_border = self._add_corners(draw_server_border, int(radius * multiplier / 2))
+        draw_server_border = draw_server_border.resize(
+            (server_border_size, server_border_size), Image.ANTIALIAS
+        )
+        server_icon_image = server_icon_image.resize(
+            (server_size * multiplier, server_size * multiplier), Image.ANTIALIAS
+        )
+        server_icon_image = self._add_corners(server_icon_image, int(radius * multiplier / 2) - 10)
+        server_icon_image = server_icon_image.resize((server_size, server_size), Image.ANTIALIAS)
+        process.paste(draw_server_border, (8, content_top + 3), draw_server_border)
+        process.paste(server_icon_image, (10, content_top + 5), server_icon_image)
+
+        def _write_unicode(text, init_x, y, font, unicode_font, fill):
+            write_pos = init_x
+
+            for char in text:
+                if char.isalnum() or char in string.punctuation or char in string.whitespace:
+                    draw.text((write_pos, y), char, font=font, fill=fill)
+                    write_pos += font.getsize(char)[0]
+                else:
+                    draw.text((write_pos, y), "{}".format(char), font=unicode_font, fill=fill)
+                    write_pos += unicode_font.getsize(char)[0]
+
+        # draw level box
+        level_left = 180
+        level_right = right_pos
+        draw.rectangle(
+            [(level_left, vert_pos), (level_right, vert_pos + title_height)], fill="#AAA"
+        )  # box
+        lvl_text = "'" + str(time)
+        draw.text(
+            (self._center(level_left, level_right, lvl_text, level_label_fnt), vert_pos + 3),
+            lvl_text,
+            font=level_label_fnt,
+            fill=(110, 110, 110, 255),
+        )  # Level #
+        left_text_align = 13
+        grey_color = (110, 110, 110, 255)
+        # goal text
+        comment_type = random.choice(COMMENT_TYPES)
+        comment = ""
+        if comment_type == "FOUL!":
+            comment = random.choice(FOULS).format(player.name, teamevent[:6].upper())
+        else:
+            foot = random.choice(FOOT)
+            height = random.choice(HEIGHT)
+            side = random.choice(SIDE)
+            distance = random.choice(DISTANCE)
+            missed_dist = random.choice(MISSED_DIST)
+            
+            chance_type = random.choice(CHANCE_TYPE)
+            if chance_type == "saved":
+                comment = SAVED_CHANCE.format(player.name, teamevent[:6].upper(), foot, distance, height, side)
+            elif chance_type == "missed":
+                comment = MISSED_CHANCE.format(player.name, teamevent[:6].upper(), foot, distance, missed_dist)
+            else:
+                comment = BLOCKED_CHANCE.format(player.name, teamevent[:6].upper(), foot, distance)
+
+        _write_unicode(
+            comment_type + "   ({})".format(teamevent[:6].upper()),
+            left_text_align - 12,
+            vert_pos + 3,
+            name_fnt,
+            header_u_fnt,
+            grey_color,
+        )
+        white_text = (240, 240, 240, 255)
+        dark_text = (35, 35, 35, 230)
+        label_align = 70
+        label_text_color = self._contrast(info_color, white_text, dark_text)
+        draw.text(
+            (label_align, 38),
+            textwrap.fill(comment, 45),
+            font=general_u_font,
+            fill=label_text_color,
+        )
+        result = Image.alpha_composite(result, process)
+        file = BytesIO()
+        result.save(file, "PNG", quality=100)
+        file.seek(0)
+        image = discord.File(file, filename="commentary.png")
         return image
 
     async def extratime(self, ctx, time):
@@ -1205,6 +1387,12 @@ class SimHelper(MixinMeta):
     async def penaltyBlock(self, guild, probability):
         rdmint = random.randint(0, 1)
         if rdmint > probability["penaltyblock"]:  # 0.6 default
+            return True
+
+    async def commentChance(self, guild, probability):
+        rdmint = random.randint(0, 100)
+        # if rdmint > probability["commentchance"]:  # 60 probability
+        if rdmint > 85:
             return True
 
     async def updatecacheall(self, guild):

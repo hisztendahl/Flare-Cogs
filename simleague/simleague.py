@@ -644,6 +644,7 @@ class SimLeague(
             await asyncio.sleep(gametime)
             if min % 5 == 0:
                 await timemsg.edit(content="Minute: {}".format(min))
+            # Goal chance
             if events is False:
                 gC = await self.goalChance(ctx.guild, probability)
                 if gC is True:
@@ -712,6 +713,8 @@ class SimLeague(
                             str(team2Stats[8]),
                         )
                     await ctx.send(file=image)
+            
+            # Penalty chance
             if events is False:
                 pC = await self.penaltyChance(ctx.guild, probability)
                 if pC is True:
@@ -784,6 +787,8 @@ class SimLeague(
                             str(team2Stats[8]),
                         )
                         await ctx.send(file=image)
+            
+            # Yellow card chance
             if events is False:
                 yC = await self.yCardChance(ctx.guild, probability)
                 if yC is True:
@@ -857,6 +862,8 @@ class SimLeague(
                                 str(team2Stats[8]),
                             )
                             await ctx.send(file=image)
+            
+            # Red card chance
             if events is False:
                 rC = await self.rCardChance(ctx.guild, probability)
                 if rC is True:
@@ -895,6 +902,27 @@ class SimLeague(
                             ),
                         )
                         await ctx.send(file=image)
+            
+            # Commentary
+            if events is False:
+                cC = await self.commentChance(ctx.guild, probability)
+                if cC is True:
+                    teamStats = await TeamWeightChance(
+                        ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                    )
+                    playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                    events = True
+                    if len(playerComment) == 3:
+                        user2 = self.bot.get_user(int(playerComment[2]))
+                        if user2 is None:
+                            user2 = await self.bot.fetch_user(int(playerComment[2]))
+                    user = self.bot.get_user(int(playerComment[1]))
+                    if user is None:
+                        user = await self.bot.fetch_user(int(playerComment[1]))
+                    image = await self.commentimg(ctx, str(playerComment[0]), str(min), user)
+                    await ctx.send(file=image)
+
             if events is False:
                 pass
             events = False
@@ -905,6 +933,7 @@ class SimLeague(
                 s = 45
                 for i in range(added):
                     s += 1
+                    # Goal chance
                     gC = await self.goalChance(ctx.guild, probability)
                     if gC is True:
                         teamStats = await TeamWeightChance(
@@ -974,6 +1003,26 @@ class SimLeague(
                                 str(team2Stats[8]),
                             )
                         await ctx.send(file=image)
+                    
+                    # Commentary
+                    cC = await self.commentChance(ctx.guild, probability)
+                    if cC is True:
+                        teamStats = await TeamWeightChance(
+                            ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                        )
+                        playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                        events = True
+                        if len(playerComment) == 3:
+                            user2 = self.bot.get_user(int(playerComment[2]))
+                            if user2 is None:
+                                user2 = await self.bot.fetch_user(int(playerComment[2]))
+                        user = self.bot.get_user(int(playerComment[1]))
+                        if user is None:
+                            user = await self.bot.fetch_user(int(playerComment[1]))
+                        image = await self.commentimg(ctx, str(playerComment[0]), str(min), user)
+                        await ctx.send(file=image)
+
                     await asyncio.sleep(gametime)
                     events = False
                     ht = await self.config.guild(ctx.guild).htbreak()
@@ -992,6 +1041,7 @@ class SimLeague(
                 s = 90
                 for i in range(added):
                     s += 1
+                    # Goal chance
                     gC = await self.goalChance(ctx.guild, probability)
                     if gC is True:
                         teamStats = await TeamWeightChance(
@@ -1061,6 +1111,26 @@ class SimLeague(
                                 str(team2Stats[8]),
                             )
                         await ctx.send(file=image)
+                    
+                    # Commentary
+                    cC = await self.commentChance(ctx.guild, probability)
+                    if cC is True:
+                        teamStats = await TeamWeightChance(
+                            ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                        )
+                        playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                        events = True
+                        if len(playerComment) == 3:
+                            user2 = self.bot.get_user(int(playerComment[2]))
+                            if user2 is None:
+                                user2 = await self.bot.fetch_user(int(playerComment[2]))
+                        user = self.bot.get_user(int(playerComment[1]))
+                        if user is None:
+                            user = await self.bot.fetch_user(int(playerComment[1]))
+                        image = await self.commentimg(ctx, str(playerComment[0]), str(min), user)
+                        await ctx.send(file=image)
+                    
                     await asyncio.sleep(gametime)
                     events = False
                 im = await self.timepic(
@@ -1376,6 +1446,8 @@ class SimLeague(
             await asyncio.sleep(gametime)
             if min % 5 == 0:
                 await timemsg.edit(content="Minute: {}".format(min))
+            
+            # Goal chance
             if events is False:
                 gC = await self.goalChance(ctx.guild, probability)
                 if gC is True:
@@ -1444,6 +1516,8 @@ class SimLeague(
                             str(team2Stats[8]),
                         )
                     await ctx.send(file=image)
+            
+            # Penalty chance
             if events is False:
                 pC = await self.penaltyChance(ctx.guild, probability)
                 if pC is True:
@@ -1522,6 +1596,8 @@ class SimLeague(
                             str(team2Stats[8]),
                         )
                         await ctx.send(file=image)
+            
+            # Yellow card chance
             if events is False:
                 yC = await self.yCardChance(ctx.guild, probability)
                 if yC is True:
@@ -1595,6 +1671,8 @@ class SimLeague(
                                 str(team2Stats[8]),
                             )
                             await ctx.send(file=image)
+            
+            # Red card chance
             if events is False:
                 rC = await self.rCardChance(ctx.guild, probability)
                 if rC is True:
@@ -1633,6 +1711,27 @@ class SimLeague(
                             ),
                         )
                         await ctx.send(file=image)
+            
+            # Commentary
+            if events is False:
+                cC = await self.commentChance(ctx.guild, probability)
+                if cC is True:
+                    teamStats = await TeamWeightChance(
+                        ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                    )
+                    playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                    events = True
+                    if len(playerComment) == 3:
+                        user2 = self.bot.get_user(int(playerComment[2]))
+                        if user2 is None:
+                            user2 = await self.bot.fetch_user(int(playerComment[2]))
+                    user = self.bot.get_user(int(playerComment[1]))
+                    if user is None:
+                        user = await self.bot.fetch_user(int(playerComment[1]))
+                    image = await self.commentimg(ctx, str(playerComment[0]), str(min), user)
+                    await ctx.send(file=image)
+
             if events is False:
                 pass
             events = False
@@ -1643,6 +1742,7 @@ class SimLeague(
                 s = 45
                 for i in range(added):
                     s += 1
+                    # Goal chance
                     gC = await self.goalChance(ctx.guild, probability)
                     if gC is True:
                         teamStats = await TeamWeightChance(
@@ -1712,6 +1812,26 @@ class SimLeague(
                                 str(team2Stats[8]),
                             )
                         await ctx.send(file=image)
+                    
+                    # Commentary
+                    cC = await self.commentChance(ctx.guild, probability)
+                    if cC is True:
+                        teamStats = await TeamWeightChance(
+                            ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                        )
+                        playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                        events = True
+                        if len(playerComment) == 3:
+                            user2 = self.bot.get_user(int(playerComment[2]))
+                            if user2 is None:
+                                user2 = await self.bot.fetch_user(int(playerComment[2]))
+                        user = self.bot.get_user(int(playerComment[1]))
+                        if user is None:
+                            user = await self.bot.fetch_user(int(playerComment[1]))
+                        image = await self.commentimg(ctx, str(playerComment[0]), str(min) + "+" + str(i + 1), user)
+                        await ctx.send(file=image)
+                    
                     await asyncio.sleep(gametime)
                     events = False
                     ht = await self.config.guild(ctx.guild).htbreak()
@@ -1730,6 +1850,7 @@ class SimLeague(
                 s = 90
                 for i in range(added):
                     s += 1
+                    # Goal chance
                     gC = await self.goalChance(ctx.guild, probability)
                     if gC is True:
                         teamStats = await TeamWeightChance(
@@ -1799,6 +1920,26 @@ class SimLeague(
                                 str(team2Stats[8]),
                             )
                         await ctx.send(file=image)
+                    
+                    # Commentary
+                    cC = await self.commentChance(ctx.guild, probability)
+                    if cC is True:
+                        teamStats = await TeamWeightChance(
+                            ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                        )
+                        playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                        events = True
+                        if len(playerComment) == 3:
+                            user2 = self.bot.get_user(int(playerComment[2]))
+                            if user2 is None:
+                                user2 = await self.bot.fetch_user(int(playerComment[2]))
+                        user = self.bot.get_user(int(playerComment[1]))
+                        if user is None:
+                            user = await self.bot.fetch_user(int(playerComment[1]))
+                        image = await self.commentimg(ctx, str(playerComment[0]), str(min) + "+" + str(i + 1), user)
+                        await ctx.send(file=image)
+
                     await asyncio.sleep(gametime)
                     events = False
                 im = await self.timepic(
@@ -1824,6 +1965,7 @@ class SimLeague(
                         await asyncio.sleep(gametime)
                         if emin % 5 == 0:
                             await timemsg.edit(content="Minute: {}".format(emin))
+                        # Goal chance
                         gC = await self.goalChance(ctx.guild, probability)
                         if gC is True:
                             teamStats = await TeamWeightChance(
@@ -1894,6 +2036,25 @@ class SimLeague(
                                 )
                             await ctx.send(file=image)
 
+                        # Commentary
+                        cC = await self.commentChance(ctx.guild, probability)
+                        if cC is True:
+                            teamStats = await TeamWeightChance(
+                                ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                            )
+                            playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                            events = True
+                            if len(playerComment) == 3:
+                                user2 = self.bot.get_user(int(playerComment[2]))
+                                if user2 is None:
+                                    user2 = await self.bot.fetch_user(int(playerComment[2]))
+                            user = self.bot.get_user(int(playerComment[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerComment[1]))
+                            image = await self.commentimg(ctx, str(playerComment[0]), str(emin), user)
+                            await ctx.send(file=image)
+
                         if emin == 105:
                             added = random.randint(1, 5)
                             im = await self.extratime(ctx, added)
@@ -1901,6 +2062,7 @@ class SimLeague(
                             s = 105
                             for i in range(added):
                                 s += 1
+                                # Goal chance
                                 gC = await self.goalChance(ctx.guild, probability)
                                 if gC is True:
                                     teamStats = await TeamWeightChance(
@@ -1976,6 +2138,26 @@ class SimLeague(
                                             str(team2Stats[8]),
                                         )
                                     await ctx.send(file=image)
+                                
+                                # Commentary
+                                cC = await self.commentChance(ctx.guild, probability)
+                                if cC is True:
+                                    teamStats = await TeamWeightChance(
+                                        ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                                    )
+                                    playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                                    events = True
+                                    if len(playerComment) == 3:
+                                        user2 = self.bot.get_user(int(playerComment[2]))
+                                        if user2 is None:
+                                            user2 = await self.bot.fetch_user(int(playerComment[2]))
+                                    user = self.bot.get_user(int(playerComment[1]))
+                                    if user is None:
+                                        user = await self.bot.fetch_user(int(playerComment[1]))
+                                    image = await self.commentimg(ctx, str(playerComment[0]), str(emin) + "+" + str(i + 1), user)
+                                    await ctx.send(file=image)
+                                
                                 await asyncio.sleep(ht)
                                 events = False
                             im = await self.timepic(
@@ -2000,6 +2182,7 @@ class SimLeague(
                         await asyncio.sleep(gametime)
                         if emin % 5 == 0:
                             await timemsg.edit(content="Minute: {}".format(emin))
+                        # Goal chance
                         gC = await self.goalChance(ctx.guild, probability)
                         if gC is True:
                             teamStats = await TeamWeightChance(
@@ -2070,6 +2253,25 @@ class SimLeague(
                                 )
                             await ctx.send(file=image)
 
+                        # Commentary
+                        cC = await self.commentChance(ctx.guild, probability)
+                        if cC is True:
+                            teamStats = await TeamWeightChance(
+                                ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                            )
+                            playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                            events = True
+                            if len(playerComment) == 3:
+                                user2 = self.bot.get_user(int(playerComment[2]))
+                                if user2 is None:
+                                    user2 = await self.bot.fetch_user(int(playerComment[2]))
+                            user = self.bot.get_user(int(playerComment[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerComment[1]))
+                                image = await self.commentimg(ctx, str(playerComment[0]), str(emin), user)
+                            await ctx.send(file=image)
+
                         if emin == 120:
                             added = random.randint(1, 5)
                             im = await self.extratime(ctx, added)
@@ -2077,6 +2279,7 @@ class SimLeague(
                             s = 120
                             for i in range(added):
                                 s += 1
+                                # Goal chance
                                 gC = await self.goalChance(ctx.guild, probability)
                                 if gC is True:
                                     teamStats = await TeamWeightChance(
@@ -2152,6 +2355,26 @@ class SimLeague(
                                             str(team2Stats[8]),
                                         )
                                     await ctx.send(file=image)
+                                
+                                # Commentary
+                                cC = await self.commentChance(ctx.guild, probability)
+                                if cC is True:
+                                    teamStats = await TeamWeightChance(
+                                        ctx, lvl1, lvl2, reds[team1], reds[team2], bonuslvl1, bonuslvl2
+                                    )
+                                    playerComment = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
+
+                                    events = True
+                                    if len(playerComment) == 3:
+                                        user2 = self.bot.get_user(int(playerComment[2]))
+                                        if user2 is None:
+                                            user2 = await self.bot.fetch_user(int(playerComment[2]))
+                                    user = self.bot.get_user(int(playerComment[1]))
+                                    if user is None:
+                                        user = await self.bot.fetch_user(int(playerComment[1]))
+                                    image = await self.commentimg(ctx, str(playerComment[0]), str(emin) + "+" + str(i + 1), user)
+                                    await ctx.send(file=image)
+                                
                                 await asyncio.sleep(gametime)
                                 events = False
                             im = await self.timepic(

@@ -10,7 +10,7 @@ class TeamsetMixin(MixinMeta):
 
     @commands.group(autohelp=True)
     async def transfer(self, ctx):
-        """Team Settings."""
+        """Transfer Commands."""
 
     @commands.has_role("Sim Captain")
     @transfer.command(name="swap")
@@ -162,6 +162,36 @@ class TeamsetMixin(MixinMeta):
                     inline=True,
                 )
         await ctx.send(embed=embed)
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.group(autohelp=True)
+    async def admintransfer(self, ctx):
+        """Admin Transfers."""
+
+    @admintransfer.command(name="swap")
+    async def _adminswap(self, ctx, team1, player1: discord.Member, team2, player2: discord.Member):
+        """Swap a player from your team with a player from another team."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        teams = await self.config.guild(ctx.guild).teams()
+        cpt1id = list(teams[team1]["captain"].keys())[0]
+        cpt2id = list(teams[team2]["captain"].keys())[0]
+        if int(cpt1id) == player1.id or int(cpt2id) == player2.id:
+            return await ctx.send("You cannot transfer team captains.")
+        await self.swap(ctx, ctx.guild, team1, player1, team2, player2)
+        await ctx.tick()
+
+    @admintransfer.command(name="sign")
+    async def _adminsign(self, ctx, team1, player1: discord.Member, player2: discord.Member):
+        """Release a player and sign a free agent."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        teams = await self.config.guild(ctx.guild).teams()
+        cptid = list(teams[team1]["captain"].keys())[0]
+        if int(cptid) == player1.id:
+            return await ctx.send("You cannot release team captains.")
+        await self.sign(ctx, ctx.guild, team1, player1, player2)
+        await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.group(autohelp=True)

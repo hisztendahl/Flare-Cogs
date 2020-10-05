@@ -1350,6 +1350,28 @@ class SimHelper(MixinMeta):
         await self.posttransfer(ctx, "Player released!", member1, team1, "(free agent)")
         await self.posttransfer(ctx, "New signing!!", member2, "(free agent)", team1)
 
+    async def purge(self, ctx, guild, team1, member1):
+        cog = self.bot.get_cog("SimLeague")
+        users = await cog.config.guild(guild).users()
+        async with cog.config.guild(guild).teams() as teams:
+            del teams[team1]["members"][str(member1)]
+        async with cog.config.guild(guild).users() as users:
+            users.remove(str(member1))
+
+    async def simplesign(self, ctx, guild, team1, member1: discord.Member):
+        cog = self.bot.get_cog("SimLeague")
+        users = await cog.config.guild(guild).users()
+        if member1.id in users:
+            return await ctx.send("User is currently not a free agent.")
+        async with cog.config.guild(guild).teams() as teams:
+            role = guild.get_role(teams[team1]["role"])
+            if role is not None:
+                await member1.add_roles(role, reason=f"Signed for {team1}")
+            teams[team1]["members"][str(member1.id)] = member1.name
+        async with cog.config.guild(guild).users() as users:
+            users.append(str(member1.id))
+        await self.posttransfer(ctx, "New signing!!", member1, "(free agent)", team1)
+
     async def team_delete(self, ctx, team):
         cog = self.bot.get_cog("SimLeague")
         async with cog.config.guild(ctx.guild).teams() as teams:

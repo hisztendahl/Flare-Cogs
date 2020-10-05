@@ -181,6 +181,22 @@ class TeamsetMixin(MixinMeta):
         await self.swap(ctx, ctx.guild, team1, player1, team2, player2)
         await ctx.tick()
 
+    @admintransfer.command(name="purge")
+    async def _adminpurge(self, ctx, team1, player1):
+        """Purge a player from a team."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        await self.purge(ctx, ctx.guild, team1, player1)
+        await ctx.tick()
+
+    @admintransfer.command(name="simplesign")
+    async def _adminsimplesign(self, ctx, team1, player1: discord.Member):
+        """Sign a player for a team."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        await self.simplesign(ctx, ctx.guild, team1, player1)
+        await ctx.tick()
+
     @admintransfer.command(name="sign")
     async def _adminsign(self, ctx, team1, player1: discord.Member, player2: discord.Member):
         """Release a player and sign a free agent."""

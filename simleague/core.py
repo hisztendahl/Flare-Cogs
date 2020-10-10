@@ -742,7 +742,6 @@ class SimHelper(MixinMeta):
             font=general_info_fnt,
             fill=label_text_color,
         )
-        # TODO: Extract this
         corner_comment = random.choice(
             [
                 "{} lines up an inswinging corner...",
@@ -930,7 +929,7 @@ class SimHelper(MixinMeta):
 
         draw.text(
             (label_align, 38),
-            textwrap.fill(comment, 45),
+            textwrap.fill(comment, 43),
             font=general_u_font,
             fill=label_text_color,
         )
@@ -1397,6 +1396,393 @@ class SimHelper(MixinMeta):
         result.save(file, "PNG", quality=100)
         file.seek(0)
         image = discord.File(file, filename="pikaleague.png")
+        return image
+
+    async def matchstats(self, ctx, team1, team2, score, yc, rc, chances, fouls):
+        theme = await self.config.guild(ctx.guild).theme()
+        font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
+        name_fnt = ImageFont.truetype(font_bold_file, 22)
+        header_u_fnt = ImageFont.truetype(font_bold_file, 18)
+        cog = self.bot.get_cog("SimLeague")
+        teams = await cog.config.guild(ctx.guild).teams()
+        server_icon = await self.getimg(
+            teams[team1]["logo"] if teams[team1]["logo"] is not None else DEFAULT_URL
+        )
+        server_icon2 = await self.getimg(
+            teams[team2]["logo"] if teams[team2]["logo"] is not None else DEFAULT_URL
+        )
+
+        try:
+            server_icon_image = Image.open(server_icon).convert("RGBA")
+            server_icon_image2 = Image.open(server_icon2).convert("RGBA")
+        except:
+            server_icon = await self.getimg(DEFAULT_URL)
+            server_icon2 = await self.getimg(DEFAULT_URL)
+            server_icon_image = Image.open(server_icon).convert("RGBA")
+            server_icon_image2 = Image.open(server_icon2).convert("RGBA")
+
+        # set canvas
+        width = 360
+        height = 300
+        bg_color = list_to_tuple(theme["general"]["bg_color"])
+        result = Image.new("RGBA", (width, height), bg_color)
+        process = Image.new("RGBA", (width, height), bg_color)
+
+        # draw
+        draw = ImageDraw.Draw(process)
+
+        # draw transparent overlay
+        vert_pos = 5
+        left_pos = 13
+        right_pos = width - vert_pos
+        title_height = 22
+        gap = 3
+
+        fill = list_to_tuple(theme["chances"]["header_text_bg"])
+        draw.rectangle(
+            [(left_pos - 10, vert_pos), (width / 2, vert_pos + title_height)], fill=fill
+        )  # title box
+
+        content_top = vert_pos + title_height + gap
+        content_bottom = 100 - vert_pos
+
+        info_color = (30, 30, 30, 160)
+
+        # draw level circle
+        multiplier = 6
+        lvl_circle_dia = 94
+        raw_length = lvl_circle_dia * multiplier
+
+        # create mask
+        mask = Image.new("L", (raw_length, raw_length), 0)
+        draw_thumb = ImageDraw.Draw(mask)
+        draw_thumb.ellipse((0, 0) + (raw_length, raw_length), fill=255, outline=0)
+
+        # draws mask
+        total_gap = 10
+        profile_size = lvl_circle_dia - total_gap
+        raw_length = profile_size * multiplier
+        # put in profile picture
+
+        # put in server picture
+        server_size = content_bottom - content_top - 10
+        server_border_size = server_size + 4
+        radius = 20
+        light_border = (150, 150, 150, 180)
+        dark_border = (90, 90, 90, 180)
+        border_color = self._contrast(info_color, light_border, dark_border)
+
+        draw_server_border = Image.new(
+            "RGBA",
+            (server_border_size * multiplier, server_border_size * multiplier),
+            border_color,
+        )
+        draw_server_border = self._add_corners(draw_server_border, int(radius * multiplier / 2))
+        draw_server_border = draw_server_border.resize(
+            (server_border_size, server_border_size), Image.ANTIALIAS
+        )
+        server_icon_image = server_icon_image.resize(
+            (server_size * multiplier, server_size * multiplier), Image.ANTIALIAS
+        )
+        server_icon_image = self._add_corners(server_icon_image, int(radius * multiplier / 2) - 10)
+        server_icon_image = server_icon_image.resize((server_size, server_size), Image.ANTIALIAS)
+        process.paste(draw_server_border, (8, content_top + 3), draw_server_border)
+        process.paste(server_icon_image, (10, content_top + 5), server_icon_image)
+
+        server_icon_image2 = server_icon_image2.resize(
+            (server_size * multiplier, server_size * multiplier), Image.ANTIALIAS
+        )
+        server_icon_image2 = self._add_corners(
+            server_icon_image2, int(radius * multiplier / 2) - 10
+        )
+        server_icon_image2 = server_icon_image2.resize((server_size, server_size), Image.ANTIALIAS)
+        process.paste(
+            draw_server_border, (width - server_size - 12, content_top + 3), draw_server_border
+        )
+        process.paste(
+            server_icon_image2, (width - server_size - 10, content_top + 5), server_icon_image2
+        )
+
+        start_vert_pos = 100
+        highlight_color = list_to_tuple(theme["chances"]["header_text_col"])
+
+        draw.rectangle(
+            [(left_pos - 10, start_vert_pos), (right_pos, start_vert_pos + title_height)],
+            fill=fill,
+        )  # score box
+        if score[0] != score[1]:
+            s_left_pos = (
+                (left_pos - 10, start_vert_pos)
+                if score[0] > score[1]
+                else (right_pos - 60, start_vert_pos)
+            )
+            s_right_pos = (
+                (left_pos + 50, start_vert_pos + title_height)
+                if score[0] > score[1]
+                else (right_pos, start_vert_pos + title_height)
+            )
+            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # score box highlight
+
+        draw.rectangle(
+            [
+                (left_pos - 10, start_vert_pos + 40),
+                (right_pos, start_vert_pos + 40 + title_height),
+            ],
+            fill=fill,
+        )  # chances box
+        if chances[0] != chances[1]:
+            s_left_pos = (
+                (left_pos - 10, start_vert_pos + 40)
+                if chances[0] > chances[1]
+                else (right_pos - 60, start_vert_pos + 40)
+            )
+            s_right_pos = (
+                (left_pos + 50, start_vert_pos + 40 + title_height)
+                if chances[0] > chances[1]
+                else (right_pos, start_vert_pos + title_height + 40)
+            )
+            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # shots box highlight
+
+        draw.rectangle(
+            [
+                (left_pos - 10, start_vert_pos + 80),
+                (right_pos, start_vert_pos + 80 + title_height),
+            ],
+            fill=fill,
+        )  # fouls box
+        if fouls[0] != fouls[1]:
+            s_left_pos = (
+                (left_pos - 10, start_vert_pos + 80)
+                if fouls[0] > fouls[1]
+                else (right_pos - 60, start_vert_pos + 80)
+            )
+            s_right_pos = (
+                (left_pos + 50, start_vert_pos + 80 + title_height)
+                if fouls[0] > fouls[1]
+                else (right_pos, start_vert_pos + title_height + 80)
+            )
+            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # fouls box highlight
+
+        draw.rectangle(
+            [
+                (left_pos - 10, start_vert_pos + 120),
+                (right_pos, start_vert_pos + 120 + title_height),
+            ],
+            fill=fill,
+        )  # yellow box
+        if yc[0] != yc[1]:
+            s_left_pos = (
+                (left_pos - 10, start_vert_pos + 120)
+                if yc[0] > yc[1]
+                else (right_pos - 60, start_vert_pos + 120)
+            )
+            s_right_pos = (
+                (left_pos + 50, start_vert_pos + 120 + title_height)
+                if yc[0] > yc[1]
+                else (right_pos, start_vert_pos + title_height + 120)
+            )
+            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # yellow box highlight
+
+        draw.rectangle(
+            [
+                (left_pos - 10, start_vert_pos + 160),
+                (right_pos, start_vert_pos + 160 + title_height),
+            ],
+            fill=fill,
+        )  # red box
+        if rc[0] != rc[1]:
+            s_left_pos = (
+                (left_pos - 10, start_vert_pos + 160)
+                if rc[0] > rc[1]
+                else (right_pos - 60, start_vert_pos + 160)
+            )
+            s_right_pos = (
+                (left_pos + 50, start_vert_pos + 160 + title_height)
+                if rc[0] > rc[1]
+                else (right_pos, start_vert_pos + title_height + 160)
+            )
+            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # red box highlight
+
+        def _write_unicode(text, init_x, y, font, unicode_font, fill):
+            write_pos = init_x
+
+            for char in text:
+                if char.isalnum() or char in string.punctuation or char in string.whitespace:
+                    draw.text((write_pos, y), char, font=font, fill=fill)
+                    write_pos += font.getsize(char)[0]
+                else:
+                    draw.text((write_pos, y), "{}".format(char), font=unicode_font, fill=fill)
+                    write_pos += unicode_font.getsize(char)[0]
+
+        # draw level box
+        level_left = width / 2
+        level_right = right_pos
+        fill = list_to_tuple(theme["chances"]["header_text_col"])
+        draw.rectangle(
+            [(level_left, vert_pos), (level_right, vert_pos + title_height)], fill=fill
+        )  # box
+        fill = list_to_tuple(theme["chances"]["header_text_bg"])
+        left_text_align = 30
+        text_color = list_to_tuple(theme["chances"]["header_text_col"])
+        # goal text
+
+        _write_unicode(
+            "{}".format(team1.upper()), 7, vert_pos + 3, name_fnt, header_u_fnt, text_color,
+        )
+        offset = len(team2) * 8
+        _write_unicode(
+            "{}".format(team2.upper()),
+            width - offset - 10,
+            vert_pos + 3,
+            name_fnt,
+            header_u_fnt,
+            fill,
+        )
+
+        label_text_color = list_to_tuple(theme["chances"]["desc_text_col"])
+        _write_unicode(
+            "MATCH REPORT",
+            width / 2 - (8 * (len("MATCH REPORT") / 2)),
+            content_top + 25,
+            name_fnt,
+            header_u_fnt,
+            label_text_color,
+        )
+
+        # SCORES
+        _write_unicode(
+            str(score[0]),
+            left_text_align - (5 if len(str(score[0])) > 1 else 0),
+            start_vert_pos + 3,
+            name_fnt,
+            header_u_fnt,
+            text_color if score[0] <= score[1] else "#FFF",
+        )
+        _write_unicode(
+            "SCORE",
+            width / 2 - (8 * (len("SCORE") / 2)),
+            start_vert_pos + 3,
+            name_fnt,
+            header_u_fnt,
+            text_color,
+        )
+        _write_unicode(
+            str(score[1]),
+            width - left_text_align - 7 - (5 if len(str(score[1])) > 1 else 0),
+            start_vert_pos + 3,
+            name_fnt,
+            header_u_fnt,
+            text_color if score[0] >= score[1] else "#FFF",
+        )
+
+        # CHANCES
+        _write_unicode(
+            str(chances[0]),
+            left_text_align - (5 if len(str(chances[0])) > 1 else 0),
+            start_vert_pos + 43,
+            name_fnt,
+            header_u_fnt,
+            text_color if chances[0] <= chances[1] else "#FFF",
+        )
+        _write_unicode(
+            "SHOTS",
+            width / 2 - (8 * (len("SHOTS") / 2)),
+            start_vert_pos + 43,
+            name_fnt,
+            header_u_fnt,
+            text_color,
+        )
+        _write_unicode(
+            str(chances[1]),
+            width - left_text_align - 7 - (5 if len(str(chances[1])) > 1 else 0),
+            start_vert_pos + 43,
+            name_fnt,
+            header_u_fnt,
+            text_color if chances[0] >= chances[1] else "#FFF",
+        )
+
+        # FOULS
+        _write_unicode(
+            str(fouls[0]),
+            left_text_align - (5 if len(str(fouls[0])) > 1 else 0),
+            start_vert_pos + 83,
+            name_fnt,
+            header_u_fnt,
+            text_color if fouls[0] <= fouls[1] else "#FFF",
+        )
+        _write_unicode(
+            "FOULS",
+            width / 2 - (8 * (len("FOULS") / 2)),
+            start_vert_pos + 83,
+            name_fnt,
+            header_u_fnt,
+            text_color,
+        )
+        _write_unicode(
+            str(fouls[1]),
+            width - left_text_align - 7 - (5 if len(str(fouls[1])) > 1 else 0),
+            start_vert_pos + 83,
+            name_fnt,
+            header_u_fnt,
+            text_color if fouls[0] >= fouls[1] else "#FFF",
+        )
+
+        # YELLOWS
+        _write_unicode(
+            str(yc[0]),
+            left_text_align - (5 if len(str(yc[0])) > 1 else 0),
+            start_vert_pos + 123,
+            name_fnt,
+            header_u_fnt,
+            text_color if yc[0] <= yc[1] else "#FFF",
+        )
+        _write_unicode(
+            "YELLOW CARDS",
+            width / 2 - (8 * (len("YELLOW CARDS") / 2)),
+            start_vert_pos + 123,
+            name_fnt,
+            header_u_fnt,
+            text_color,
+        )
+        _write_unicode(
+            str(yc[1]),
+            width - left_text_align - 7 - (5 if len(str(yc[1])) > 1 else 0),
+            start_vert_pos + 123,
+            name_fnt,
+            header_u_fnt,
+            text_color if yc[0] >= yc[1] else "#FFF",
+        )
+
+        # REDS
+        _write_unicode(
+            str(rc[0]),
+            left_text_align - (5 if len(str(rc[0])) > 1 else 0),
+            start_vert_pos + 163,
+            name_fnt,
+            header_u_fnt,
+            text_color if rc[0] <= rc[1] else "#FFF",
+        )
+        _write_unicode(
+            "RED CARDS",
+            width / 2 - (8 * (len("RED CARDS") / 2)),
+            start_vert_pos + 163,
+            name_fnt,
+            header_u_fnt,
+            text_color,
+        )
+        _write_unicode(
+            str(rc[1]),
+            width - left_text_align - 7 - (5 if len(str(rc[1])) > 1 else 0),
+            start_vert_pos + 163,
+            name_fnt,
+            header_u_fnt,
+            text_color if rc[0] >= rc[1] else "#FFF",
+        )
+        result = Image.alpha_composite(result, process)
+        file = BytesIO()
+        result.save(file, "PNG", quality=100)
+        file.seek(0)
+        image = discord.File(file, filename="matchstats.png")
         return image
 
     async def get(self, url):

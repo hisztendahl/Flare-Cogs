@@ -20,10 +20,10 @@ COMMENT_TYPES = ["CHANCE!", "FOUL!"]
 FOULS = [
     "Foul by {} ({}).",
     "Late tackle from {} ({}).",
-    "{} ({}) wins a free kick in the attacking half.",
-    "{} ({}) wins a free kick in the defensive half.",
-    "{} ({}) wins a free kick on the left wing.",
-    "{} ({}) wins a free kick on the right wing.",
+    "{} ({}) concedes a free kick in the attacking half.",
+    "{} ({}) concedes a free kick in the defensive half.",
+    "{} ({}) concedes a free kick on the left wing.",
+    "{} ({}) concedes a free kick on the right wing.",
 ]
 
 

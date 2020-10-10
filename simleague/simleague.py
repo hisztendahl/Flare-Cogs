@@ -537,9 +537,20 @@ class SimLeague(
         team1players = list(teams[team1]["members"].keys())
         team2players = list(teams[team2]["members"].keys())
         logos = ["sky", "bt", "bein", "bbc"]
-        yellowcards = []
+        yellowcards = {}
+        redcards = {}
         logo = random.choice(logos)
         motm = {}
+        for t1p in team1players:
+            user = self.bot.get_user(int(t1p))
+            if user is None:
+                user = await self.bot.fetch_user(int(t1p))
+            motm[user] = 5
+        for t2p in team2players:
+            user = self.bot.get_user(int(t2p))
+            if user is None:
+                user = await self.bot.fetch_user(int(t2p))
+            motm[user] = 5
         events = False
 
         # Team 1 stuff
@@ -552,6 +563,8 @@ class SimLeague(
         rc_count1 = 0
         score_count1 = 0
         injury_count1 = 0
+        chances_count1 = 0
+        fouls_count1 = 0
         team1Stats = [
             team1,
             yC_team1,
@@ -563,6 +576,8 @@ class SimLeague(
             rc_count1,
             score_count1,
             injury_count1,
+            chances_count1,
+            fouls_count1,
         ]
 
         # Team 2 stuff
@@ -575,6 +590,8 @@ class SimLeague(
         rc_count2 = 0
         score_count2 = 0
         injury_count2 = 0
+        chances_count2 = 0
+        fouls_count2 = 0
         team2Stats = [
             team2,
             yC_team2,
@@ -586,6 +603,8 @@ class SimLeague(
             rc_count2,
             score_count2,
             injury_count2,
+            chances_count2,
+            fouls_count2,
         ]
 
         async def TeamWeightChance(
@@ -700,6 +719,7 @@ class SimLeague(
                     )
                     playerGoal = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
                     teamStats[8] += 1
+                    teamStats[10] += 1
                     async with self.config.guild(ctx.guild).stats() as stats:
                         if playerGoal[1] not in stats["goals"]:
                             stats["goals"][playerGoal[1]] = 1
@@ -716,9 +736,9 @@ class SimLeague(
                         if user2 is None:
                             user2 = await self.bot.fetch_user(int(playerGoal[2]))
                         if user2 not in motm:
-                            motm[user2] = 1
+                            motm[user2] = 0.75
                         else:
-                            motm[user2] += 1
+                            motm[user2] += 0.75
                         if user2.id not in assists:
                             assists[user2.id] = 1
                         else:
@@ -727,9 +747,9 @@ class SimLeague(
                     if user is None:
                         user = await self.bot.fetch_user(int(playerGoal[1]))
                     if user not in motm:
-                        motm[user] = 2
+                        motm[user] = 1.5
                     else:
-                        motm[user] += 2
+                        motm[user] += 1.5
                     if user.id not in goals:
                         goals[user.id] = 1
                     else:
@@ -771,6 +791,11 @@ class SimLeague(
                     playerPenalty = await PlayerGenerator(
                         3, teamStats[0], teamStats[1], teamStats[2]
                     )
+                    teamStats[10] += 1
+                    if teamStats[0] == team1:
+                        team1Stats[11] += 1
+                    else:
+                        team2Stats[11] += 1
                     user = self.bot.get_user(int(playerPenalty[1]))
                     if user is None:
                         user = await self.bot.fetch_user(int(playerPenalty[1]))
@@ -787,6 +812,10 @@ class SimLeague(
                         user = self.bot.get_user(int(playerPenalty[1]))
                         if user is None:
                             user = await self.bot.fetch_user(int(playerPenalty[1]))
+                        if user not in motm:
+                            motm[user] = 0.25
+                        else:
+                            motm[user] += 0.25
                         image = await self.simpic(
                             ctx,
                             str(min),
@@ -815,9 +844,9 @@ class SimLeague(
                         if user is None:
                             user = await self.bot.fetch_user(int(playerPenalty[1]))
                         if user not in motm:
-                            motm[user] = 2
+                            motm[user] = 1.5
                         else:
-                            motm[user] += 2
+                            motm[user] += 1.5
                         if user.id not in goals:
                             goals[user.id] = 1
                         else:
@@ -843,6 +872,7 @@ class SimLeague(
                     playerYellow = await PlayerGenerator(
                         1, teamStats[0], teamStats[1], teamStats[2]
                     )
+                    teamStats[11] += 1
                     if playerYellow is not None:
                         if len(playerYellow) == 4:
                             teamStats[7] += 1
@@ -864,6 +894,14 @@ class SimLeague(
                                 motm[user] = -2
                             else:
                                 motm[user] += -2
+                            if user.id not in yellowcards:
+                                yellowcards[user.id] = 1
+                            else:
+                                yellowcards[user.id] += 1
+                            if user.id not in redcards:
+                                redcards[user.id] = 1
+                            else:
+                                redcards[user.id] += 1
                             user2 = self.bot.get_user(int(playerYellow[2]))
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerYellow[2]))
@@ -886,7 +924,6 @@ class SimLeague(
                             await ctx.send(file=image)
                         else:
                             teamStats[1].append(playerYellow[1])
-                            yellowcards.append(str(playerYellow[1]))
                             async with self.config.guild(ctx.guild).stats() as stats:
                                 if playerYellow[1] not in stats["yellows"]:
                                     stats["yellows"][playerYellow[1]] = 1
@@ -900,6 +937,10 @@ class SimLeague(
                                 motm[user] = -1
                             else:
                                 motm[user] += -1
+                            if user.id not in yellowcards:
+                                yellowcards[user.id] = 1
+                            else:
+                                yellowcards[user.id] += 1
                             user2 = self.bot.get_user(int(playerYellow[2]))
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerYellow[2]))
@@ -925,6 +966,7 @@ class SimLeague(
                     playerRed = await PlayerGenerator(2, teamStats[0], teamStats[1], teamStats[2])
                     if playerRed is not None:
                         teamStats[7] += 1
+                        teamStats[11] += 1
                         async with self.config.guild(ctx.guild).stats() as stats:
                             if playerRed[1] not in stats["reds"]:
                                 stats["reds"][playerRed[1]] = 1
@@ -940,6 +982,10 @@ class SimLeague(
                             motm[user] = -2
                         else:
                             motm[user] += -2
+                        if user.id not in redcards:
+                            redcards[user.id] = 1
+                        else:
+                            redcards[user.id] += 1
                         user2 = self.bot.get_user(int(playerRed[2]))
                         if user2 is None:
                             user2 = await self.bot.fetch_user(int(playerRed[2]))
@@ -974,6 +1020,7 @@ class SimLeague(
                         playerCorner = await PlayerGenerator(
                             0, teamStats[0], teamStats[1], teamStats[2], True
                         )
+                        teamStats[10] += 1
                         events = True
                         user = self.bot.get_user(int(playerCorner[1]))
                         if user is None:
@@ -993,6 +1040,10 @@ class SimLeague(
                             user2 = self.bot.get_user(int(playerCorner[2]))
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerCorner[2]))
+                            if user2 not in motm:
+                                motm[user2] = 0.25
+                            else:
+                                motm[user2] += 0.25
                             image = await self.simpic(
                                 ctx,
                                 str(min),
@@ -1021,9 +1072,9 @@ class SimLeague(
                             if user is None:
                                 user = await self.bot.fetch_user(int(playerCorner[1]))
                             if user not in motm:
-                                motm[user] = 1
+                                motm[user] = 0.75
                             else:
-                                motm[user] += 1
+                                motm[user] += 0.75
                             if user.id not in assists:
                                 assists[user.id] = 1
                             else:
@@ -1032,9 +1083,9 @@ class SimLeague(
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerCorner[2]))
                             if user2 not in motm:
-                                motm[user2] = 2
+                                motm[user2] = 1.5
                             else:
-                                motm[user2] += 2
+                                motm[user2] += 1.5
                             if user2.id not in goals:
                                 goals[user2.id] = 1
                             else:
@@ -1072,7 +1123,16 @@ class SimLeague(
                     user = self.bot.get_user(int(playerComment[1]))
                     if user is None:
                         user = await self.bot.fetch_user(int(playerComment[1]))
-                    image = await self.commentimg(ctx, str(playerComment[0]), str(min), user)
+                    ct = random.randint(0, 1)
+                    if ct < 1:
+                        teamStats[10] += 1
+                    else:
+                        teamStats[11] += 1
+                    if user not in motm:
+                        motm[user] = 0.25 if ct < 1 else -0.25
+                    else:
+                        motm[user] += 0.25 if ct < 1 else -0.25
+                    image = await self.commentimg(ctx, str(playerComment[0]), str(min), user, ct)
                     await ctx.send(file=image)
 
             if events is False:
@@ -1095,6 +1155,7 @@ class SimLeague(
                             0, teamStats[0], teamStats[1], teamStats[2]
                         )
                         teamStats[8] += 1
+                        teamStats[10] += 1
                         async with self.config.guild(ctx.guild).stats() as stats:
                             if playerGoal[1] not in stats["goals"]:
                                 stats["goals"][playerGoal[1]] = 1
@@ -1110,9 +1171,9 @@ class SimLeague(
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerGoal[2]))
                             if user2 not in motm:
-                                motm[user2] = 1
+                                motm[user2] = 0.75
                             else:
-                                motm[user2] += 1
+                                motm[user2] += 0.75
                             if user2.id not in assists:
                                 assists[user2.id] = 1
                             else:
@@ -1122,9 +1183,9 @@ class SimLeague(
                         if user is None:
                             user = await self.bot.fetch_user(int(playerGoal[1]))
                         if user not in motm:
-                            motm[user] = 2
+                            motm[user] = 1.5
                         else:
-                            motm[user] += 2
+                            motm[user] += 1.5
                         if user.id not in goals:
                             goals[user.id] = 1
                         else:
@@ -1174,8 +1235,17 @@ class SimLeague(
                         user = self.bot.get_user(int(playerComment[1]))
                         if user is None:
                             user = await self.bot.fetch_user(int(playerComment[1]))
+                        ct = random.randint(0, 1)
+                        if ct < 1:
+                            teamStats[10] += 1
+                        else:
+                            teamStats[11] += 1
+                        if user not in motm:
+                            motm[user] = 0.25 if ct < 1 else -0.25
+                        else:
+                            motm[user] += 0.25 if ct < 1 else -0.25
                         image = await self.commentimg(
-                            ctx, str(playerComment[0]), str(min) + "+" + str(i + 1), user
+                            ctx, str(playerComment[0]), str(min) + "+" + str(i + 1), user, ct
                         )
                         await ctx.send(file=image)
 
@@ -1207,6 +1277,7 @@ class SimLeague(
                             0, teamStats[0], teamStats[1], teamStats[2]
                         )
                         teamStats[8] += 1
+                        teamStats[10] += 1
                         async with self.config.guild(ctx.guild).stats() as stats:
                             if playerGoal[1] not in stats["goals"]:
                                 stats["goals"][playerGoal[1]] = 1
@@ -1222,9 +1293,9 @@ class SimLeague(
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerGoal[2]))
                             if user2 not in motm:
-                                motm[user2] = 1
+                                motm[user2] = 0.75
                             else:
-                                motm[user2] += 1
+                                motm[user2] += 0.75
                             if user2.id not in assists:
                                 assists[user2.id] = 1
                             else:
@@ -1234,9 +1305,9 @@ class SimLeague(
                         if user is None:
                             user = await self.bot.fetch_user(int(playerGoal[1]))
                         if user not in motm:
-                            motm[user] = 2
+                            motm[user] = 1.5
                         else:
-                            motm[user] += 2
+                            motm[user] += 1.5
                         if user.id not in goals:
                             goals[user.id] = 1
                         else:
@@ -1279,15 +1350,20 @@ class SimLeague(
                         )
 
                         events = True
-                        if len(playerComment) == 3:
-                            user2 = self.bot.get_user(int(playerComment[2]))
-                            if user2 is None:
-                                user2 = await self.bot.fetch_user(int(playerComment[2]))
                         user = self.bot.get_user(int(playerComment[1]))
                         if user is None:
                             user = await self.bot.fetch_user(int(playerComment[1]))
+                        ct = random.randint(0, 1)
+                        if ct < 1:
+                            teamStats[10] += 1
+                        else:
+                            teamStats[11] += 1
+                        if user not in motm:
+                            motm[user] = 0.25 if ct < 1 else -0.25
+                        else:
+                            motm[user] += 0.25 if ct < 1 else -0.25
                         image = await self.commentimg(
-                            ctx, str(playerComment[0]), str(min) + "+" + str(i + 1), user
+                            ctx, str(playerComment[0]), str(min) + "+" + str(i + 1), user, ct
                         )
                         await ctx.send(file=image)
 
@@ -1341,11 +1417,21 @@ class SimLeague(
         await self.config.guild(ctx.guild).active.set(False)
         await self.config.guild(ctx.guild).started.set(False)
         await self.config.guild(ctx.guild).betteams.set([])
+        image = await self.matchstats(
+            ctx,
+            team1,
+            team2,
+            (team1Stats[8], team2Stats[8]),
+            (len(team1Stats[1]), len(team2Stats[1])),
+            (len(team1Stats[2]), len(team2Stats[2])),
+            (team1Stats[10], team2Stats[10]),
+            (team1Stats[11], team2Stats[11]),
+        )
+        await ctx.send(file=image)
         if ctx.guild.id in self.bets:
             self.bets[ctx.guild.id] = {}
         if motm:
-            motmwinner = sorted(motm, key=motm.get, reverse=True)
-            motmwinner = motmwinner[0]
+            motmwinner = sorted(motm, key=motm.get, reverse=True)[0]
             if motmwinner.id in goals:
                 motmgoals = goals[motmwinner.id]
             else:
@@ -1373,6 +1459,21 @@ class SimLeague(
                 else:
                     stats["motm"][str(motmwinner.id)] += 1
             await ctx.send(file=im)
+        a = []  # PrettyTable(["Player", "G", "A", "YC, "RC", "Note"])
+        for x in sorted(motm, key=motm.get, reverse=True):
+            a.append(
+                [
+                    x.name[:10]
+                    + f" ({team1[:3].upper() if str(x.id) in teams[team1]['members'].keys() else team2[:3].upper()})",
+                    goals[x.id] if x.id in goals else "-",
+                    assists[x.id] if x.id in assists else "-",
+                    yellowcards[x.id] if x.id in yellowcards else "-",
+                    redcards[x.id] if x.id in redcards else "-",
+                    motm[x] if motm[x] <= 10 else 10,
+                ]
+            )
+        tab = tabulate(a, headers=["Player", "G", "A", "YC", "RC", "Note"])
+        await ctx.send(box(tab))
         if t is not None:
             await ctx.send("Bet Winners:\n" + t)
 
@@ -1380,7 +1481,7 @@ class SimLeague(
     @commands.cooldown(rate=1, per=30, type=commands.BucketType.guild)
     @commands.max_concurrency(1, per=commands.BucketType.guild)
     @commands.command(aliases=["playsimcup", "simulatecup"])
-    async def simcup(self, ctx, team1: str, team2: str, cupmode=False):
+    async def simcup(self, ctx, team1: str, team2: str):
         """Simulate a cup game between two teams."""
         teams = await self.config.guild(ctx.guild).teams()
         cupgames = await self.config.guild(ctx.guild).cupgames()
@@ -1459,9 +1560,20 @@ class SimLeague(
         team1players = list(teams[team1]["members"].keys())
         team2players = list(teams[team2]["members"].keys())
         logos = ["sky", "bt", "bein", "bbc"]
-        yellowcards = []
+        yellowcards = {}
+        redcards = {}
         logo = random.choice(logos)
         motm = {}
+        for t1p in team1players:
+            user = self.bot.get_user(int(t1p))
+            if user is None:
+                user = await self.bot.fetch_user(int(t1p))
+            motm[user] = 5
+        for t2p in team2players:
+            user = self.bot.get_user(int(t2p))
+            if user is None:
+                user = await self.bot.fetch_user(int(t2p))
+            motm[user] = 5
         events = False
 
         # Team 1 stuff
@@ -1475,6 +1587,8 @@ class SimLeague(
         score_count1 = 0
         penalty_count1 = 0
         injury_count1 = 0
+        chances_count1 = 0
+        fouls_count1 = 0
         team1Stats = [
             team1,
             yC_team1,
@@ -1487,6 +1601,8 @@ class SimLeague(
             score_count1,
             injury_count1,
             penalty_count1,
+            chances_count1,
+            fouls_count1,
         ]
 
         # Team 2 stuff
@@ -1500,6 +1616,8 @@ class SimLeague(
         score_count2 = 0
         penalty_count2 = 0
         injury_count2 = 0
+        chances_count2 = 0
+        fouls_count2 = 0
         team2Stats = [
             team2,
             yC_team2,
@@ -1512,6 +1630,8 @@ class SimLeague(
             score_count2,
             injury_count2,
             penalty_count2,
+            chances_count2,
+            fouls_count2,
         ]
 
         async def TeamWeightChance(
@@ -1627,6 +1747,7 @@ class SimLeague(
                     )
                     playerGoal = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
                     teamStats[8] += 1
+                    teamStats[11] += 1
                     async with self.config.guild(ctx.guild).cupstats() as cupstats:
                         if playerGoal[1] not in cupstats["goals"]:
                             cupstats["goals"][playerGoal[1]] = 1
@@ -1643,9 +1764,9 @@ class SimLeague(
                         if user2 is None:
                             user2 = await self.bot.fetch_user(int(playerGoal[2]))
                         if user2 not in motm:
-                            motm[user2] = 1
+                            motm[user2] = 0.75
                         else:
-                            motm[user2] += 1
+                            motm[user2] += 0.75
                         if user2.id not in assists:
                             assists[user2.id] = 1
                         else:
@@ -1654,9 +1775,9 @@ class SimLeague(
                     if user is None:
                         user = await self.bot.fetch_user(int(playerGoal[1]))
                     if user not in motm:
-                        motm[user] = 2
+                        motm[user] = 1.5
                     else:
-                        motm[user] += 2
+                        motm[user] += 1.5
                     if user.id not in goals:
                         goals[user.id] = 1
                     else:
@@ -1698,6 +1819,11 @@ class SimLeague(
                     playerPenalty = await PlayerGenerator(
                         3, teamStats[0], teamStats[1], teamStats[2]
                     )
+                    teamStats[11] += 1
+                    if teamStats[0] == team1:
+                        team1Stats[12] += 1
+                    else:
+                        team2Stats[12] += 1
                     user = self.bot.get_user(int(playerPenalty[1]))
                     if user is None:
                         user = await self.bot.fetch_user(int(playerPenalty[1]))
@@ -1717,6 +1843,10 @@ class SimLeague(
                         user = self.bot.get_user(int(playerPenalty[1]))
                         if user is None:
                             user = await self.bot.fetch_user(int(playerPenalty[1]))
+                        if user not in motm:
+                            motm[user] = 0.25
+                        else:
+                            motm[user] += 0.25
                         image = await self.simpic(
                             ctx,
                             str(min),
@@ -1748,9 +1878,9 @@ class SimLeague(
                         if user is None:
                             user = await self.bot.fetch_user(int(playerPenalty[1]))
                         if user not in motm:
-                            motm[user] = 2
+                            motm[user] = 1.5
                         else:
-                            motm[user] += 2
+                            motm[user] += 1.5
                         if user.id not in goals:
                             goals[user.id] = 1
                         else:
@@ -1776,6 +1906,7 @@ class SimLeague(
                     playerYellow = await PlayerGenerator(
                         1, teamStats[0], teamStats[1], teamStats[2]
                     )
+                    teamStats[12] += 1
                     if playerYellow is not None:
                         if len(playerYellow) == 4:
                             teamStats[7] += 1
@@ -1798,6 +1929,14 @@ class SimLeague(
                             else:
                                 motm[user] += -2
                             user2 = self.bot.get_user(int(playerYellow[2]))
+                            if user.id not in yellowcards:
+                                yellowcards[user.id] = 1
+                            else:
+                                yellowcards[user.id] += 1
+                            if user.id not in redcards:
+                                redcards[user.id] = 1
+                            else:
+                                redcards[user.id] += 1
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerYellow[2]))
                             image = await self.simpic(
@@ -1819,7 +1958,6 @@ class SimLeague(
                             await ctx.send(file=image)
                         else:
                             teamStats[1].append(playerYellow[1])
-                            yellowcards.append(str(playerYellow[1]))
                             async with self.config.guild(ctx.guild).cupstats() as cupstats:
                                 if playerYellow[1] not in cupstats["yellows"]:
                                     cupstats["yellows"][playerYellow[1]] = 1
@@ -1833,6 +1971,10 @@ class SimLeague(
                                 motm[user] = -1
                             else:
                                 motm[user] += -1
+                            if user.id not in yellowcards:
+                                yellowcards[user.id] = 1
+                            else:
+                                yellowcards[user.id] += 1
                             user2 = self.bot.get_user(int(playerYellow[2]))
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerYellow[2]))
@@ -1858,6 +2000,7 @@ class SimLeague(
                     playerRed = await PlayerGenerator(2, teamStats[0], teamStats[1], teamStats[2])
                     if playerRed is not None:
                         teamStats[7] += 1
+                        teamStats[12] += 1
                         async with self.config.guild(ctx.guild).cupstats() as cupstats:
                             if playerRed[1] not in cupstats["reds"]:
                                 cupstats["reds"][playerRed[1]] = 1
@@ -1873,6 +2016,10 @@ class SimLeague(
                             motm[user] = -2
                         else:
                             motm[user] += -2
+                        if user.id not in redcards:
+                            redcards[user.id] = 1
+                        else:
+                            redcards[user.id] += 1
                         user2 = self.bot.get_user(int(playerRed[2]))
                         if user2 is None:
                             user2 = await self.bot.fetch_user(int(playerRed[2]))
@@ -1907,6 +2054,7 @@ class SimLeague(
                         playerCorner = await PlayerGenerator(
                             0, teamStats[0], teamStats[1], teamStats[2], True
                         )
+                        teamStats[11] += 1
                         events = True
                         user = self.bot.get_user(int(playerCorner[1]))
                         if user is None:
@@ -1926,6 +2074,10 @@ class SimLeague(
                             user2 = self.bot.get_user(int(playerCorner[2]))
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerCorner[2]))
+                            if user2 not in motm:
+                                motm[user2] = 0.25
+                            else:
+                                motm[user2] += 0.25
                             image = await self.simpic(
                                 ctx,
                                 str(min),
@@ -1954,9 +2106,9 @@ class SimLeague(
                             if user is None:
                                 user = await self.bot.fetch_user(int(playerCorner[1]))
                             if user not in motm:
-                                motm[user] = 1
+                                motm[user] = 0.75
                             else:
-                                motm[user] += 1
+                                motm[user] += 0.75
                             if user.id not in assists:
                                 assists[user.id] = 1
                             else:
@@ -1965,9 +2117,9 @@ class SimLeague(
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerCorner[2]))
                             if user2 not in motm:
-                                motm[user2] = 2
+                                motm[user2] = 1.5
                             else:
-                                motm[user2] += 2
+                                motm[user2] += 1.5
                             if user2.id not in goals:
                                 goals[user2.id] = 1
                             else:
@@ -2005,7 +2157,16 @@ class SimLeague(
                     user = self.bot.get_user(int(playerComment[1]))
                     if user is None:
                         user = await self.bot.fetch_user(int(playerComment[1]))
-                    image = await self.commentimg(ctx, str(playerComment[0]), str(min), user)
+                    ct = random.randint(0, 1)
+                    if ct < 1:
+                        teamStats[11] += 1
+                    else:
+                        teamStats[12] += 1
+                    if user not in motm:
+                        motm[user] = 0.25 if ct < 1 else -0.25
+                    else:
+                        motm[user] += 0.25 if ct < 1 else -0.25
+                    image = await self.commentimg(ctx, str(playerComment[0]), str(min), user, ct)
                     await ctx.send(file=image)
 
             if events is False:
@@ -2028,6 +2189,7 @@ class SimLeague(
                             0, teamStats[0], teamStats[1], teamStats[2]
                         )
                         teamStats[8] += 1
+                        teamStats[11] += 1
                         async with self.config.guild(ctx.guild).cupstats() as cupstats:
                             if playerGoal[1] not in cupstats["goals"]:
                                 cupstats["goals"][playerGoal[1]] = 1
@@ -2043,9 +2205,9 @@ class SimLeague(
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerGoal[2]))
                             if user2 not in motm:
-                                motm[user2] = 1
+                                motm[user2] = 0.75
                             else:
-                                motm[user2] += 1
+                                motm[user2] += 0.75
                             if user2.id not in assists:
                                 assists[user2.id] = 1
                             else:
@@ -2055,9 +2217,9 @@ class SimLeague(
                         if user is None:
                             user = await self.bot.fetch_user(int(playerGoal[1]))
                         if user not in motm:
-                            motm[user] = 2
+                            motm[user] = 1.5
                         else:
-                            motm[user] += 2
+                            motm[user] += 1.5
                         if user.id not in goals:
                             goals[user.id] = 1
                         else:
@@ -2107,8 +2269,17 @@ class SimLeague(
                         user = self.bot.get_user(int(playerComment[1]))
                         if user is None:
                             user = await self.bot.fetch_user(int(playerComment[1]))
+                        ct = random.randint(0, 1)
+                        if ct < 1:
+                            teamStats[11] += 1
+                        else:
+                            teamStats[12] += 1
+                        if user not in motm:
+                            motm[user] = 0.25 if ct < 1 else -0.25
+                        else:
+                            motm[user] += 0.25 if ct < 1 else -0.25
                         image = await self.commentimg(
-                            ctx, str(playerComment[0]), str(min) + "+" + str(i + 1), user
+                            ctx, str(playerComment[0]), str(min) + "+" + str(i + 1), user, ct
                         )
                         await ctx.send(file=image)
 
@@ -2140,6 +2311,7 @@ class SimLeague(
                             0, teamStats[0], teamStats[1], teamStats[2]
                         )
                         teamStats[8] += 1
+                        teamStats[11] += 1
                         async with self.config.guild(ctx.guild).cupstats() as cupstats:
                             if playerGoal[1] not in cupstats["goals"]:
                                 cupstats["goals"][playerGoal[1]] = 1
@@ -2155,9 +2327,9 @@ class SimLeague(
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerGoal[2]))
                             if user2 not in motm:
-                                motm[user2] = 1
+                                motm[user2] = 0.75
                             else:
-                                motm[user2] += 1
+                                motm[user2] += 0.75
                             if user2.id not in assists:
                                 assists[user2.id] = 1
                             else:
@@ -2167,9 +2339,9 @@ class SimLeague(
                         if user is None:
                             user = await self.bot.fetch_user(int(playerGoal[1]))
                         if user not in motm:
-                            motm[user] = 2
+                            motm[user] = 1.5
                         else:
-                            motm[user] += 2
+                            motm[user] += 1.5
                         if user.id not in goals:
                             goals[user.id] = 1
                         else:
@@ -2212,13 +2384,18 @@ class SimLeague(
                         )
 
                         events = True
-                        if len(playerComment) == 3:
-                            user2 = self.bot.get_user(int(playerComment[2]))
-                            if user2 is None:
-                                user2 = await self.bot.fetch_user(int(playerComment[2]))
                         user = self.bot.get_user(int(playerComment[1]))
                         if user is None:
                             user = await self.bot.fetch_user(int(playerComment[1]))
+                        ct = random.randint(0, 1)
+                        if ct < 1:
+                            teamStats[11] += 1
+                        else:
+                            teamStats[12] += 1
+                        if user not in motm:
+                            motm[user] = 0.25 if ct < 1 else -0.25
+                        else:
+                            motm[user] += 0.25 if ct < 1 else -0.25
                         image = await self.commentimg(
                             ctx, str(playerComment[0]), str(min) + "+" + str(i + 1), user
                         )
@@ -2259,6 +2436,7 @@ class SimLeague(
                                 0, teamStats[0], teamStats[1], teamStats[2]
                             )
                             teamStats[8] += 1
+                            teamStats[11] += 1
                             async with self.config.guild(ctx.guild).cupstats() as cupstats:
                                 if playerGoal[1] not in cupstats["goals"]:
                                     cupstats["goals"][playerGoal[1]] = 1
@@ -2274,9 +2452,9 @@ class SimLeague(
                                 if user2 is None:
                                     user2 = await self.bot.fetch_user(int(playerGoal[2]))
                                 if user2 not in motm:
-                                    motm[user2] = 1
+                                    motm[user2] = 0.75
                                 else:
-                                    motm[user2] += 1
+                                    motm[user2] += 0.75
                                 if user2.id not in assists:
                                     assists[user2.id] = 1
                                 else:
@@ -2286,9 +2464,9 @@ class SimLeague(
                             if user is None:
                                 user = await self.bot.fetch_user(int(playerGoal[1]))
                             if user not in motm:
-                                motm[user] = 2
+                                motm[user] = 1.5
                             else:
-                                motm[user] += 2
+                                motm[user] += 1.5
                             if user.id not in goals:
                                 goals[user.id] = 1
                             else:
@@ -2338,8 +2516,17 @@ class SimLeague(
                             user = self.bot.get_user(int(playerComment[1]))
                             if user is None:
                                 user = await self.bot.fetch_user(int(playerComment[1]))
+                            ct = random.randint(0, 1)
+                            if ct < 1:
+                                teamStats[11] += 1
+                            else:
+                                teamStats[12] += 1
+                            if user not in motm:
+                                motm[user] = 0.25 if ct < 1 else -0.25
+                            else:
+                                motm[user] += 0.25 if ct < 1 else -0.25
                             image = await self.commentimg(
-                                ctx, str(playerComment[0]), str(emin), user
+                                ctx, str(playerComment[0]), str(emin), user, ct
                             )
                             await ctx.send(file=image)
 
@@ -2366,6 +2553,7 @@ class SimLeague(
                                         0, teamStats[0], teamStats[1], teamStats[2]
                                     )
                                     teamStats[8] += 1
+                                    teamStats[11] += 1
                                     async with self.config.guild(ctx.guild).cupstats() as cupstats:
                                         if playerGoal[1] not in cupstats["goals"]:
                                             cupstats["goals"][playerGoal[1]] = 1
@@ -2381,9 +2569,9 @@ class SimLeague(
                                         if user2 is None:
                                             user2 = await self.bot.fetch_user(int(playerGoal[2]))
                                         if user2 not in motm:
-                                            motm[user2] = 1
+                                            motm[user2] = 0.75
                                         else:
-                                            motm[user2] += 1
+                                            motm[user2] += 0.75
                                         if user2.id not in assists:
                                             assists[user2.id] = 1
                                         else:
@@ -2393,9 +2581,9 @@ class SimLeague(
                                     if user is None:
                                         user = await self.bot.fetch_user(int(playerGoal[1]))
                                     if user not in motm:
-                                        motm[user] = 2
+                                        motm[user] = 1.5
                                     else:
-                                        motm[user] += 2
+                                        motm[user] += 1.5
                                     if user.id not in goals:
                                         goals[user.id] = 1
                                     else:
@@ -2453,11 +2641,21 @@ class SimLeague(
                                     user = self.bot.get_user(int(playerComment[1]))
                                     if user is None:
                                         user = await self.bot.fetch_user(int(playerComment[1]))
+                                    ct = random.randint(0, 1)
+                                    if ct < 1:
+                                        teamStats[11] += 1
+                                    else:
+                                        teamStats[12] += 1
+                                    if user not in motm:
+                                        motm[user] = 0.25 if ct < 1 else -0.25
+                                    else:
+                                        motm[user] += 0.25 if ct < 1 else -0.25
                                     image = await self.commentimg(
                                         ctx,
                                         str(playerComment[0]),
                                         str(emin) + "+" + str(i + 1),
                                         user,
+                                        ct,
                                     )
                                     await ctx.send(file=image)
 
@@ -2495,6 +2693,7 @@ class SimLeague(
                                 0, teamStats[0], teamStats[1], teamStats[2]
                             )
                             teamStats[8] += 1
+                            teamStats[11] += 1
                             async with self.config.guild(ctx.guild).cupstats() as cupstats:
                                 if playerGoal[1] not in cupstats["goals"]:
                                     cupstats["goals"][playerGoal[1]] = 1
@@ -2510,9 +2709,9 @@ class SimLeague(
                                 if user2 is None:
                                     user2 = await self.bot.fetch_user(int(playerGoal[2]))
                                 if user2 not in motm:
-                                    motm[user2] = 1
+                                    motm[user2] = 0.75
                                 else:
-                                    motm[user2] += 1
+                                    motm[user2] += 0.75
                                 if user2.id not in assists:
                                     assists[user2.id] = 1
                                 else:
@@ -2522,9 +2721,9 @@ class SimLeague(
                             if user is None:
                                 user = await self.bot.fetch_user(int(playerGoal[1]))
                             if user not in motm:
-                                motm[user] = 2
+                                motm[user] = 1.5
                             else:
-                                motm[user] += 2
+                                motm[user] += 1.5
                             if user.id not in goals:
                                 goals[user.id] = 1
                             else:
@@ -2574,8 +2773,17 @@ class SimLeague(
                             user = self.bot.get_user(int(playerComment[1]))
                             if user is None:
                                 user = await self.bot.fetch_user(int(playerComment[1]))
+                            ct = random.randint(0, 1)
+                            if ct < 1:
+                                teamStats[11] += 1
+                            else:
+                                teamStats[12] += 1
+                            if user not in motm:
+                                motm[user] = 0.25 if ct < 1 else -0.25
+                            else:
+                                motm[user] += 0.25 if ct < 1 else -0.25
                             image = await self.commentimg(
-                                ctx, str(playerComment[0]), str(emin), user
+                                ctx, str(playerComment[0]), str(emin), user, ct
                             )
                             await ctx.send(file=image)
 
@@ -2602,6 +2810,7 @@ class SimLeague(
                                         0, teamStats[0], teamStats[1], teamStats[2]
                                     )
                                     teamStats[8] += 1
+                                    teamStats[11] += 1
                                     async with self.config.guild(ctx.guild).cupstats() as cupstats:
                                         if playerGoal[1] not in cupstats["goals"]:
                                             cupstats["goals"][playerGoal[1]] = 1
@@ -2617,9 +2826,9 @@ class SimLeague(
                                         if user2 is None:
                                             user2 = await self.bot.fetch_user(int(playerGoal[2]))
                                         if user2 not in motm:
-                                            motm[user2] = 1
+                                            motm[user2] = 0.75
                                         else:
-                                            motm[user2] += 1
+                                            motm[user2] += 0.75
                                         if user2.id not in assists:
                                             assists[user2.id] = 1
                                         else:
@@ -2629,9 +2838,9 @@ class SimLeague(
                                     if user is None:
                                         user = await self.bot.fetch_user(int(playerGoal[1]))
                                     if user not in motm:
-                                        motm[user] = 2
+                                        motm[user] = 1.5
                                     else:
-                                        motm[user] += 2
+                                        motm[user] += 1.5
                                     if user.id not in goals:
                                         goals[user.id] = 1
                                     else:
@@ -2689,11 +2898,21 @@ class SimLeague(
                                     user = self.bot.get_user(int(playerComment[1]))
                                     if user is None:
                                         user = await self.bot.fetch_user(int(playerComment[1]))
+                                    ct = random.randint(0, 1)
+                                    if ct < 1:
+                                        teamStats[11] += 1
+                                    else:
+                                        teamStats[12] += 1
+                                    if user not in motm:
+                                        motm[user] = 0.25 if ct < 1 else -0.25
+                                    else:
+                                        motm[user] += 0.25 if ct < 1 else -0.25
                                     image = await self.commentimg(
                                         ctx,
                                         str(playerComment[0]),
                                         str(emin) + "+" + str(i + 1),
                                         user,
+                                        ct,
                                     )
                                     await ctx.send(file=image)
 
@@ -2866,6 +3085,17 @@ class SimLeague(
         await self.config.guild(ctx.guild).betteams.set([])
         if ctx.guild.id in self.bets:
             self.bets[ctx.guild.id] = {}
+        image = await self.matchstats(
+            ctx,
+            team1,
+            team2,
+            (team1Stats[8], team2Stats[8]),
+            (len(team1Stats[1]), len(team2Stats[1])),
+            (len(team1Stats[2]), len(team2Stats[2])),
+            (team1Stats[11], team2Stats[11]),
+            (team1Stats[12], team2Stats[12]),
+        )
+        await ctx.send(file=image)
         if motm:
             motmwinner = sorted(motm, key=motm.get, reverse=True)[0]
             if motmwinner.id in goals:
@@ -2889,13 +3119,27 @@ class SimLeague(
                 motmgoals,
                 motmassists,
             )
-            if not cupmode:
-                async with self.config.guild(ctx.guild).cupstats() as cupstats:
-                    if str(motmwinner.id) not in cupstats["motm"]:
-                        cupstats["motm"][str(motmwinner.id)] = 1
-                    else:
-                        cupstats["motm"][str(motmwinner.id)] += 1
+            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                if str(motmwinner.id) not in cupstats["motm"]:
+                    cupstats["motm"][str(motmwinner.id)] = 1
+                else:
+                    cupstats["motm"][str(motmwinner.id)] += 1
             await ctx.send(file=im)
+        a = []  # PrettyTable(["Player", "G", "A", "YC, "RC", "Note"])
+        for x in sorted(motm, key=motm.get, reverse=True):
+            a.append(
+                [
+                    x.name[:10]
+                    + f" ({team1[:3].upper() if str(x.id) in teams[team1]['members'].keys() else team2[:3].upper()})",
+                    goals[x.id] if x.id in goals else "-",
+                    assists[x.id] if x.id in assists else "-",
+                    yellowcards[x.id] if x.id in yellowcards else "-",
+                    redcards[x.id] if x.id in redcards else "-",
+                    motm[x] if motm[x] <= 10 else 10,
+                ]
+            )
+        tab = tabulate(a, headers=["Player", "G", "A", "YC", "RC", "Note"])
+        await ctx.send(box(tab))
         if t is not None:
             await ctx.send("Bet Winners:\n" + t)
 

@@ -33,16 +33,20 @@ class SimthemeMixin(MixinMeta):
                     msg += "{}: {}\n".format(subkey, theme[key][subkey])
             await ctx.send(box(msg))
 
+    async def regexcolor(self, ctx, color):
+        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
+            msg = await ctx.send(f"Color {color} invalid. Please use hex colors (ie: #FFFFFF).")
+            await msg.add_reaction("\U0000274c")
+            return True
+
     @simtheme.command()
     async def background(self, ctx, color: str):
         """Events background color"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["general"]["bg_color"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["general"]["bg_color"] = f"{color}"
+                await ctx.tick()
 
-    # TODO: Add load theme option ?
     @simtheme.command()
     async def reset(self, ctx):
         """Resets all theme changes."""
@@ -83,47 +87,42 @@ class SimthemeMixin(MixinMeta):
     @chances.command(name="headerbg")
     async def headerbg(self, ctx, color: str):
         """Chances header background (commentaries)"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["chances"]["header_text_bg"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["chances"]["header_text_bg"] = f"{color}"
+                await ctx.tick()
 
     @chances.command(name="headertxt")
     async def headertext(self, ctx, color: str):
         """Chances header text (commentaries)"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["chances"]["header_text_col"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["chances"]["header_text_col"] = f"{color}"
+                await ctx.tick()
 
     @chances.command(name="timebg")
     async def headertimebg(self, ctx, color: str):
         """Chances header time background (commentaries)"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["chances"]["header_time_bg"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["chances"]["header_time_bg"] = f"{color}"
+                await ctx.tick()
 
     @chances.command(name="timetxt")
     async def headertimetext(self, ctx, color: str):
         """Chances header time text (commentaries)"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["chances"]["header_time_col"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["chances"]["header_time_col"] = f"{color}"
+                await ctx.tick()
 
     @chances.command(name="desc")
     async def cdescriptiontext(self, ctx, color: str):
         """Chances description text"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["chances"]["desc_text_col"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["chances"]["desc_text_col"] = f"{color}"
+                await ctx.tick()
 
     @simtheme.group(name="goals")
     async def __goals(self, ctx):
@@ -132,47 +131,42 @@ class SimthemeMixin(MixinMeta):
     @__goals.command(name="headerbg")
     async def gheaderbg(self, ctx, color: str):
         """Goals header background color"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["goals"]["header_text_bg"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["goals"]["header_text_bg"] = f"{color}"
+                await ctx.tick()
 
     @__goals.command(name="headertxt")
     async def gheadertext(self, ctx, color: str):
         """Goals header text color"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["goals"]["header_text_col"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["goals"]["header_text_col"] = f"{color}"
+                await ctx.tick()
 
     @__goals.command(name="timebg")
     async def gheadertimebg(self, ctx, color: str):
         """Goals header time background"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["goals"]["header_time_bg"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["goals"]["header_time_bg"] = f"{color}"
+                await ctx.tick()
 
     @__goals.command(name="timetxt")
     async def gheadertimetext(self, ctx, color: str):
         """Goals header time text"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["goals"]["header_time_col"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["goals"]["header_time_col"] = f"{color}"
+                await ctx.tick()
 
     @__goals.command(name="desc")
     async def gdescriptiontext(self, ctx, color: str):
         """Goals description text"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["goals"]["desc_text_col"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["goals"]["desc_text_col"] = f"{color}"
+                await ctx.tick()
 
     @simtheme.group()
     async def fouls(self, ctx):
@@ -181,47 +175,42 @@ class SimthemeMixin(MixinMeta):
     @fouls.command(name="headerbg")
     async def fheaderbg(self, ctx, color: str):
         """Fouls header background"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["fouls"]["header_text_bg"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["fouls"]["header_text_bg"] = f"{color}"
+                await ctx.tick()
 
     @fouls.command(name="headertxt")
     async def fheadertext(self, ctx, color: str):
         """Fouls header text"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["fouls"]["header_text_col"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["fouls"]["header_text_col"] = f"{color}"
+                await ctx.tick()
 
     @fouls.command(name="timebg")
     async def fheadertimebg(self, ctx, color: str):
         """Fouls header time background"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["fouls"]["header_time_bg"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["fouls"]["header_time_bg"] = f"{color}"
+                await ctx.tick()
 
     @fouls.command(name="timetxt")
     async def fheadertimetext(self, ctx, color: str):
         """Fouls header time text"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["fouls"]["header_time_col"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["fouls"]["header_time_col"] = f"{color}"
+                await ctx.tick()
 
     @fouls.command(name="desc")
     async def fdescriptiontext(self, ctx, color: str):
         """Fouls description text"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["fouls"]["desc_text_col"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["fouls"]["desc_text_col"] = f"{color}"
+                await ctx.tick()
 
     @simtheme.group(name="walkout")
     async def _walkout(self, ctx):
@@ -230,11 +219,10 @@ class SimthemeMixin(MixinMeta):
     @_walkout.command(name="players")
     async def wplayers(self, ctx, color: str):
         """Walkout player names"""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["walkout"]["name_text"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["walkout"]["name_text"] = f"{color}"
+                await ctx.tick()
 
     @simtheme.group(name="matchinfo")
     async def _matchinfo(self, ctx):
@@ -243,47 +231,42 @@ class SimthemeMixin(MixinMeta):
     @_matchinfo.command(name="vstitle")
     async def mvstitle(self, ctx, color: str):
         """Match info Team1 vs Team2."""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["matchinfo"]["vs_title"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["matchinfo"]["vs_title"] = f"{color}"
+                await ctx.tick()
 
     @_matchinfo.command(name="stadium")
     async def mstadium(self, ctx, color: str):
         """Match info stadium."""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["matchinfo"]["stadium"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["matchinfo"]["stadium"] = f"{color}"
+                await ctx.tick()
 
     @_matchinfo.command(name="commentator")
     async def mcommentator(self, ctx, color: str):
         """Match info commentator."""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["matchinfo"]["commentator"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["matchinfo"]["commentator"] = f"{color}"
+                await ctx.tick()
 
     @_matchinfo.command(name="ha")
     async def mhomeaway(self, ctx, color: str):
         """Match info home/away text."""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["matchinfo"]["home_away_text"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["matchinfo"]["home_away_text"] = f"{color}"
+                await ctx.tick()
 
     @_matchinfo.command(name="odds")
     async def modds(self, ctx, color: str):
         """Match odds text."""
-        if not re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", color):
-            return await ctx.send("Color invalid. Please use hex colors (ie: #FFFFFF).")
-        async with self.config.guild(ctx.guild).theme() as theme:
-            theme["matchinfo"]["odds"] = f"{color}"
-        await ctx.tick()
+        if not await self.regexcolor(ctx, color):
+            async with self.config.guild(ctx.guild).theme() as theme:
+                theme["matchinfo"]["odds"] = f"{color}"
+                await ctx.tick()
 
     @simtheme.group(name="preview")
     async def preview(self, ctx):
@@ -476,5 +459,16 @@ class SimthemeMixin(MixinMeta):
         )
         await ctx.send(file=image)
 
-    # TODO: Add method to reset theme to default
-    # TODO: Add method to display current theme (per section)
+    @preview.command(name="matchstats")
+    async def pmatchstats(self, ctx):
+        """Preview match stats."""
+        teams = await self.config.guild(ctx.guild).teams()
+        team1 = list(teams.keys())[random.randint(0, len(teams) - 1)]
+        team2 = list(teams.keys())[random.randint(0, len(teams) - 1)]
+        score = (random.randint(0, 4), random.randint(0, 4))
+        yellow = (random.randint(0, 3), random.randint(0, 3))
+        red = (random.randint(0, 1), random.randint(0, 1))
+        chances = (random.randint(1, 10), random.randint(1, 10))
+        fouls = (random.randint(3, 15), random.randint(3, 15))
+        image = await self.matchstats(ctx, team1, team2, score, yellow, red, chances, fouls)
+        await ctx.send(file=image)

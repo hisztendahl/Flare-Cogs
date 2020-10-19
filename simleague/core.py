@@ -751,7 +751,7 @@ class SimHelper(MixinMeta):
         )
         draw.text(
             (label_align, 58),
-            corner_comment.format(player.name),
+            textwrap.fill(corner_comment.format(player.name), 40),
             font=general_u_font,
             fill=label_text_color,
         )
@@ -929,7 +929,7 @@ class SimHelper(MixinMeta):
 
         draw.text(
             (label_align, 38),
-            textwrap.fill(comment, 43),
+            textwrap.fill(comment, 40),
             font=general_u_font,
             fill=label_text_color,
         )
@@ -996,7 +996,7 @@ class SimHelper(MixinMeta):
             server_icon_image = Image.open(server_icon).convert("RGBA")
 
         # set canvas
-        width = 300
+        width = 360
         height = 100
         bg_color = list_to_tuple(theme["general"]["bg_color"])
         result = Image.new("RGBA", (width, height), bg_color)
@@ -1423,7 +1423,7 @@ class SimHelper(MixinMeta):
 
         # set canvas
         width = 360
-        height = 300
+        height = 340
         bg_color = list_to_tuple(theme["general"]["bg_color"])
         result = Image.new("RGBA", (width, height), bg_color)
         process = Image.new("RGBA", (width, height), bg_color)
@@ -1523,25 +1523,32 @@ class SimHelper(MixinMeta):
             )
             draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # score box highlight
 
+        actionTeam1Count = chances[0]+fouls[1]
+        actionTeam2Count = chances[1]+fouls[0]
+        total_action_count = actionTeam1Count + actionTeam2Count
+        team1_possession = round(actionTeam1Count/total_action_count * 100)
+        team2_possession = round(actionTeam2Count/total_action_count * 100)
+        poss = (team1_possession, team2_possession)
+
         draw.rectangle(
             [
                 (left_pos - 10, start_vert_pos + 40),
                 (right_pos, start_vert_pos + 40 + title_height),
             ],
             fill=fill,
-        )  # chances box
-        if chances[0] != chances[1]:
+        )  # possesion box
+        if poss[0] != poss[1]:
             s_left_pos = (
                 (left_pos - 10, start_vert_pos + 40)
-                if chances[0] > chances[1]
+                if poss[0] > poss[1]
                 else (right_pos - 60, start_vert_pos + 40)
             )
             s_right_pos = (
                 (left_pos + 50, start_vert_pos + 40 + title_height)
-                if chances[0] > chances[1]
+                if poss[0] > poss[1]
                 else (right_pos, start_vert_pos + title_height + 40)
             )
-            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # shots box highlight
+            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # possession box highlight
 
         draw.rectangle(
             [
@@ -1549,19 +1556,19 @@ class SimHelper(MixinMeta):
                 (right_pos, start_vert_pos + 80 + title_height),
             ],
             fill=fill,
-        )  # fouls box
-        if fouls[0] != fouls[1]:
+        )  # chances box
+        if chances[0] != chances[1]:
             s_left_pos = (
                 (left_pos - 10, start_vert_pos + 80)
-                if fouls[0] > fouls[1]
+                if chances[0] > chances[1]
                 else (right_pos - 60, start_vert_pos + 80)
             )
             s_right_pos = (
                 (left_pos + 50, start_vert_pos + 80 + title_height)
-                if fouls[0] > fouls[1]
+                if chances[0] > chances[1]
                 else (right_pos, start_vert_pos + title_height + 80)
             )
-            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # fouls box highlight
+            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # shots box highlight
 
         draw.rectangle(
             [
@@ -1569,19 +1576,19 @@ class SimHelper(MixinMeta):
                 (right_pos, start_vert_pos + 120 + title_height),
             ],
             fill=fill,
-        )  # yellow box
-        if yc[0] != yc[1]:
+        )  # fouls box
+        if fouls[0] != fouls[1]:
             s_left_pos = (
                 (left_pos - 10, start_vert_pos + 120)
-                if yc[0] > yc[1]
+                if fouls[0] > fouls[1]
                 else (right_pos - 60, start_vert_pos + 120)
             )
             s_right_pos = (
                 (left_pos + 50, start_vert_pos + 120 + title_height)
-                if yc[0] > yc[1]
+                if fouls[0] > fouls[1]
                 else (right_pos, start_vert_pos + title_height + 120)
             )
-            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # yellow box highlight
+            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # fouls box highlight
 
         draw.rectangle(
             [
@@ -1589,17 +1596,37 @@ class SimHelper(MixinMeta):
                 (right_pos, start_vert_pos + 160 + title_height),
             ],
             fill=fill,
-        )  # red box
-        if rc[0] != rc[1]:
+        )  # yellow box
+        if yc[0] != yc[1]:
             s_left_pos = (
                 (left_pos - 10, start_vert_pos + 160)
-                if rc[0] > rc[1]
+                if yc[0] > yc[1]
                 else (right_pos - 60, start_vert_pos + 160)
             )
             s_right_pos = (
                 (left_pos + 50, start_vert_pos + 160 + title_height)
-                if rc[0] > rc[1]
+                if yc[0] > yc[1]
                 else (right_pos, start_vert_pos + title_height + 160)
+            )
+            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # yellow box highlight
+
+        draw.rectangle(
+            [
+                (left_pos - 10, start_vert_pos + 200),
+                (right_pos, start_vert_pos + 200 + title_height),
+            ],
+            fill=fill,
+        )  # red box
+        if rc[0] != rc[1]:
+            s_left_pos = (
+                (left_pos - 10, start_vert_pos + 200)
+                if rc[0] > rc[1]
+                else (right_pos - 60, start_vert_pos + 200)
+            )
+            s_right_pos = (
+                (left_pos + 50, start_vert_pos + 200 + title_height)
+                if rc[0] > rc[1]
+                else (right_pos, start_vert_pos + title_height + 200)
             )
             draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # red box highlight
 
@@ -1675,11 +1702,37 @@ class SimHelper(MixinMeta):
             text_color if score[0] >= score[1] else "#FFF",
         )
 
+        # POSSESSION
+        _write_unicode(
+            str(poss[0])+"%",
+            left_text_align - 9,
+            start_vert_pos + 43,
+            name_fnt,
+            header_u_fnt,
+            text_color if poss[0] <= poss[1] else "#FFF",
+        )
+        _write_unicode(
+            "POSSESSION",
+            width / 2 - (8 * (len("POSSESSION") / 2)),
+            start_vert_pos + 43,
+            name_fnt,
+            header_u_fnt,
+            text_color,
+        )
+        _write_unicode(
+            str(poss[1])+"%",
+            width - left_text_align - 16,
+            start_vert_pos + 43,
+            name_fnt,
+            header_u_fnt,
+            text_color if poss[0] >= poss[1] else "#FFF",
+        )
+
         # CHANCES
         _write_unicode(
             str(chances[0]),
             left_text_align - (5 if len(str(chances[0])) > 1 else 0),
-            start_vert_pos + 43,
+            start_vert_pos + 83,
             name_fnt,
             header_u_fnt,
             text_color if chances[0] <= chances[1] else "#FFF",
@@ -1687,7 +1740,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             "SHOTS",
             width / 2 - (8 * (len("SHOTS") / 2)),
-            start_vert_pos + 43,
+            start_vert_pos + 83,
             name_fnt,
             header_u_fnt,
             text_color,
@@ -1695,7 +1748,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             str(chances[1]),
             width - left_text_align - 7 - (5 if len(str(chances[1])) > 1 else 0),
-            start_vert_pos + 43,
+            start_vert_pos + 83,
             name_fnt,
             header_u_fnt,
             text_color if chances[0] >= chances[1] else "#FFF",
@@ -1705,7 +1758,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             str(fouls[0]),
             left_text_align - (5 if len(str(fouls[0])) > 1 else 0),
-            start_vert_pos + 83,
+            start_vert_pos + 123,
             name_fnt,
             header_u_fnt,
             text_color if fouls[0] <= fouls[1] else "#FFF",
@@ -1713,7 +1766,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             "FOULS",
             width / 2 - (8 * (len("FOULS") / 2)),
-            start_vert_pos + 83,
+            start_vert_pos + 123,
             name_fnt,
             header_u_fnt,
             text_color,
@@ -1721,7 +1774,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             str(fouls[1]),
             width - left_text_align - 7 - (5 if len(str(fouls[1])) > 1 else 0),
-            start_vert_pos + 83,
+            start_vert_pos + 123,
             name_fnt,
             header_u_fnt,
             text_color if fouls[0] >= fouls[1] else "#FFF",
@@ -1731,7 +1784,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             str(yc[0]),
             left_text_align - (5 if len(str(yc[0])) > 1 else 0),
-            start_vert_pos + 123,
+            start_vert_pos + 163,
             name_fnt,
             header_u_fnt,
             text_color if yc[0] <= yc[1] else "#FFF",
@@ -1739,7 +1792,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             "YELLOW CARDS",
             width / 2 - (8 * (len("YELLOW CARDS") / 2)),
-            start_vert_pos + 123,
+            start_vert_pos + 163,
             name_fnt,
             header_u_fnt,
             text_color,
@@ -1747,7 +1800,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             str(yc[1]),
             width - left_text_align - 7 - (5 if len(str(yc[1])) > 1 else 0),
-            start_vert_pos + 123,
+            start_vert_pos + 163,
             name_fnt,
             header_u_fnt,
             text_color if yc[0] >= yc[1] else "#FFF",
@@ -1757,7 +1810,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             str(rc[0]),
             left_text_align - (5 if len(str(rc[0])) > 1 else 0),
-            start_vert_pos + 163,
+            start_vert_pos + 203,
             name_fnt,
             header_u_fnt,
             text_color if rc[0] <= rc[1] else "#FFF",
@@ -1765,7 +1818,7 @@ class SimHelper(MixinMeta):
         _write_unicode(
             "RED CARDS",
             width / 2 - (8 * (len("RED CARDS") / 2)),
-            start_vert_pos + 163,
+            start_vert_pos + 203,
             name_fnt,
             header_u_fnt,
             text_color,
@@ -1773,11 +1826,12 @@ class SimHelper(MixinMeta):
         _write_unicode(
             str(rc[1]),
             width - left_text_align - 7 - (5 if len(str(rc[1])) > 1 else 0),
-            start_vert_pos + 163,
+            start_vert_pos + 203,
             name_fnt,
             header_u_fnt,
             text_color if rc[0] >= rc[1] else "#FFF",
         )
+
         result = Image.alpha_composite(result, process)
         file = BytesIO()
         result.save(file, "PNG", quality=100)

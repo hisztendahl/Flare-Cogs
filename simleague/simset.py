@@ -273,6 +273,7 @@ class SimsetMixin(MixinMeta):
                         firstteam = team
                     transfers[team] = {
                         "ready": True if i == 0 else False,
+                        "locked": None,
                         "swap": {"in": None, "out": None},
                         "sign": {"in": None, "out": None},
                     }

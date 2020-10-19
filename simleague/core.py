@@ -2044,14 +2044,18 @@ class SimHelper(MixinMeta):
                                         "Failed to remove role from {}".format(member.name)
                                     )
 
-    async def posttransfer(self, ctx, title, member1, fromteam, toteam):
+    async def posttransfer(self, ctx, title, member1, fromteam, toteam = None):
+        cog = self.bot.get_cog("SimLeague")
         embed = discord.Embed(color=0xCCFFCC)
         embed.title = title
         embed.set_thumbnail(url=member1.avatar_url)
-        embed.description = f"{member1.name}\n"
-        embed.description += f"**From**: {fromteam}\n"
-        embed.description += f"**To**: {toteam}\n"
-        cog = self.bot.get_cog("SimLeague")
+        embed.description = f"**Player**: {member1.name}\n"
+        if toteam is None:
+            embed.description += f"**Club**: {fromteam}\n"
+            embed.description += f"**Duration**: 1 season\n"
+        else:
+            embed.description += f"**From**: {fromteam}\n"
+            embed.description += f"**To**: {toteam}\n"
 
         transferchannels = await cog.config.guild(ctx.guild).transferchannel()
         if transferchannels:
@@ -2244,6 +2248,18 @@ class SimHelper(MixinMeta):
 
         await self.posttransfer(ctx, "Player released!", member1, team1, "(free agent)")
         await self.posttransfer(ctx, "New signing!!", member2, "(free agent)", team1)
+
+    async def lock(self, ctx, guild, team1, member1: discord.Member):
+        cog = self.bot.get_cog("SimLeague")
+        async with cog.config.guild(guild).teams() as teams:
+            if str(member1.id) not in teams[team1]["members"]:
+                return await ctx.send(f"{member1.name} is not on {team1}.")
+            async with self.config.guild(ctx.guild).transfers() as transfers:
+                transfers[team1]["locked"] = member1.id
+            async with self.config.guild(ctx.guild).transferred() as transferred:
+                transferred.append(member1.id)
+            await self.posttransfer(ctx, "Contract extension!", member1, team1)
+            await ctx.tick()
 
     async def purge(self, ctx, guild, team1, member1):
         cog = self.bot.get_cog("SimLeague")

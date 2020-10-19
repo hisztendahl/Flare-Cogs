@@ -129,38 +129,82 @@ class TeamsetMixin(MixinMeta):
         eligibleteam = [team for team in transfers if transfers[team]["ready"] == True]
         await ctx.send(f"Current transferring team: {eligibleteam[0]}")
 
+    @commands.has_role("Sim Captain")
+    @transfer.command(name="lock")
+    async def _lock(self, ctx, team1, player1: discord.Member):
+        """Lock a player to make him intransferable."""
+        teams = await self.config.guild(ctx.guild).teams()
+        cptid = list(teams[team1]["captain"].keys())[0]
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        if ctx.author.id != int(cptid):
+            return await ctx.send("You need to pick players from your team")
+        transfers = await self.config.guild(ctx.guild).transfers()
+        if transfers[team1]["locked"] is not None:
+            return await ctx.send("You have already locked a player.")
+        if int(cptid) == player1.id:
+            return await ctx.send("Team captains are already locked.")
+        await self.lock(ctx, ctx.guild, team1, player1)
+
     @transfer.command(name="list")
-    async def list(self, ctx):
+    async def _tlist(self, ctx, team1 = None):
         """Shows players already transferred during this window."""
         transferred = await self.config.guild(ctx.guild).transferred()
         teams = await self.config.guild(ctx.guild).teams()
-        embed = discord.Embed(color=0x800080)
         async with ctx.typing():
-            for team in teams:
+            if team1 is not None:
+                if team1 not in teams:
+                    return await ctx.send(f"{team1} is not a valid team.")
+                embed = discord.Embed(color=0x800080, description="--------------- Transfer List ---------------")
                 av = []
                 unav = []
                 members = {
                     k: v
-                    for (k, v) in teams[team]["members"].items()
-                    if k not in teams[team]["captain"]
+                    for (k, v) in teams[team1]["members"].items()
+                    if k not in teams[team1]["captain"]
                 }
                 for m in members:
                     if int(m) in transferred:
                         unav.append(m)
-                        av.append("")
                     else:
                         av.append(m)
 
                 avmems = [members[x] if x != "" else "" for x in av]
-                unavmems = [members[x] if x != "" else "\n" for x in unav]
+                unavmems = [members[x] if x != "" else "" for x in unav]
 
                 embed.add_field(
-                    name="Team {}".format(team),
-                    value="\n**Available**:\n{}\n\n**Unavailable**:\n{}".format(
+                    name="Team {}".format(team1),
+                    value="\n_Available_:\n{}\n\n_Unavailable_:\n{}".format(
                         "\n".join(avmems), "\n".join(unavmems),
                     ),
                     inline=True,
                 )
+            else:
+                embed = discord.Embed(color=0x800080, description="------------------------- Transfer List -------------------------")
+                for team in teams:
+                    av = []
+                    unav = []
+                    members = {
+                        k: v
+                        for (k, v) in teams[team]["members"].items()
+                        if k not in teams[team]["captain"]
+                    }
+                    for m in members:
+                        if int(m) in transferred:
+                            unav.append(m)
+                        else:
+                            av.append(m)
+
+                    avmems = [members[x] if x != "" else "" for x in av]
+                    unavmems = [members[x] if x != "" else "" for x in unav]
+
+                    embed.add_field(
+                        name="Team {}".format(team),
+                        value="\n_Available_:\n{}\n\n_Unavailable_:\n{}".format(
+                            "\n".join(avmems), "\n".join(unavmems),
+                        ),
+                        inline=True,
+                    )
         await ctx.send(embed=embed)
 
     @checks.admin_or_permissions(manage_guild=True)

@@ -238,7 +238,7 @@ class SimLeague(
         if not teams:
             return await ctx.send("No teams have been registered.")
         if mobilefriendly:
-            embed = discord.Embed(colour=ctx.author.colour)
+            embed = discord.Embed(colour=ctx.author.colour, description="------------------------- Team List -------------------------")
             msg = await ctx.send(
                 "This may take some time depending on the amount of teams currently registered."
             )
@@ -348,7 +348,7 @@ class SimLeague(
         if not cupgames:
             return await ctx.send("No cup fixtures have been made.")
         if cupround is None:
-            embed = discord.Embed(color=0xFF0000)
+            embed = discord.Embed(colour=ctx.author.colour, description="------------------------- Cup Fixtures -------------------------")
             for rd in cupgames:
                 fixtures = cupgames[rd]
                 a = []
@@ -393,7 +393,7 @@ class SimLeague(
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
         if week is None:
-            embed = discord.Embed(color=0xFF0000)
+            embed = discord.Embed(colour=ctx.author.colour, description="------------------------- Fixtures -------------------------")
             for i, fixture in enumerate(fixtures[:25]):
                 a = []
                 for game in fixture:
@@ -402,7 +402,7 @@ class SimLeague(
 
             await ctx.send(embed=embed)
             if len(fixtures) > 25:
-                embed = discord.Embed(color=0xFF0000)
+                embed = discord.Embed(colour=ctx.author.colour, description="------------------------- Fixtures -------------------------")
                 for i, fixture in enumerate(fixtures[25:], 25):
                     a = []
                     for game in fixture:
@@ -437,23 +437,26 @@ class SimLeague(
         if standings is None:
             return await ctx.send("The table is empty.")
         if not verbose:
-            t = []  # PrettyTable(["Team", "W", "L", "D", "PL", "PO"])
+            t = []  # PrettyTable(["Team", "Pl", "W", "D", "L", "Pts"])
             for x in sorted(
                 standings,
                 key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
                 reverse=True,
             ):
+                gd = standings[x]["gd"]
+                gd = f"+{gd}" if gd > 0 else gd 
                 t.append(
                     [
                         x,
-                        standings[x]["wins"],
-                        standings[x]["losses"],
-                        standings[x]["draws"],
                         standings[x]["played"],
+                        standings[x]["wins"],
+                        standings[x]["draws"],
+                        standings[x]["losses"],
                         standings[x]["points"],
+                        gd
                     ]
                 )
-            tab = tabulate(t, headers=["Team", "Wins", "Losses", "Draws", "Played", "Points"])
+            tab = tabulate(t, headers=["Team", "Pl.", "W", "D", "L", "Pts", "Diff"])
             await ctx.send(box(tab))
         else:
             t = []
@@ -462,6 +465,8 @@ class SimLeague(
                 key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
                 reverse=True,
             ):
+                gd = standings[x]["gd"]
+                gd = f"+{gd}" if gd > 0 else gd 
                 t.append(
                     [
                         x,
@@ -472,10 +477,10 @@ class SimLeague(
                         standings[x]["gf"],
                         standings[x]["ga"],
                         standings[x]["points"],
-                        standings[x]["gd"],
+                        gd,
                     ]
                 )
-            tab = tabulate(t, headers=["Team", "Played", "W", "D", "L", "GF", "GA", "Pts", "GD",],)
+            tab = tabulate(t, headers=["Team", "Pl.", "W", "D", "L", "GF", "GA", "Pts", "Diff"],)
             await ctx.send(box(tab))
 
     @checks.admin_or_permissions(manage_guild=True)
@@ -618,7 +623,6 @@ class SimLeague(
             team2bonus = team2bonus * 15
             t1totalxp = t1totalxp * float(f"1.{team1bonus}")
             t2totalxp = t2totalxp * float(f"1.{team2bonus}")
-            self.log.debug(f"Team 1: {t1totalxp} - Team 2: {t2totalxp}")
             redst1 = float(f"0.{reds1 * redcardmodifier}")
             redst2 = float(f"0.{reds2 * redcardmodifier}")
             total = ["A"] * int(((1 - redst1) * 100) * t1totalxp) + ["B"] * int(
@@ -1026,17 +1030,10 @@ class SimLeague(
                         if user is None:
                             user = await self.bot.fetch_user(int(playerCorner[1]))
                         image = await self.cornerimg(ctx, str(playerCorner[0]), str(min), user)
-
-                        user2 = self.bot.get_user(int(playerCorner[1]))
-                        if user2 is None:
-                            user2 = await self.bot.fetch_user(int(playerCorner[1]))
-
                         await ctx.send(file=image)
+                        await asyncio.sleep(2)
                         cB = await self.cornerBlock(ctx.guild, probability)
                         if cB is True:
-                            user = self.bot.get_user(int(playerCorner[1]))
-                            if user is None:
-                                user = await self.bot.fetch_user(int(playerCorner[1]))
                             user2 = self.bot.get_user(int(playerCorner[2]))
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerCorner[2]))
@@ -2060,17 +2057,10 @@ class SimLeague(
                         if user is None:
                             user = await self.bot.fetch_user(int(playerCorner[1]))
                         image = await self.cornerimg(ctx, str(playerCorner[0]), str(min), user)
-
-                        user2 = self.bot.get_user(int(playerCorner[1]))
-                        if user2 is None:
-                            user2 = await self.bot.fetch_user(int(playerCorner[1]))
-
                         await ctx.send(file=image)
+                        await asyncio.sleep(2)
                         cB = await self.cornerBlock(ctx.guild, probability)
                         if cB is True:
-                            user = self.bot.get_user(int(playerCorner[1]))
-                            if user is None:
-                                user = await self.bot.fetch_user(int(playerCorner[1]))
                             user2 = self.bot.get_user(int(playerCorner[2]))
                             if user2 is None:
                                 user2 = await self.bot.fetch_user(int(playerCorner[2]))
@@ -3218,7 +3208,7 @@ class SimLeague(
                     stats["cleansheets"][team2] = 1
         elif team2score == 0 and team1score > 0:
             async with self.config.guild(ctx.guild).stats() as stats:
-                if team2 in stats["cleansheets"]:
+                if team1 in stats["cleansheets"]:
                     stats["cleansheets"][team1] += 1
                 else:
                     stats["cleansheets"][team1] = 1

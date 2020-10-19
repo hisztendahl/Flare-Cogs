@@ -101,7 +101,7 @@ class CupStatsMixin(MixinMeta):
                 await self.statsmention(ctx, motms), stats["motm"][motms[0]] if len(motms) else ""
             )
             if cleansheets:
-                msg += "**Cleansheets**: {} - {}\n".format(
+                msg += "**Cleansheets**: _{}_ - {}\n".format(
                     cleansheets[0], stats["cleansheets"][cleansheets[0]]
                 )
             else:
@@ -113,13 +113,14 @@ class CupStatsMixin(MixinMeta):
             user = ctx.guild.get_member(int(stats[0]))
             if not user:
                 return "Invalid User {}".format(stats[0])
-            return user.mention
+            return f"_{user.name}_"
         else:
             return "None"
 
     @cupstats.command(name="ga", alias=["ga", "contributions"])
     async def _cupgoals_assists(self, ctx):
         """Players with the most combined goals and assists."""
+        teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).cupstats()
         goals = stats["goals"]
         assists = stats["assists"]
@@ -127,9 +128,15 @@ class CupStatsMixin(MixinMeta):
         stats = contributions
         if contributions:
             a = []
-            for k in sorted(stats, key=stats.get, reverse=True):
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                team = ""
+                for t in teams:
+                    print(teams[t]["members"])
+                    if k in teams[t]["members"]:
+                        team = t
+                        pass
+                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
             embed = discord.Embed(
                 title="Top goal involvements (goals + assists)",
                 description="\n".join(a[:10]),
@@ -142,13 +149,20 @@ class CupStatsMixin(MixinMeta):
     @cupstats.command(name="goals", alias=["topscorer", "topscorers"])
     async def _cupgoals(self, ctx):
         """Players with the most goals."""
+        teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["goals"]
         if stats:
             a = []
-            for k in sorted(stats, key=stats.get, reverse=True):
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                team = ""
+                for t in teams:
+                    print(teams[t]["members"])
+                    if k in teams[t]["members"]:
+                        team = t
+                        pass
+                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
             embed = discord.Embed(
                 title="Top Scorers", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -159,13 +173,20 @@ class CupStatsMixin(MixinMeta):
     @cupstats.command(name="yellows", aliases=["yellowcards"])
     async def _yellows(self, ctx):
         """Players with the most yellow cards."""
+        teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["yellows"]
         if stats:
             a = []
-            for k in sorted(stats, key=stats.get, reverse=True):
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                team = ""
+                for t in teams:
+                    print(teams[t]["members"])
+                    if k in teams[t]["members"]:
+                        team = t
+                        pass
+                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
             embed = discord.Embed(
                 title="Most Yellow Cards", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -176,13 +197,20 @@ class CupStatsMixin(MixinMeta):
     @cupstats.command(name="reds", aliases=["redcards"])
     async def _reds(self, ctx):
         """Players with the most red cards."""
+        teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["reds"]
         if stats:
             a = []
-            for k in sorted(stats, key=stats.get, reverse=True):
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                team = ""
+                for t in teams:
+                    print(teams[t]["members"])
+                    if k in teams[t]["members"]:
+                        team = t
+                        pass
+                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
             embed = discord.Embed(
                 title="Most Red Cards", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -193,13 +221,20 @@ class CupStatsMixin(MixinMeta):
     @cupstats.command(name="motms", alias=["motms"])
     async def _motm(self, ctx):
         """Players with the most MOTMs."""
+        teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["motm"]
         if stats:
             a = []
-            for k in sorted(stats, key=stats.get, reverse=True):
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                team = ""
+                for t in teams:
+                    print(teams[t]["members"])
+                    if k in teams[t]["members"]:
+                        team = t
+                        pass
+                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
             embed = discord.Embed(
                 title="Most MOTMs", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -214,8 +249,8 @@ class CupStatsMixin(MixinMeta):
         stats = stats["cleansheets"]
         if stats:
             a = []
-            for k in sorted(stats, key=stats.get, reverse=True)[:10]:
-                a.append(f"{k} - {stats[k]}")
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[:10]):
+                a.append(f"{i+1}. {k} - {stats[k]}")
             embed = discord.Embed(
                 title="Most Cleansheets", description="\n".join(a), colour=0xFF0000
             )
@@ -226,22 +261,31 @@ class CupStatsMixin(MixinMeta):
     @cupstats.command(name="penalties")
     async def _penalties(self, ctx):
         """Penalties scored and missed statistics."""
+        teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["penalties"]
         if stats:
             a = []
             b = []
-            for k in sorted(stats, key=lambda x: stats[x]["scored"], reverse=True)[:10]:
+            for i, k in enumerate(sorted(stats, key=lambda x: stats[x]["scored"], reverse=True)[:10]):
                 user = self.bot.get_user(int(k))
-                a.append(
-                    f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]['scored']}"
-                )
-            for k in sorted(stats, key=lambda x: stats[x]["missed"], reverse=True)[:10]:
+                team = ""
+                for t in teams:
+                    print(teams[t]["members"])
+                    if k in teams[t]["members"]:
+                        team = t
+                        pass
+                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]['scored']}")
+            for i, k in enumerate(sorted(stats, key=lambda x: stats[x]["missed"], reverse=True)[:10]):
                 user = self.bot.get_user(int(k))
-                b.append(
-                    f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]['missed']}"
-                )
-            embed = discord.Embed(title="Penalty Statistics", colour=0xFF0000)
+                team = ""
+                for t in teams:
+                    print(teams[t]["members"])
+                    if k in teams[t]["members"]:
+                        team = t
+                        pass
+                b.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]['missed']}")
+            embed = discord.Embed(title="Penalty Statistics", colour=0xFF0000, description="=== Scored and Missed penalties statistics ===")
             embed.add_field(name="Penalties Scored", value="\n".join(a))
             embed.add_field(name="Penalties Missed", value="\n".join(b))
             await ctx.send(embed=embed)
@@ -251,13 +295,20 @@ class CupStatsMixin(MixinMeta):
     @cupstats.command(name="assists")
     async def _assists(self, ctx):
         """Players with the most assists."""
+        teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["assists"]
         if stats:
             a = []
-            for k in sorted(stats, key=stats.get, reverse=True)[:10]:
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[:10]):
                 user = self.bot.get_user(int(k))
-                a.append(f"{user.mention if user else 'Invalid User {}'.format(k)} - {stats[k]}")
+                team = ""
+                for t in teams:
+                    print(teams[t]["members"])
+                    if k in teams[t]["members"]:
+                        team = t
+                        pass
+                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
             embed = discord.Embed(
                 title="Assist Statistics", description="\n".join(a), colour=0xFF0000
             )

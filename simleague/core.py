@@ -1216,7 +1216,7 @@ class SimHelper(MixinMeta):
         text_color = list_to_tuple(theme["chances"]["header_text_col"])
         level = teams[team1]["cachedlevel"]
         teamname = self._truncate_text(team1, 10)
-        bonus = teams[team1]["bonus"] * 15
+        bonus = teams[team1]["bonus"]
         _write_unicode(
             "Team: {} | Total Level: {} | Bonus %: {}".format(teamname, level, bonus),
             10,
@@ -2131,6 +2131,11 @@ class SimHelper(MixinMeta):
         t2totalxp = 0
         cog = self.bot.get_cog("SimLeague")
         async with cog.config.guild(guild).teams() as teams:
+            if not "form" in teams[team1]:
+                teams[team1]["form"] = {"result": None, "streak": 0}
+            if not "form" in teams[team2]:
+                teams[team2]["form"] = {"result": None, "streak": 0}
+                
             team1pl = teams[team1]["members"]
 
             for memberid in team1pl:

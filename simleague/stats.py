@@ -132,7 +132,6 @@ class StatsMixin(MixinMeta):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
-                    print(teams[t]["members"])
                     if k in teams[t]["members"]:
                         team = t
                         pass
@@ -158,7 +157,6 @@ class StatsMixin(MixinMeta):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
-                    print(teams[t]["members"])
                     if k in teams[t]["members"]:
                         team = t
                         pass
@@ -182,7 +180,6 @@ class StatsMixin(MixinMeta):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
-                    print(teams[t]["members"])
                     if k in teams[t]["members"]:
                         team = t
                         pass
@@ -206,7 +203,6 @@ class StatsMixin(MixinMeta):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
-                    print(teams[t]["members"])
                     if k in teams[t]["members"]:
                         team = t
                         pass
@@ -230,7 +226,6 @@ class StatsMixin(MixinMeta):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
-                    print(teams[t]["members"])
                     if k in teams[t]["members"]:
                         team = t
                         pass
@@ -271,7 +266,6 @@ class StatsMixin(MixinMeta):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
-                    print(teams[t]["members"])
                     if k in teams[t]["members"]:
                         team = t
                         pass
@@ -280,7 +274,6 @@ class StatsMixin(MixinMeta):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
-                    print(teams[t]["members"])
                     if k in teams[t]["members"]:
                         team = t
                         pass
@@ -304,7 +297,6 @@ class StatsMixin(MixinMeta):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
-                    print(teams[t]["members"])
                     if k in teams[t]["members"]:
                         team = t
                         pass

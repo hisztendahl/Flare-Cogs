@@ -22,7 +22,31 @@ from .simtheme import SimthemeMixin
 
 # THANKS TO https://code.sololearn.com/ci42wd5h0UQX/#py FOR THE SIMULATION AND FIXATOR/AIKATERNA/STEVY FOR THE PILLOW HELP/LEVELER
 
-
+def getformbonus(form):
+    streak = form["streak"]
+    result = form["result"]
+    if result == "D" or result is None:
+        return 1
+    multiplier = 1
+    if streak == 1:
+        multiplier = 2.5
+    elif streak == 2:
+        multiplier= 5
+    elif streak == 3:
+        multiplier= 7.5
+    elif streak == 4:
+        multiplier= 12.5
+    elif streak == 5:
+        multiplier= 20
+    elif streak == 6:
+        multiplier= 32.5
+    else:
+        multiplier= 50
+    if result == "W":
+        multiplier = - multiplier
+    multiplier = (100 + multiplier) / 100
+    return multiplier
+        
 class CompositeMetaClass(type(commands.Cog), type(ABC)):
     """This allows the metaclass used for proper type detection to coexist with discord.py's
     metaclass."""
@@ -212,6 +236,7 @@ class SimLeague(
                 "kits": {"home": None, "away": None, "third": None},
                 "stadium": None,
                 "bonus": 0,
+                "form": {"result": None, "streak": 0},
             }
         async with self.config.guild(ctx.guild).standings() as standings:
             standings[teamname] = {
@@ -321,7 +346,7 @@ class SimLeague(
             )
             embed.add_field(name="Captain:", value=list(teams[team]["captain"].values())[0])
             embed.add_field(name="Level:", value=teams[team]["cachedlevel"], inline=True)
-            embed.add_field(name="Bonus %:", value=f"{teams[team]['bonus'] * 15}%", inline=True)
+            embed.add_field(name="Bonus %:", value=f"{teams[team]['bonus']}%", inline=True)
             if teams[team]["role"] is not None:
                 embed.add_field(
                     name="Role:",
@@ -619,10 +644,10 @@ class SimLeague(
                 t1totalxp = 1
             if t2totalxp < 2:
                 t2totalxp = 1
-            team1bonus = team1bonus * 15
-            team2bonus = team2bonus * 15
-            t1totalxp = t1totalxp * float(f"1.{team1bonus}")
-            t2totalxp = t2totalxp * float(f"1.{team2bonus}")
+            t1form = getformbonus(teams[team1]["form"])
+            t2form = getformbonus(teams[team2]["form"])
+            t1totalxp = t1totalxp * (100 + team1bonus) * t1form / 100
+            t2totalxp = t2totalxp * (100 + team2bonus) * t2form / 100
             redst1 = float(f"0.{reds1 * redcardmodifier}")
             redst2 = float(f"0.{reds2 * redcardmodifier}")
             total = ["A"] * int(((1 - redst1) * 100) * t1totalxp) + ["B"] * int(
@@ -805,9 +830,9 @@ class SimLeague(
                         user = await self.bot.fetch_user(int(playerPenalty[1]))
                     image = await self.penaltyimg(ctx, str(playerPenalty[0]), str(min), user)
                     await ctx.send(file=image)
+                    events = True
                     pB = await self.penaltyBlock(ctx.guild, probability)
                     if pB is True:
-                        events = True
                         async with self.config.guild(ctx.guild).stats() as stats:
                             if playerPenalty[1] not in stats["penalties"]:
                                 stats["penalties"][playerPenalty[1]] = {"scored": 0, "missed": 1}
@@ -877,9 +902,11 @@ class SimLeague(
                         1, teamStats[0], teamStats[1], teamStats[2]
                     )
                     teamStats[11] += 1
+                    events = True
                     if playerYellow is not None:
                         if len(playerYellow) == 4:
                             teamStats[7] += 1
+                            teamStats[1].append(playerYellow[1])
                             teamStats[2].append(playerYellow[1])
                             async with self.config.guild(ctx.guild).stats() as stats:
                                 reds[str(playerYellow[0])] += 1
@@ -933,7 +960,6 @@ class SimLeague(
                                     stats["yellows"][playerYellow[1]] = 1
                                 else:
                                     stats["yellows"][playerYellow[1]] += 1
-                            events = True
                             user = self.bot.get_user(int(playerYellow[1]))
                             if user is None:
                                 user = await self.bot.fetch_user(int(playerYellow[1]))
@@ -968,6 +994,7 @@ class SimLeague(
                 if rC is True:
                     teamStats = await TeamChance()
                     playerRed = await PlayerGenerator(2, teamStats[0], teamStats[1], teamStats[2])
+                    events = True
                     if playerRed is not None:
                         teamStats[7] += 1
                         teamStats[11] += 1
@@ -1223,7 +1250,6 @@ class SimLeague(
                         playerComment = await PlayerGenerator(
                             0, teamStats[0], teamStats[1], teamStats[2]
                         )
-
                         events = True
                         if len(playerComment) == 3:
                             user2 = self.bot.get_user(int(playerComment[2]))
@@ -1345,7 +1371,6 @@ class SimLeague(
                         playerComment = await PlayerGenerator(
                             0, teamStats[0], teamStats[1], teamStats[2]
                         )
-
                         events = True
                         user = self.bot.get_user(int(playerComment[1]))
                         if user is None:
@@ -1372,6 +1397,18 @@ class SimLeague(
                 await timemsg.delete()
                 await ctx.send(file=im)
                 if team1Stats[8] > team2Stats[8]:
+                    async with self.config.guild(ctx.guild).teams() as teams:
+                        if teams[team1]["form"]["result"] == "W":
+                            teams[team1]["form"]["streak"] += 1 
+                        else:
+                            teams[team1]["form"]["result"] = "W"
+                            teams[team1]["form"]["streak"] = 1
+
+                        if teams[team2]["form"]["result"] == "L":
+                            teams[team2]["form"]["streak"] += 1 
+                        else:
+                            teams[team2]["form"]["result"] = "L"
+                            teams[team2]["form"]["streak"] = 1
                     async with self.config.guild(ctx.guild).standings() as standings:
                         standings[team1]["wins"] += 1
                         standings[team1]["points"] += 3
@@ -1380,6 +1417,18 @@ class SimLeague(
                         standings[team2]["played"] += 1
                         t = await self.payout(ctx.guild, team1, homewin)
                 if team1Stats[8] < team2Stats[8]:
+                    async with self.config.guild(ctx.guild).teams() as teams:
+                        if teams[team1]["form"]["result"] == "L":
+                            teams[team1]["form"]["streak"] += 1 
+                        else:
+                            teams[team1]["form"]["result"] = "L"
+                            teams[team1]["form"]["streak"] = 1
+
+                        if teams[team2]["form"]["result"] == "W":
+                            teams[team2]["form"]["streak"] += 1 
+                        else:
+                            teams[team2]["form"]["result"] = "W"
+                            teams[team2]["form"]["streak"] = 1
                     async with self.config.guild(ctx.guild).standings() as standings:
                         standings[team2]["points"] += 3
                         standings[team2]["wins"] += 1
@@ -1388,6 +1437,17 @@ class SimLeague(
                         standings[team1]["played"] += 1
                         t = await self.payout(ctx.guild, team2, awaywin)
                 if team1Stats[8] == team2Stats[8]:
+                    async with self.config.guild(ctx.guild).teams() as teams:
+                        if teams[team1]["form"]["result"] == "D":
+                            teams[team1]["form"]["streak"] += 1 
+                        else:
+                            teams[team1]["form"]["result"] = "D"
+                            teams[team1]["form"]["streak"] = 1
+                        if teams[team2]["form"]["result"] == "D":
+                            teams[team2]["form"]["streak"] += 1 
+                        else:
+                            teams[team2]["form"]["result"] = "D"
+                            teams[team2]["form"]["streak"] = 1                        
                     async with self.config.guild(ctx.guild).standings() as standings:
                         standings[team1]["played"] += 1
                         standings[team2]["played"] += 1
@@ -1516,8 +1576,8 @@ class SimLeague(
         teams = await self.config.guild(ctx.guild).teams()
         lvl1 = 1
         lvl2 = 1
-        bonuslvl1 = 1
-        bonuslvl2 = 1
+        bonuslvl1 = 0
+        bonuslvl2 = 0
         homewin = lvl2 / lvl1
         awaywin = lvl1 / lvl2
         try:
@@ -1638,10 +1698,8 @@ class SimLeague(
                 t1totalxp = 1
             if t2totalxp < 2:
                 t2totalxp = 1
-            team1bonus = team1bonus * 15
-            team2bonus = team2bonus * 15
-            t1totalxp = t1totalxp * float(f"1.{team1bonus}")
-            t2totalxp = t2totalxp * float(f"1.{team2bonus}")
+            t1totalxp = t1totalxp * (100 + team1bonus) / 100
+            t2totalxp = t2totalxp * (100 + team2bonus) / 100
             self.log.debug(f"Team 1: {t1totalxp} - Team 2: {t2totalxp}")
             redst1 = float(f"0.{reds1 * redcardmodifier}")
             redst2 = float(f"0.{reds2 * redcardmodifier}")
@@ -1907,6 +1965,7 @@ class SimLeague(
                     if playerYellow is not None:
                         if len(playerYellow) == 4:
                             teamStats[7] += 1
+                            teamStats[1].append(playerYellow[1])
                             teamStats[2].append(playerYellow[1])
                             async with self.config.guild(ctx.guild).cupstats() as cupstats:
                                 reds[str(playerYellow[0])] += 1

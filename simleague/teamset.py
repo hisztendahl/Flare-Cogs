@@ -147,7 +147,7 @@ class TeamsetMixin(MixinMeta):
         await self.lock(ctx, ctx.guild, team1, player1)
 
     @transfer.command(name="list")
-    async def _tlist(self, ctx, team1 = None):
+    async def _tlist(self, ctx, team1=None):
         """Shows players already transferred during this window."""
         transferred = await self.config.guild(ctx.guild).transferred()
         teams = await self.config.guild(ctx.guild).teams()
@@ -155,7 +155,9 @@ class TeamsetMixin(MixinMeta):
             if team1 is not None:
                 if team1 not in teams:
                     return await ctx.send(f"{team1} is not a valid team.")
-                embed = discord.Embed(color=0x800080, description="--------------- Transfer List ---------------")
+                embed = discord.Embed(
+                    color=0x800080, description="--------------- Transfer List ---------------"
+                )
                 av = []
                 unav = []
                 members = {
@@ -180,7 +182,10 @@ class TeamsetMixin(MixinMeta):
                     inline=True,
                 )
             else:
-                embed = discord.Embed(color=0x800080, description="------------------------- Transfer List -------------------------")
+                embed = discord.Embed(
+                    color=0x800080,
+                    description="------------------------- Transfer List -------------------------",
+                )
                 for team in teams:
                     av = []
                     unav = []
@@ -213,7 +218,9 @@ class TeamsetMixin(MixinMeta):
         """Admin Transfers."""
 
     @admintransfer.command(name="swap")
-    async def _adminswap(self, ctx, team1, player1: discord.Member, team2, player2: discord.Member):
+    async def _adminswap(
+        self, ctx, team1, player1: discord.Member, team2, player2: discord.Member
+    ):
         """Swap a player from your team with a player from another team."""
         if not await self.config.guild(ctx.guild).transferwindow():
             return await ctx.send("The transfer window is currently closed.")

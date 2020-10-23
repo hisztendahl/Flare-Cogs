@@ -22,6 +22,7 @@ from .simtheme import SimthemeMixin
 
 # THANKS TO https://code.sololearn.com/ci42wd5h0UQX/#py FOR THE SIMULATION AND FIXATOR/AIKATERNA/STEVY FOR THE PILLOW HELP/LEVELER
 
+
 def getformbonus(form):
     streak = form["streak"]
     result = form["result"]
@@ -31,22 +32,23 @@ def getformbonus(form):
     if streak == 1:
         multiplier = 2.5
     elif streak == 2:
-        multiplier= 5
+        multiplier = 5
     elif streak == 3:
-        multiplier= 7.5
+        multiplier = 7.5
     elif streak == 4:
-        multiplier= 12.5
+        multiplier = 12.5
     elif streak == 5:
-        multiplier= 20
+        multiplier = 20
     elif streak == 6:
-        multiplier= 32.5
+        multiplier = 32.5
     else:
-        multiplier= 50
+        multiplier = 50
     if result == "W":
-        multiplier = - multiplier
+        multiplier = -multiplier
     multiplier = (100 + multiplier) / 100
     return multiplier
-        
+
+
 class CompositeMetaClass(type(commands.Cog), type(ABC)):
     """This allows the metaclass used for proper type detection to coexist with discord.py's
     metaclass."""
@@ -263,7 +265,10 @@ class SimLeague(
         if not teams:
             return await ctx.send("No teams have been registered.")
         if mobilefriendly:
-            embed = discord.Embed(colour=ctx.author.colour, description="------------------------- Team List -------------------------")
+            embed = discord.Embed(
+                colour=ctx.author.colour,
+                description="------------------------- Team List -------------------------",
+            )
             msg = await ctx.send(
                 "This may take some time depending on the amount of teams currently registered."
             )
@@ -373,7 +378,10 @@ class SimLeague(
         if not cupgames:
             return await ctx.send("No cup fixtures have been made.")
         if cupround is None:
-            embed = discord.Embed(colour=ctx.author.colour, description="------------------------- Cup Fixtures -------------------------")
+            embed = discord.Embed(
+                colour=ctx.author.colour,
+                description="------------------------- Cup Fixtures -------------------------",
+            )
             for rd in cupgames:
                 fixtures = cupgames[rd]
                 a = []
@@ -418,7 +426,10 @@ class SimLeague(
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
         if week is None:
-            embed = discord.Embed(colour=ctx.author.colour, description="------------------------- Fixtures -------------------------")
+            embed = discord.Embed(
+                colour=ctx.author.colour,
+                description="------------------------- Fixtures -------------------------",
+            )
             for i, fixture in enumerate(fixtures[:25]):
                 a = []
                 for game in fixture:
@@ -427,7 +438,10 @@ class SimLeague(
 
             await ctx.send(embed=embed)
             if len(fixtures) > 25:
-                embed = discord.Embed(colour=ctx.author.colour, description="------------------------- Fixtures -------------------------")
+                embed = discord.Embed(
+                    colour=ctx.author.colour,
+                    description="------------------------- Fixtures -------------------------",
+                )
                 for i, fixture in enumerate(fixtures[25:], 25):
                     a = []
                     for game in fixture:
@@ -469,7 +483,7 @@ class SimLeague(
                 reverse=True,
             ):
                 gd = standings[x]["gd"]
-                gd = f"+{gd}" if gd > 0 else gd 
+                gd = f"+{gd}" if gd > 0 else gd
                 t.append(
                     [
                         x,
@@ -478,7 +492,7 @@ class SimLeague(
                         standings[x]["draws"],
                         standings[x]["losses"],
                         standings[x]["points"],
-                        gd
+                        gd,
                     ]
                 )
             tab = tabulate(t, headers=["Team", "Pl.", "W", "D", "L", "Pts", "Diff"])
@@ -491,7 +505,7 @@ class SimLeague(
                 reverse=True,
             ):
                 gd = standings[x]["gd"]
-                gd = f"+{gd}" if gd > 0 else gd 
+                gd = f"+{gd}" if gd > 0 else gd
                 t.append(
                     [
                         x,
@@ -1399,13 +1413,13 @@ class SimLeague(
                 if team1Stats[8] > team2Stats[8]:
                     async with self.config.guild(ctx.guild).teams() as teams:
                         if teams[team1]["form"]["result"] == "W":
-                            teams[team1]["form"]["streak"] += 1 
+                            teams[team1]["form"]["streak"] += 1
                         else:
                             teams[team1]["form"]["result"] = "W"
                             teams[team1]["form"]["streak"] = 1
 
                         if teams[team2]["form"]["result"] == "L":
-                            teams[team2]["form"]["streak"] += 1 
+                            teams[team2]["form"]["streak"] += 1
                         else:
                             teams[team2]["form"]["result"] = "L"
                             teams[team2]["form"]["streak"] = 1
@@ -1419,13 +1433,13 @@ class SimLeague(
                 if team1Stats[8] < team2Stats[8]:
                     async with self.config.guild(ctx.guild).teams() as teams:
                         if teams[team1]["form"]["result"] == "L":
-                            teams[team1]["form"]["streak"] += 1 
+                            teams[team1]["form"]["streak"] += 1
                         else:
                             teams[team1]["form"]["result"] = "L"
                             teams[team1]["form"]["streak"] = 1
 
                         if teams[team2]["form"]["result"] == "W":
-                            teams[team2]["form"]["streak"] += 1 
+                            teams[team2]["form"]["streak"] += 1
                         else:
                             teams[team2]["form"]["result"] = "W"
                             teams[team2]["form"]["streak"] = 1
@@ -1439,15 +1453,15 @@ class SimLeague(
                 if team1Stats[8] == team2Stats[8]:
                     async with self.config.guild(ctx.guild).teams() as teams:
                         if teams[team1]["form"]["result"] == "D":
-                            teams[team1]["form"]["streak"] += 1 
+                            teams[team1]["form"]["streak"] += 1
                         else:
                             teams[team1]["form"]["result"] = "D"
                             teams[team1]["form"]["streak"] = 1
                         if teams[team2]["form"]["result"] == "D":
-                            teams[team2]["form"]["streak"] += 1 
+                            teams[team2]["form"]["streak"] += 1
                         else:
                             teams[team2]["form"]["result"] = "D"
-                            teams[team2]["form"]["streak"] = 1                        
+                            teams[team2]["form"]["streak"] = 1
                     async with self.config.guild(ctx.guild).standings() as standings:
                         standings[team1]["played"] += 1
                         standings[team2]["played"] += 1

@@ -1523,11 +1523,11 @@ class SimHelper(MixinMeta):
             )
             draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # score box highlight
 
-        actionTeam1Count = chances[0]+fouls[1]
-        actionTeam2Count = chances[1]+fouls[0]
+        actionTeam1Count = chances[0] + fouls[1]
+        actionTeam2Count = chances[1] + fouls[0]
         total_action_count = actionTeam1Count + actionTeam2Count
-        team1_possession = round(actionTeam1Count/total_action_count * 100)
-        team2_possession = round(actionTeam2Count/total_action_count * 100)
+        team1_possession = round(actionTeam1Count / total_action_count * 100)
+        team2_possession = round(actionTeam2Count / total_action_count * 100)
         poss = (team1_possession, team2_possession)
 
         draw.rectangle(
@@ -1548,7 +1548,9 @@ class SimHelper(MixinMeta):
                 if poss[0] > poss[1]
                 else (right_pos, start_vert_pos + title_height + 40)
             )
-            draw.rectangle([s_left_pos, s_right_pos], fill=highlight_color)  # possession box highlight
+            draw.rectangle(
+                [s_left_pos, s_right_pos], fill=highlight_color
+            )  # possession box highlight
 
         draw.rectangle(
             [
@@ -1704,7 +1706,7 @@ class SimHelper(MixinMeta):
 
         # POSSESSION
         _write_unicode(
-            str(poss[0])+"%",
+            str(poss[0]) + "%",
             left_text_align - 9,
             start_vert_pos + 43,
             name_fnt,
@@ -1720,7 +1722,7 @@ class SimHelper(MixinMeta):
             text_color,
         )
         _write_unicode(
-            str(poss[1])+"%",
+            str(poss[1]) + "%",
             width - left_text_align - 16,
             start_vert_pos + 43,
             name_fnt,
@@ -2044,7 +2046,7 @@ class SimHelper(MixinMeta):
                                         "Failed to remove role from {}".format(member.name)
                                     )
 
-    async def posttransfer(self, ctx, title, member1, fromteam, toteam = None):
+    async def posttransfer(self, ctx, title, member1, fromteam, toteam=None):
         cog = self.bot.get_cog("SimLeague")
         embed = discord.Embed(color=0xCCFFCC)
         embed.title = title
@@ -2135,7 +2137,7 @@ class SimHelper(MixinMeta):
                 teams[team1]["form"] = {"result": None, "streak": 0}
             if not "form" in teams[team2]:
                 teams[team2]["form"] = {"result": None, "streak": 0}
-                
+
             team1pl = teams[team1]["members"]
 
             for memberid in team1pl:

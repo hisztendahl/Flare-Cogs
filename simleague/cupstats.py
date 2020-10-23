@@ -135,7 +135,9 @@ class CupStatsMixin(MixinMeta):
                     if k in teams[t]["members"]:
                         team = t
                         pass
-                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
+                a.append(
+                    f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}"
+                )
             embed = discord.Embed(
                 title="Top goal involvements (goals + assists)",
                 description="\n".join(a[:10]),
@@ -160,7 +162,9 @@ class CupStatsMixin(MixinMeta):
                     if k in teams[t]["members"]:
                         team = t
                         pass
-                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
+                a.append(
+                    f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}"
+                )
             embed = discord.Embed(
                 title="Top Scorers", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -183,7 +187,9 @@ class CupStatsMixin(MixinMeta):
                     if k in teams[t]["members"]:
                         team = t
                         pass
-                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
+                a.append(
+                    f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}"
+                )
             embed = discord.Embed(
                 title="Most Yellow Cards", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -206,7 +212,9 @@ class CupStatsMixin(MixinMeta):
                     if k in teams[t]["members"]:
                         team = t
                         pass
-                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
+                a.append(
+                    f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}"
+                )
             embed = discord.Embed(
                 title="Most Red Cards", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -229,7 +237,9 @@ class CupStatsMixin(MixinMeta):
                     if k in teams[t]["members"]:
                         team = t
                         pass
-                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
+                a.append(
+                    f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}"
+                )
             embed = discord.Embed(
                 title="Most MOTMs", description="\n".join(a[:10]), colour=0xFF0000
             )
@@ -262,23 +272,35 @@ class CupStatsMixin(MixinMeta):
         if stats:
             a = []
             b = []
-            for i, k in enumerate(sorted(stats, key=lambda x: stats[x]["scored"], reverse=True)[:10]):
+            for i, k in enumerate(
+                sorted(stats, key=lambda x: stats[x]["scored"], reverse=True)[:10]
+            ):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
                     if k in teams[t]["members"]:
                         team = t
                         pass
-                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]['scored']}")
-            for i, k in enumerate(sorted(stats, key=lambda x: stats[x]["missed"], reverse=True)[:10]):
+                a.append(
+                    f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]['scored']}"
+                )
+            for i, k in enumerate(
+                sorted(stats, key=lambda x: stats[x]["missed"], reverse=True)[:10]
+            ):
                 user = self.bot.get_user(int(k))
                 team = ""
                 for t in teams:
                     if k in teams[t]["members"]:
                         team = t
                         pass
-                b.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]['missed']}")
-            embed = discord.Embed(title="Penalty Statistics", colour=0xFF0000, description="=== Scored and Missed penalties statistics ===")
+                b.append(
+                    f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]['missed']}"
+                )
+            embed = discord.Embed(
+                title="Penalty Statistics",
+                colour=0xFF0000,
+                description="=== Scored and Missed penalties statistics ===",
+            )
             embed.add_field(name="Penalties Scored", value="\n".join(a))
             embed.add_field(name="Penalties Missed", value="\n".join(b))
             await ctx.send(embed=embed)
@@ -300,7 +322,9 @@ class CupStatsMixin(MixinMeta):
                     if k in teams[t]["members"]:
                         team = t
                         pass
-                a.append(f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}")
+                a.append(
+                    f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}"
+                )
             embed = discord.Embed(
                 title="Assist Statistics", description="\n".join(a), colour=0xFF0000
             )

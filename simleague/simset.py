@@ -334,10 +334,10 @@ class SimsetMixin(MixinMeta):
                 member = ctx.guild.get_member(int(user))
                 await member.add_roles(role)
         await ctx.tick()
-    
+
     @simset.command()
     @commands.bot_has_permissions(manage_roles=True)
-    async def clearform(self, ctx, team = None):
+    async def clearform(self, ctx, team=None):
         """Clear streak form for a team or all teams."""
         cog = self.bot.get_cog("SimLeague")
         async with cog.config.guild(ctx.guild).teams() as teams:

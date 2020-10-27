@@ -865,7 +865,10 @@ class SimLeague(
                             if pB is True:
                                 async with self.config.guild(ctx.guild).stats() as stats:
                                     if playerPenalty[1] not in stats["penalties"]:
-                                        stats["penalties"][playerPenalty[1]] = {"scored": 0, "missed": 1}
+                                        stats["penalties"][playerPenalty[1]] = {
+                                            "scored": 0,
+                                            "missed": 1,
+                                        }
                                     else:
                                         stats["penalties"][playerPenalty[1]]["missed"] += 1
                                 user = self.bot.get_user(int(playerPenalty[1]))
@@ -895,7 +898,10 @@ class SimLeague(
                                     else:
                                         stats["goals"][playerPenalty[1]] += 1
                                     if playerPenalty[1] not in stats["penalties"]:
-                                        stats["penalties"][playerPenalty[1]] = {"scored": 1, "missed": 0}
+                                        stats["penalties"][playerPenalty[1]] = {
+                                            "scored": 1,
+                                            "missed": 0,
+                                        }
                                     else:
                                         stats["penalties"][playerPenalty[1]]["scored"] += 1
                                 events = True
@@ -927,7 +933,10 @@ class SimLeague(
                         if pB is True:
                             async with self.config.guild(ctx.guild).stats() as stats:
                                 if playerPenalty[1] not in stats["penalties"]:
-                                    stats["penalties"][playerPenalty[1]] = {"scored": 0, "missed": 1}
+                                    stats["penalties"][playerPenalty[1]] = {
+                                        "scored": 0,
+                                        "missed": 1,
+                                    }
                                 else:
                                     stats["penalties"][playerPenalty[1]]["missed"] += 1
                             user = self.bot.get_user(int(playerPenalty[1]))
@@ -957,7 +966,10 @@ class SimLeague(
                                 else:
                                     stats["goals"][playerPenalty[1]] += 1
                                 if playerPenalty[1] not in stats["penalties"]:
-                                    stats["penalties"][playerPenalty[1]] = {"scored": 1, "missed": 0}
+                                    stats["penalties"][playerPenalty[1]] = {
+                                        "scored": 1,
+                                        "missed": 0,
+                                    }
                                 else:
                                     stats["penalties"][playerPenalty[1]]["scored"] += 1
                             events = True
@@ -984,7 +996,7 @@ class SimLeague(
                                 str(team2Stats[8]),
                             )
                             await ctx.send(file=image)
-        
+
             # Yellow card chance
             if events is False:
                 yC = await self.yCardChance(ctx.guild, probability)
@@ -1106,7 +1118,9 @@ class SimLeague(
                             str(team2Stats[8]),
                             user2,
                             str(
-                                len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7])) - 1
+                                len(teams[str(str(playerRed[0]))]["members"])
+                                - (int(teamStats[7]))
+                                - 1
                             ),
                         )
                         await ctx.send(file=image)
@@ -2280,7 +2294,8 @@ class SimLeague(
                             str(team2Stats[8]),
                             user2,
                             str(
-                                len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7])-1)
+                                len(teams[str(str(playerRed[0]))]["members"])
+                                - (int(teamStats[7]) - 1)
                             ),
                         )
                         await ctx.send(file=image)

@@ -940,13 +940,15 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="commentary.png")
         return image
 
-    async def varcheckimg(self, ctx, vartype, res = None):
+    async def varcheckimg(self, ctx, vartype, res=None):
         theme = await self.config.guild(ctx.guild).theme()
         font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
         name_fnt = ImageFont.truetype(font_bold_file, 22)
         header_u_fnt = ImageFont.truetype(font_bold_file, 18)
         general_info_fnt2 = ImageFont.truetype(font_bold_file, 20, encoding="utf-8")
-        rank_avatar = await self.getimg("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/VAR_System_Logo.svg/1280px-VAR_System_Logo.svg.png")
+        rank_avatar = await self.getimg(
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/VAR_System_Logo.svg/1280px-VAR_System_Logo.svg.png"
+        )
         profile_image = Image.open(rank_avatar).convert("RGBA")
 
         # set canvas
@@ -1036,7 +1038,13 @@ class SimHelper(MixinMeta):
                 header_u_fnt,
                 goal_text_color,
             )
-            comment = "Checking {} for possible {}".format(vartype, random.choice(["offside", "foul", "handball"])) if vartype == 'penalty' else "Checking red card incident"
+            comment = (
+                "Checking {} for possible {}".format(
+                    vartype, random.choice(["offside", "foul", "handball"])
+                )
+                if vartype == "penalty"
+                else "Checking red card incident"
+            )
             draw.text(
                 (label_align, 38),
                 textwrap.fill(comment, 30),

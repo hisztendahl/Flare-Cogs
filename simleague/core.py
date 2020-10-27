@@ -940,6 +940,116 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="commentary.png")
         return image
 
+    async def varcheckimg(self, ctx, vartype, res = None):
+        theme = await self.config.guild(ctx.guild).theme()
+        font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
+        name_fnt = ImageFont.truetype(font_bold_file, 22)
+        header_u_fnt = ImageFont.truetype(font_bold_file, 18)
+        general_info_fnt2 = ImageFont.truetype(font_bold_file, 20, encoding="utf-8")
+        rank_avatar = await self.getimg("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/VAR_System_Logo.svg/1280px-VAR_System_Logo.svg.png")
+        profile_image = Image.open(rank_avatar).convert("RGBA")
+
+        # set canvas
+        width = 360
+        height = 100
+        bg_color = list_to_tuple(theme["general"]["bg_color"])
+        result = Image.new("RGBA", (width, height), bg_color)
+        process = Image.new("RGBA", (width, height), bg_color)
+
+        # draw
+        draw = ImageDraw.Draw(process)
+
+        # draw transparent overlay
+        vert_pos = 5
+        left_pos = 135
+        right_pos = width - vert_pos
+        title_height = 22
+
+        fill = list_to_tuple(theme["chances"]["header_text_bg"])
+        draw.rectangle(
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
+        )  # title box
+
+        # draw level circle
+        lvl_circle_dia = 105
+        circle_left = 7
+        circle_top = int((height - lvl_circle_dia) / 2) + 10
+
+        # draws mask
+        total_gap = 10
+        border = int(total_gap / 2)
+        profile_size = lvl_circle_dia - total_gap
+        # put in profile picture
+        profile_image = profile_image.resize((profile_size, profile_size - 20), Image.ANTIALIAS)
+        process.paste(profile_image, (circle_left + border, circle_top + border), profile_image)
+
+        # put in server picture
+        def _write_unicode(text, init_x, y, font, unicode_font, fill):
+            write_pos = init_x
+
+            for char in text:
+                if char.isalnum() or char in string.punctuation or char in string.whitespace:
+                    draw.text((write_pos, y), char, font=font, fill=fill)
+                    write_pos += font.getsize(char)[0]
+                else:
+                    draw.text((write_pos, y), "{}".format(char), font=unicode_font, fill=fill)
+                    write_pos += unicode_font.getsize(char)[0]
+
+        # draw level box
+        fill = list_to_tuple(theme["goals"]["header_time_col"])
+        left_text_align = 130
+        goal_text_color = theme["chances"]["header_text_col"]
+        goal_text_color = list_to_tuple(goal_text_color)
+        # goal text
+
+        label_align = 117
+        label_text_color = list_to_tuple(theme["chances"]["desc_text_col"])
+        if res is not None:
+            _write_unicode(
+                "Check complete",
+                left_text_align - 12,
+                vert_pos + 3,
+                name_fnt,
+                header_u_fnt,
+                goal_text_color,
+            )
+            if res is True:
+                draw.text(
+                    (label_align, 38),
+                    "Decision: NO {}!".format(vartype),
+                    font=general_info_fnt2,
+                    fill=label_text_color,
+                )
+            else:
+                draw.text(
+                    (label_align, 38),
+                    "Decision: {}!".format(vartype),
+                    font=general_info_fnt2,
+                    fill=label_text_color,
+                )
+        else:
+            _write_unicode(
+                "Reviewing incident",
+                left_text_align - 12,
+                vert_pos + 3,
+                name_fnt,
+                header_u_fnt,
+                goal_text_color,
+            )
+            comment = "Checking {} for possible {}".format(vartype, random.choice(["offside", "foul", "handball"])) if vartype == 'penalty' else "Checking red card incident"
+            draw.text(
+                (label_align, 38),
+                textwrap.fill(comment, 30),
+                font=general_info_fnt2,
+                fill=label_text_color,
+            )
+        result = Image.alpha_composite(result, process)
+        file = BytesIO()
+        result.save(file, "PNG", quality=100)
+        file.seek(0)
+        image = discord.File(file, filename="pikaleague.png")
+        return image
+
     async def extratime(self, ctx, time):
         time = str(time)
         font_bold_file = f"{bundled_data_path(self)}/LeagueSpartan-Bold.otf"
@@ -2101,6 +2211,16 @@ class SimHelper(MixinMeta):
     async def penaltyBlock(self, guild, probability):
         rdmint = random.randint(0, 1)
         if rdmint > probability["penaltyblock"]:  # 0.75 default
+            return True
+
+    async def varChance(self, guild, probability):
+        rdmint = random.randint(0, 100)
+        if rdmint > probability["varchance"]:  # 50 default
+            return True
+
+    async def varSuccess(self, guild, probability):
+        rdmint = random.randint(0, 100)
+        if rdmint > probability["varsuccess"]:  # 50 default
             return True
 
     async def commentChance(self, guild, probability):

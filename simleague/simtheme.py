@@ -472,3 +472,13 @@ class SimthemeMixin(MixinMeta):
         fouls = (random.randint(3, 15), random.randint(3, 15))
         image = await self.matchstats(ctx, team1, team2, score, yellow, red, chances, fouls)
         await ctx.send(file=image)
+
+    @preview.command(name="var")
+    async def pvar(self, ctx):
+        """Preview VAR check."""
+        eventtype = random.choice(["penalty", "red card"])
+        varsuccess = random.choice([True, False])
+        image = await self.varcheckimg(ctx, eventtype)
+        await ctx.send(file=image)
+        image = await self.varcheckimg(ctx, eventtype, varsuccess)
+        await ctx.send(file=image)

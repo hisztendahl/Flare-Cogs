@@ -119,6 +119,8 @@ class SimLeague(
                 "cornerchance": 98,
                 "cornerblock": 0.2,
                 "commentchance": 85,
+                "varchance": 50,
+                "varsuccess": 50,
             },
             "maxplayers": 4,
             "active": False,
@@ -845,68 +847,144 @@ class SimLeague(
                     image = await self.penaltyimg(ctx, str(playerPenalty[0]), str(min), user)
                     await ctx.send(file=image)
                     events = True
-                    pB = await self.penaltyBlock(ctx.guild, probability)
-                    if pB is True:
-                        async with self.config.guild(ctx.guild).stats() as stats:
-                            if playerPenalty[1] not in stats["penalties"]:
-                                stats["penalties"][playerPenalty[1]] = {"scored": 0, "missed": 1}
-                            else:
-                                stats["penalties"][playerPenalty[1]]["missed"] += 1
-                        user = self.bot.get_user(int(playerPenalty[1]))
-                        if user is None:
-                            user = await self.bot.fetch_user(int(playerPenalty[1]))
-                        if user not in motm:
-                            motm[user] = 0.25
-                        else:
-                            motm[user] += 0.25
-                        image = await self.simpic(
-                            ctx,
-                            str(min),
-                            "penmiss",
-                            user,
-                            team1,
-                            team2,
-                            str(playerPenalty[0]),
-                            str(team1Stats[8]),
-                            str(team2Stats[8]),
-                        )
+                    await asyncio.sleep(2)
+                    vC = await self.varChance(ctx.guild, probability)
+                    if vC is True:
+                        image = await self.varcheckimg(ctx, "penalty")
                         await ctx.send(file=image)
+                        await asyncio.sleep(3)
+                        vCs = await self.varSuccess(ctx.guild, probability)
+                        if vCs is True:
+                            image = await self.varcheckimg(ctx, "penalty", True)
+                            await ctx.send(file=image)
+                        else:
+                            image = await self.varcheckimg(ctx, "penalty", False)
+                            await ctx.send(file=image)
+                            await asyncio.sleep(2)
+                            pB = await self.penaltyBlock(ctx.guild, probability)
+                            if pB is True:
+                                async with self.config.guild(ctx.guild).stats() as stats:
+                                    if playerPenalty[1] not in stats["penalties"]:
+                                        stats["penalties"][playerPenalty[1]] = {"scored": 0, "missed": 1}
+                                    else:
+                                        stats["penalties"][playerPenalty[1]]["missed"] += 1
+                                user = self.bot.get_user(int(playerPenalty[1]))
+                                if user is None:
+                                    user = await self.bot.fetch_user(int(playerPenalty[1]))
+                                if user not in motm:
+                                    motm[user] = 0.25
+                                else:
+                                    motm[user] += 0.25
+                                image = await self.simpic(
+                                    ctx,
+                                    str(min),
+                                    "penmiss",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerPenalty[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                )
+                                await ctx.send(file=image)
+                            else:
+                                teamStats[8] += 1
+                                async with self.config.guild(ctx.guild).stats() as stats:
+                                    if playerPenalty[1] not in stats["goals"]:
+                                        stats["goals"][playerPenalty[1]] = 1
+                                    else:
+                                        stats["goals"][playerPenalty[1]] += 1
+                                    if playerPenalty[1] not in stats["penalties"]:
+                                        stats["penalties"][playerPenalty[1]] = {"scored": 1, "missed": 0}
+                                    else:
+                                        stats["penalties"][playerPenalty[1]]["scored"] += 1
+                                events = True
+                                user = self.bot.get_user(int(playerPenalty[1]))
+                                if user is None:
+                                    user = await self.bot.fetch_user(int(playerPenalty[1]))
+                                if user not in motm:
+                                    motm[user] = 1.5
+                                else:
+                                    motm[user] += 1.5
+                                if user.id not in goals:
+                                    goals[user.id] = 1
+                                else:
+                                    goals[user.id] += 1
+                                image = await self.simpic(
+                                    ctx,
+                                    str(min),
+                                    "penscore",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerPenalty[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                )
+                                await ctx.send(file=image)
                     else:
-                        teamStats[8] += 1
-                        async with self.config.guild(ctx.guild).stats() as stats:
-                            if playerPenalty[1] not in stats["goals"]:
-                                stats["goals"][playerPenalty[1]] = 1
+                        pB = await self.penaltyBlock(ctx.guild, probability)
+                        if pB is True:
+                            async with self.config.guild(ctx.guild).stats() as stats:
+                                if playerPenalty[1] not in stats["penalties"]:
+                                    stats["penalties"][playerPenalty[1]] = {"scored": 0, "missed": 1}
+                                else:
+                                    stats["penalties"][playerPenalty[1]]["missed"] += 1
+                            user = self.bot.get_user(int(playerPenalty[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerPenalty[1]))
+                            if user not in motm:
+                                motm[user] = 0.25
                             else:
-                                stats["goals"][playerPenalty[1]] += 1
-                            if playerPenalty[1] not in stats["penalties"]:
-                                stats["penalties"][playerPenalty[1]] = {"scored": 1, "missed": 0}
+                                motm[user] += 0.25
+                            image = await self.simpic(
+                                ctx,
+                                str(min),
+                                "penmiss",
+                                user,
+                                team1,
+                                team2,
+                                str(playerPenalty[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                            )
+                            await ctx.send(file=image)
+                        else:
+                            teamStats[8] += 1
+                            async with self.config.guild(ctx.guild).stats() as stats:
+                                if playerPenalty[1] not in stats["goals"]:
+                                    stats["goals"][playerPenalty[1]] = 1
+                                else:
+                                    stats["goals"][playerPenalty[1]] += 1
+                                if playerPenalty[1] not in stats["penalties"]:
+                                    stats["penalties"][playerPenalty[1]] = {"scored": 1, "missed": 0}
+                                else:
+                                    stats["penalties"][playerPenalty[1]]["scored"] += 1
+                            events = True
+                            user = self.bot.get_user(int(playerPenalty[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerPenalty[1]))
+                            if user not in motm:
+                                motm[user] = 1.5
                             else:
-                                stats["penalties"][playerPenalty[1]]["scored"] += 1
-                        events = True
-                        user = self.bot.get_user(int(playerPenalty[1]))
-                        if user is None:
-                            user = await self.bot.fetch_user(int(playerPenalty[1]))
-                        if user not in motm:
-                            motm[user] = 1.5
-                        else:
-                            motm[user] += 1.5
-                        if user.id not in goals:
-                            goals[user.id] = 1
-                        else:
-                            goals[user.id] += 1
-                        image = await self.simpic(
-                            ctx,
-                            str(min),
-                            "penscore",
-                            user,
-                            team1,
-                            team2,
-                            str(playerPenalty[0]),
-                            str(team1Stats[8]),
-                            str(team2Stats[8]),
-                        )
-                        await ctx.send(file=image)
-
+                                motm[user] += 1.5
+                            if user.id not in goals:
+                                goals[user.id] = 1
+                            else:
+                                goals[user.id] += 1
+                            image = await self.simpic(
+                                ctx,
+                                str(min),
+                                "penscore",
+                                user,
+                                team1,
+                                team2,
+                                str(playerPenalty[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                            )
+                            await ctx.send(file=image)
+        
             # Yellow card chance
             if events is False:
                 yC = await self.yCardChance(ctx.guild, probability)
@@ -1008,29 +1086,11 @@ class SimLeague(
                 if rC is True:
                     teamStats = await TeamChance()
                     playerRed = await PlayerGenerator(2, teamStats[0], teamStats[1], teamStats[2])
-                    events = True
                     if playerRed is not None:
-                        teamStats[7] += 1
-                        teamStats[11] += 1
-                        async with self.config.guild(ctx.guild).stats() as stats:
-                            if playerRed[1] not in stats["reds"]:
-                                stats["reds"][playerRed[1]] = 1
-                            else:
-                                stats["reds"][playerRed[1]] += 1
-                        reds[str(playerRed[0])] += 1
-                        teamStats[2].append(playerRed[1])
                         events = True
                         user = self.bot.get_user(int(playerRed[1]))
                         if user is None:
                             user = await self.bot.fetch_user(int(playerRed[1]))
-                        if user not in motm:
-                            motm[user] = -2
-                        else:
-                            motm[user] += -2
-                        if user.id not in redcards:
-                            redcards[user.id] = 1
-                        else:
-                            redcards[user.id] += 1
                         user2 = self.bot.get_user(int(playerRed[2]))
                         if user2 is None:
                             user2 = await self.bot.fetch_user(int(playerRed[2]))
@@ -1046,10 +1106,60 @@ class SimLeague(
                             str(team2Stats[8]),
                             user2,
                             str(
-                                len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7]))
+                                len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7])) - 1
                             ),
                         )
                         await ctx.send(file=image)
+                        await asyncio.sleep(2)
+                        vC = await self.varChance(ctx.guild, probability)
+                        if vC is True:
+                            image = await self.varcheckimg(ctx, "red card")
+                            await ctx.send(file=image)
+                            await asyncio.sleep(3)
+                            vCs = await self.varSuccess(ctx.guild, probability)
+                            if vCs is True:
+                                image = await self.varcheckimg(ctx, "red card", True)
+                                await ctx.send(file=image)
+                            else:
+                                image = await self.varcheckimg(ctx, "red card", False)
+                                await ctx.send(file=image)
+                                await asyncio.sleep(2)
+                                teamStats[7] += 1
+                                teamStats[11] += 1
+                                async with self.config.guild(ctx.guild).stats() as stats:
+                                    if playerRed[1] not in stats["reds"]:
+                                        stats["reds"][playerRed[1]] = 1
+                                    else:
+                                        stats["reds"][playerRed[1]] += 1
+                                reds[str(playerRed[0])] += 1
+                                teamStats[2].append(playerRed[1])
+                                if user not in motm:
+                                    motm[user] = -2
+                                else:
+                                    motm[user] += -2
+                                if user.id not in redcards:
+                                    redcards[user.id] = 1
+                                else:
+                                    redcards[user.id] += 1
+                        else:
+                            teamStats[7] += 1
+                            teamStats[11] += 1
+                            async with self.config.guild(ctx.guild).stats() as stats:
+                                if playerRed[1] not in stats["reds"]:
+                                    stats["reds"][playerRed[1]] = 1
+                                else:
+                                    stats["reds"][playerRed[1]] += 1
+                            reds[str(playerRed[0])] += 1
+                            teamStats[2].append(playerRed[1])
+                            events = True
+                            if user not in motm:
+                                motm[user] = -2
+                            else:
+                                motm[user] += -2
+                            if user.id not in redcards:
+                                redcards[user.id] = 1
+                            else:
+                                redcards[user.id] += 1
 
             # Corner chance
             if events is False:
@@ -1898,74 +2008,156 @@ class SimLeague(
                         user = await self.bot.fetch_user(int(playerPenalty[1]))
                     image = await self.penaltyimg(ctx, str(playerPenalty[0]), str(min), user)
                     await ctx.send(file=image)
-                    pB = await self.penaltyBlock(ctx.guild, probability)
-                    if pB is True:
-                        events = True
-                        async with self.config.guild(ctx.guild).cupstats() as cupstats:
-                            if playerPenalty[1] not in cupstats["penalties"]:
-                                cupstats["penalties"][playerPenalty[1]] = {
-                                    "scored": 0,
-                                    "missed": 1,
-                                }
-                            else:
-                                cupstats["penalties"][playerPenalty[1]]["missed"] += 1
-                        user = self.bot.get_user(int(playerPenalty[1]))
-                        if user is None:
-                            user = await self.bot.fetch_user(int(playerPenalty[1]))
-                        if user not in motm:
-                            motm[user] = 0.25
-                        else:
-                            motm[user] += 0.25
-                        image = await self.simpic(
-                            ctx,
-                            str(min),
-                            "penmiss",
-                            user,
-                            team1,
-                            team2,
-                            str(playerPenalty[0]),
-                            str(team1Stats[8]),
-                            str(team2Stats[8]),
-                        )
+                    events = True
+                    await asyncio.sleep(2)
+                    vC = await self.varChance(ctx.guild, probability)
+                    if vC is True:
+                        image = await self.varcheckimg(ctx, "penalty")
                         await ctx.send(file=image)
+                        await asyncio.sleep(3)
+                        vCs = await self.varSuccess(ctx.guild, probability)
+                        if vCs is True:
+                            image = await self.varcheckimg(ctx, "penalty", True)
+                            await ctx.send(file=image)
+                        else:
+                            image = await self.varcheckimg(ctx, "penalty", False)
+                            await ctx.send(file=image)
+                            await asyncio.sleep(2)
+                            pB = await self.penaltyBlock(ctx.guild, probability)
+                            if pB is True:
+                                async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                    if playerPenalty[1] not in cupstats["penalties"]:
+                                        cupstats["penalties"][playerPenalty[1]] = {
+                                            "scored": 0,
+                                            "missed": 1,
+                                        }
+                                    else:
+                                        cupstats["penalties"][playerPenalty[1]]["missed"] += 1
+                                user = self.bot.get_user(int(playerPenalty[1]))
+                                if user is None:
+                                    user = await self.bot.fetch_user(int(playerPenalty[1]))
+                                if user not in motm:
+                                    motm[user] = 0.25
+                                else:
+                                    motm[user] += 0.25
+                                image = await self.simpic(
+                                    ctx,
+                                    str(min),
+                                    "penmiss",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerPenalty[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                )
+                                await ctx.send(file=image)
+                            else:
+                                teamStats[8] += 1
+                                async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                    if playerPenalty[1] not in cupstats["goals"]:
+                                        cupstats["goals"][playerPenalty[1]] = 1
+                                    else:
+                                        cupstats["goals"][playerPenalty[1]] += 1
+                                    if playerPenalty[1] not in cupstats["penalties"]:
+                                        cupstats["penalties"][playerPenalty[1]] = {
+                                            "scored": 1,
+                                            "missed": 0,
+                                        }
+                                    else:
+                                        cupstats["penalties"][playerPenalty[1]]["scored"] += 1
+                                events = True
+                                user = self.bot.get_user(int(playerPenalty[1]))
+                                if user is None:
+                                    user = await self.bot.fetch_user(int(playerPenalty[1]))
+                                if user not in motm:
+                                    motm[user] = 1.5
+                                else:
+                                    motm[user] += 1.5
+                                if user.id not in goals:
+                                    goals[user.id] = 1
+                                else:
+                                    goals[user.id] += 1
+                                image = await self.simpic(
+                                    ctx,
+                                    str(min),
+                                    "penscore",
+                                    user,
+                                    team1,
+                                    team2,
+                                    str(playerPenalty[0]),
+                                    str(team1Stats[8]),
+                                    str(team2Stats[8]),
+                                )
+                                await ctx.send(file=image)
                     else:
-                        teamStats[8] += 1
-                        async with self.config.guild(ctx.guild).cupstats() as cupstats:
-                            if playerPenalty[1] not in cupstats["goals"]:
-                                cupstats["goals"][playerPenalty[1]] = 1
+                        pB = await self.penaltyBlock(ctx.guild, probability)
+                        if pB is True:
+                            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                if playerPenalty[1] not in cupstats["penalties"]:
+                                    cupstats["penalties"][playerPenalty[1]] = {
+                                        "scored": 0,
+                                        "missed": 1,
+                                    }
+                                else:
+                                    cupstats["penalties"][playerPenalty[1]]["missed"] += 1
+                            user = self.bot.get_user(int(playerPenalty[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerPenalty[1]))
+                            if user not in motm:
+                                motm[user] = 0.25
                             else:
-                                cupstats["goals"][playerPenalty[1]] += 1
-                            if playerPenalty[1] not in cupstats["penalties"]:
-                                cupstats["penalties"][playerPenalty[1]] = {
-                                    "scored": 1,
-                                    "missed": 0,
-                                }
+                                motm[user] += 0.25
+                            image = await self.simpic(
+                                ctx,
+                                str(min),
+                                "penmiss",
+                                user,
+                                team1,
+                                team2,
+                                str(playerPenalty[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                            )
+                            await ctx.send(file=image)
+                        else:
+                            teamStats[8] += 1
+                            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                if playerPenalty[1] not in cupstats["goals"]:
+                                    cupstats["goals"][playerPenalty[1]] = 1
+                                else:
+                                    cupstats["goals"][playerPenalty[1]] += 1
+                                if playerPenalty[1] not in cupstats["penalties"]:
+                                    cupstats["penalties"][playerPenalty[1]] = {
+                                        "scored": 1,
+                                        "missed": 0,
+                                    }
+                                else:
+                                    cupstats["penalties"][playerPenalty[1]]["scored"] += 1
+                            events = True
+                            user = self.bot.get_user(int(playerPenalty[1]))
+                            if user is None:
+                                user = await self.bot.fetch_user(int(playerPenalty[1]))
+                            if user not in motm:
+                                motm[user] = 1.5
                             else:
-                                cupstats["penalties"][playerPenalty[1]]["scored"] += 1
-                        events = True
-                        user = self.bot.get_user(int(playerPenalty[1]))
-                        if user is None:
-                            user = await self.bot.fetch_user(int(playerPenalty[1]))
-                        if user not in motm:
-                            motm[user] = 1.5
-                        else:
-                            motm[user] += 1.5
-                        if user.id not in goals:
-                            goals[user.id] = 1
-                        else:
-                            goals[user.id] += 1
-                        image = await self.simpic(
-                            ctx,
-                            str(min),
-                            "penscore",
-                            user,
-                            team1,
-                            team2,
-                            str(playerPenalty[0]),
-                            str(team1Stats[8]),
-                            str(team2Stats[8]),
-                        )
-                        await ctx.send(file=image)
+                                motm[user] += 1.5
+                            if user.id not in goals:
+                                goals[user.id] = 1
+                            else:
+                                goals[user.id] += 1
+                            image = await self.simpic(
+                                ctx,
+                                str(min),
+                                "penscore",
+                                user,
+                                team1,
+                                team2,
+                                str(playerPenalty[0]),
+                                str(team1Stats[8]),
+                                str(team2Stats[8]),
+                            )
+                            await ctx.send(file=image)
 
             # Yellow card chance
             if events is False:
@@ -2069,27 +2261,10 @@ class SimLeague(
                     teamStats = await TeamChance()
                     playerRed = await PlayerGenerator(2, teamStats[0], teamStats[1], teamStats[2])
                     if playerRed is not None:
-                        teamStats[7] += 1
-                        teamStats[12] += 1
-                        async with self.config.guild(ctx.guild).cupstats() as cupstats:
-                            if playerRed[1] not in cupstats["reds"]:
-                                cupstats["reds"][playerRed[1]] = 1
-                            else:
-                                cupstats["reds"][playerRed[1]] += 1
-                        reds[str(playerRed[0])] += 1
-                        teamStats[2].append(playerRed[1])
                         events = True
                         user = self.bot.get_user(int(playerRed[1]))
                         if user is None:
                             user = await self.bot.fetch_user(int(playerRed[1]))
-                        if user not in motm:
-                            motm[user] = -2
-                        else:
-                            motm[user] += -2
-                        if user.id not in redcards:
-                            redcards[user.id] = 1
-                        else:
-                            redcards[user.id] += 1
                         user2 = self.bot.get_user(int(playerRed[2]))
                         if user2 is None:
                             user2 = await self.bot.fetch_user(int(playerRed[2]))
@@ -2105,10 +2280,58 @@ class SimLeague(
                             str(team2Stats[8]),
                             user2,
                             str(
-                                len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7]))
+                                len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7])-1)
                             ),
                         )
                         await ctx.send(file=image)
+                        await asyncio.sleep(2)
+                        vC = await self.varChance(ctx.guild, probability)
+                        if vC is True:
+                            image = await self.varcheckimg(ctx, "red card")
+                            await ctx.send(file=image)
+                            await asyncio.sleep(3)
+                            vCs = await self.varSuccess(ctx.guild, probability)
+                            if vCs is True:
+                                image = await self.varcheckimg(ctx, "red card", True)
+                                await ctx.send(file=image)
+                            else:
+                                image = await self.varcheckimg(ctx, "red card", False)
+                                await ctx.send(file=image)
+                                await asyncio.sleep(2)
+                                teamStats[7] += 1
+                                teamStats[12] += 1
+                                async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                    if playerRed[1] not in cupstats["reds"]:
+                                        cupstats["reds"][playerRed[1]] = 1
+                                    else:
+                                        cupstats["reds"][playerRed[1]] += 1
+                                reds[str(playerRed[0])] += 1
+                                teamStats[2].append(playerRed[1])
+                                if user not in motm:
+                                    motm[user] = -2
+                                else:
+                                    motm[user] += -2
+                                if user.id not in redcards:
+                                    redcards[user.id] = 1
+                                else:
+                                    redcards[user.id] += 1
+                        else:
+                            teamStats[12] += 1
+                            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                                if playerRed[1] not in cupstats["reds"]:
+                                    cupstats["reds"][playerRed[1]] = 1
+                                else:
+                                    cupstats["reds"][playerRed[1]] += 1
+                            reds[str(playerRed[0])] += 1
+                            teamStats[2].append(playerRed[1])
+                            if user not in motm:
+                                motm[user] = -2
+                            else:
+                                motm[user] += -2
+                            if user.id not in redcards:
+                                redcards[user.id] = 1
+                            else:
+                                redcards[user.id] += 1
 
             # Corner chance
             if events is False:

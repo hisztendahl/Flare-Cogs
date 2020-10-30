@@ -23,6 +23,45 @@ class StatsMixin(MixinMeta):
                 stats["penalties"].pop(userid, None)
         await ctx.tick()
 
+    @commands.command()
+    async def teamstats(self, ctx, team):
+        """Sim League Team Statistics."""
+        stats = await self.config.guild(ctx.guild).stats()
+        teams = await self.config.guild(ctx.guild).teams()
+        if team not in teams:
+            return await ctx.send("This team does not exist.")
+        else:
+            members = teams[team]["members"]
+            embed = discord.Embed(color=ctx.author.color, title="Statistics for {}".format(team))
+            for m in members:
+                userid = str(m)
+                pens = stats["penalties"].get(userid)
+                statistics = [
+                    stats["goals"].get(userid),
+                    stats["assists"].get(userid),
+                    stats["yellows"].get(userid),
+                    stats["reds"].get(userid),
+                    stats["motm"].get(userid),
+                    pens.get("missed") if pens else None,
+                    pens.get("scored") if pens else None,
+                ]
+                headers = [
+                    "goals",
+                    "assists",
+                    "yellows",
+                    "reds",
+                    "motms",
+                    "pen. missed",
+                    "pen. scored",
+                ]
+                stat = ""
+                for i, h in enumerate(headers):
+                    statistic = statistics[i] if statistics[i] is not None else 0
+                    stat += f"{h.title()}: {statistic}\n"
+                member = await self.statsmention(ctx, [m])
+                embed.add_field(name=member, value=stat)
+            await ctx.send(embed=embed)
+
     @commands.group(invoke_without_command=True)
     async def leaguestats(self, ctx, user: discord.Member = None):
         """Sim League Statistics."""
@@ -110,7 +149,7 @@ class StatsMixin(MixinMeta):
 
     async def statsmention(self, ctx, stats):
         if stats:
-            user = ctx.guild.get_member(int(stats[0]))
+            user = self.bot.get_user(int(stats[0]))
             if not user:
                 return "Invalid User {}".format(stats[0])
             return f"_{user.name}_"

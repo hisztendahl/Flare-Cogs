@@ -278,10 +278,26 @@ class SimsetMixin(MixinMeta):
                         "sign": {"in": None, "out": None},
                     }
             await self.config.guild(ctx.guild).transferwindow.set(True)
-            await ctx.send("Window is now open. Transfers will start with {}".format(firstteam))
+            await ctx.send(
+                "Transfer window is now open. Transfers will start with {}".format(firstteam)
+            )
         else:
             await self.config.guild(ctx.guild).transferwindow.set(False)
-            await ctx.send("Window is now closed.")
+            await ctx.send("Transfer window is now closed.")
+
+    @simset.command()
+    async def lockwindow(self, ctx, status: str):
+        """Open or close the contract extension window."""
+        if status.lower() not in ["open", "close"]:
+            return await ctx.send("You must specify either 'open' or 'close'.")
+        if status == "open":
+            await self.config.guild(ctx.guild).extensionwindow.set(True)
+            await ctx.send(
+                "Extension window is now open. You can now pick a player to extend for this season."
+            )
+        else:
+            await self.config.guild(ctx.guild).extensionwindow.set(False)
+            await ctx.send("Extension window is now closed.")
 
     @simset.command()
     async def mentions(self, ctx, bool: bool):
@@ -669,6 +685,19 @@ class SimsetMixin(MixinMeta):
     @clear.command(name="transfers")
     async def clear_transfers(self, ctx):
         await self.config.guild(ctx.guild).transferred.set([])
+        await ctx.tick()
+
+    @clear.command(name="lock")
+    async def clear_lock(self, ctx, team=None):
+        teams = await self.config.guild(ctx.guild).teams()
+        if team is not None and team not in teams:
+            return await ctx.send("This team does not exist.")
+        async with self.config.guild(ctx.guild).transfers() as transfers:
+            if team is not None:
+                transfers[team]["locked"] = None
+            else:
+                for t in transfers:
+                    transfers[t]["locked"] = None
         await ctx.tick()
 
     @clear.command(name="cup")

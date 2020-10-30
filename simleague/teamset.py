@@ -135,8 +135,9 @@ class TeamsetMixin(MixinMeta):
         """Lock a player to make him intransferable."""
         teams = await self.config.guild(ctx.guild).teams()
         cptid = list(teams[team1]["captain"].keys())[0]
-        if not await self.config.guild(ctx.guild).transferwindow():
-            return await ctx.send("The transfer window is currently closed.")
+        transfers = await self.config.guild(ctx.guild).transfers()
+        if not await self.config.guild(ctx.guild).extensionwindow():
+            return await ctx.send("The contract extension window is currently closed.")
         if ctx.author.id != int(cptid):
             return await ctx.send("You need to pick players from your team")
         transfers = await self.config.guild(ctx.guild).transfers()
@@ -150,6 +151,7 @@ class TeamsetMixin(MixinMeta):
     async def _tlist(self, ctx, team1=None):
         """Shows players already transferred during this window."""
         transferred = await self.config.guild(ctx.guild).transferred()
+        transfers = await self.config.guild(ctx.guild).transfers()
         teams = await self.config.guild(ctx.guild).teams()
         async with ctx.typing():
             if team1 is not None:
@@ -166,7 +168,7 @@ class TeamsetMixin(MixinMeta):
                     if k not in teams[team1]["captain"]
                 }
                 for m in members:
-                    if int(m) in transferred:
+                    if int(m) in transferred or transfers[team1]["locked"] == int(m):
                         unav.append(m)
                     else:
                         av.append(m)
@@ -195,7 +197,7 @@ class TeamsetMixin(MixinMeta):
                         if k not in teams[team]["captain"]
                     }
                     for m in members:
-                        if int(m) in transferred:
+                        if int(m) in transferred or transfers[team]["locked"] == int(m):
                             unav.append(m)
                         else:
                             av.append(m)

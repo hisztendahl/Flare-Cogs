@@ -129,6 +129,7 @@ class SimLeague(
             "transfers": {},
             "transferred": [],
             "transferwindow": False,
+            "extensionwindow": False,
             "cupmode": False,
             "theme": {
                 "general": {"bg_color": (255, 255, 255, 0),},

@@ -124,7 +124,7 @@ class CupStatsMixin(MixinMeta):
         stats = await self.config.guild(ctx.guild).cupstats()
         goals = stats["goals"]
         assists = stats["assists"]
-        contributions = mergeDict(goals, assists)
+        contributions = mergeDict(self, goals, assists)
         stats = contributions
         if contributions:
             a = []

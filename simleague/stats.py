@@ -32,15 +32,18 @@ class StatsMixin(MixinMeta):
             return await ctx.send("Incorrect type. Must be one of: league, cup, all.")
         if comptype == "league":
             stats = await self.config.guild(ctx.guild).stats()
+            del stats["cleansheets"]
         elif comptype == "cup":
             title = "Cup"
             stats = await self.config.guild(ctx.guild).cupstats()
+            del stats["cleansheets"]
         else:
             title = "All comps"
             stats = await self.config.guild(ctx.guild).stats()
             cupstats = await self.config.guild(ctx.guild).cupstats()
+            del stats["cleansheets"]
             for s in stats:
-                stats[s] = mergeDict(stats[s], cupstats[s])
+                stats[s] = mergeDict(self, stats[s], cupstats[s])
         teams = await self.config.guild(ctx.guild).teams()
         if team not in teams:
             return await ctx.send("This team does not exist.")
@@ -178,7 +181,7 @@ class StatsMixin(MixinMeta):
         stats = await self.config.guild(ctx.guild).stats()
         goals = stats["goals"]
         assists = stats["assists"]
-        contributions = mergeDict(goals, assists)
+        contributions = mergeDict(self, goals, assists)
         stats = contributions
         if contributions:
             a = []

@@ -24,43 +24,58 @@ class StatsMixin(MixinMeta):
         await ctx.tick()
 
     @commands.command()
-    async def teamstats(self, ctx, team):
+    async def teamstats(self, ctx, team, comptype="league"):
         """Sim League Team Statistics."""
-        stats = await self.config.guild(ctx.guild).stats()
+        stats = {}
+        title = "League"
+        if comptype not in ["league", "cup", "all"]:
+            return await ctx.send("Incorrect type. Must be one of: league, cup, all.")
+        if comptype == "league":
+            stats = await self.config.guild(ctx.guild).stats()
+        elif comptype == "cup":
+            title = "Cup"
+            stats = await self.config.guild(ctx.guild).cupstats()
+        else:
+            title = "All comps"
+            stats = await self.config.guild(ctx.guild).stats()
+            cupstats = await self.config.guild(ctx.guild).cupstats()
+            for s in stats:
+                stats[s] = mergeDict(stats[s], cupstats[s])
         teams = await self.config.guild(ctx.guild).teams()
         if team not in teams:
             return await ctx.send("This team does not exist.")
-        else:
-            members = teams[team]["members"]
-            embed = discord.Embed(color=ctx.author.color, title="Statistics for {}".format(team))
-            for m in members:
-                userid = str(m)
-                pens = stats["penalties"].get(userid)
-                statistics = [
-                    stats["goals"].get(userid),
-                    stats["assists"].get(userid),
-                    stats["yellows"].get(userid),
-                    stats["reds"].get(userid),
-                    stats["motm"].get(userid),
-                    pens.get("missed") if pens else None,
-                    pens.get("scored") if pens else None,
-                ]
-                headers = [
-                    "goals",
-                    "assists",
-                    "yellows",
-                    "reds",
-                    "motms",
-                    "pen. missed",
-                    "pen. scored",
-                ]
-                stat = ""
-                for i, h in enumerate(headers):
-                    statistic = statistics[i] if statistics[i] is not None else 0
-                    stat += f"{h.title()}: {statistic}\n"
-                member = await self.statsmention(ctx, [m])
-                embed.add_field(name=member, value=stat)
-            await ctx.send(embed=embed)
+        members = teams[team]["members"]
+        embed = discord.Embed(
+            color=ctx.author.color, title="Statistics for {} - ({})".format(team, title)
+        )
+        for m in members:
+            userid = str(m)
+            pens = stats["penalties"].get(userid)
+            statistics = [
+                stats["goals"].get(userid),
+                stats["assists"].get(userid),
+                stats["yellows"].get(userid),
+                stats["reds"].get(userid),
+                stats["motm"].get(userid),
+                pens.get("missed") if pens else None,
+                pens.get("scored") if pens else None,
+            ]
+            headers = [
+                "goals",
+                "assists",
+                "yellows",
+                "reds",
+                "motms",
+                "pen. missed",
+                "pen. scored",
+            ]
+            stat = ""
+            for i, h in enumerate(headers):
+                statistic = statistics[i] if statistics[i] is not None else 0
+                stat += f"{h.title()}: {statistic}\n"
+            member = await self.statsmention(ctx, [m])
+            embed.add_field(name=member, value=stat)
+        await ctx.send(embed=embed)
 
     @commands.group(invoke_without_command=True)
     async def leaguestats(self, ctx, user: discord.Member = None):

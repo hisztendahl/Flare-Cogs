@@ -219,7 +219,7 @@ class SimHelper(MixinMeta):
         draw.rectangle(
             [(level_left, vert_pos), (level_right, vert_pos + title_height)], fill=fill
         )  # box
-        lvl_text = "'" + str(time)
+        lvl_text = str(time) + "'"
         fill = list_to_tuple(theme["goals"]["header_time_col"])
         draw.text(
             (self._center(level_left, level_right, lvl_text, level_label_fnt), vert_pos + 3),
@@ -568,7 +568,7 @@ class SimHelper(MixinMeta):
         draw.rectangle(
             [(level_left + 5, vert_pos), (level_right, vert_pos + title_height)], fill=fill
         )  # box
-        lvl_text = "'" + str(time)
+        lvl_text = str(time) + "'"
         fill = list_to_tuple(theme["chances"]["header_time_col"])
         draw.text(
             (self._center(level_left, level_right, lvl_text, level_label_fnt), vert_pos + 3),
@@ -715,7 +715,7 @@ class SimHelper(MixinMeta):
         draw.rectangle(
             [(level_left, vert_pos), (level_right, vert_pos + title_height)], fill=fill
         )  # box
-        lvl_text = "'" + str(time)
+        lvl_text = str(time) + "'"
         fill = list_to_tuple(theme["chances"]["header_time_col"])
         draw.text(
             (self._center(level_left, level_right, lvl_text, level_label_fnt), vert_pos + 3),
@@ -875,7 +875,7 @@ class SimHelper(MixinMeta):
         draw.rectangle(
             [(level_left + 5, vert_pos), (level_right, vert_pos + title_height)], fill=fill
         )  # box
-        lvl_text = "'" + str(time)
+        lvl_text = str(time) + "'"
         fill = theme["chances"]["header_time_col"]
         if comment_type == "FOUL!":
             fill = theme["fouls"]["header_time_col"]

@@ -2430,10 +2430,11 @@ class SimHelper(MixinMeta):
             async with cog.config.guild(ctx.guild).users() as users:
                 for uid in teams[team]["members"]:
                     user = ctx.guild.get_member(int(uid))
-                    cptrole = [r for r in user.roles if r.name == "Sim Captain"][0]
-                    if cptrole:
-                        await user.remove_roles(cptrole)
-                    users.remove(uid)
+                    if user is not None:
+                        cptrole = [r for r in user.roles if r.name == "Sim Captain"][0]
+                        if cptrole:
+                            await user.remove_roles(cptrole)
+                        users.remove(uid)
             del teams[team]
             async with cog.config.guild(ctx.guild).standings() as standings:
                 del standings[team]

@@ -512,7 +512,7 @@ class SimsetMixin(MixinMeta):
                         byemention = ctx.guild.get_role(teams[bye]["role"]).mention
                         byementions.append(byemention)
 
-                    if len(bye):
+                    if len(byes):
                         await ctx.send(
                             "Teams directly qualified for the next round: {}".format(
                                 ", ".join(byementions)
@@ -561,7 +561,10 @@ class SimsetMixin(MixinMeta):
                     async with self.config.guild(ctx.guild).cupgames() as cupgames:
                         cupgames[str(roundsize)] = fixtures
 
-            embed = discord.Embed(color=0xFF0000)
+            embed = discord.Embed(
+                color=0xFF0000,
+                description="------------------------- Cup Draw -------------------------",
+            )
             a = []
             for fixture in fixtures:
                 if fixture["team2"] == "BYE":

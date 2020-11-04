@@ -164,7 +164,7 @@ class SimsetMixin(MixinMeta):
                 else:
                     await ctx.send(f"Stat '{param}' already exists (league).")
             async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
-                if not cupstandings[team]:
+                if team not in cupstandings:
                     cupstandings[team] = {
                         "played": 0,
                         "wins": 0,

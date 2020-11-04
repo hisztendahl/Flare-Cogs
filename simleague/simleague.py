@@ -529,7 +529,7 @@ class SimLeague(
             await ctx.send(box(tab))
 
     @standings.command(name="goals")
-    async def _goals(self, ctx):
+    async def standings_goals(self, ctx):
         """Teams with the most goals."""
         standings = await self.config.guild(ctx.guild).standings()
         if standings is None:

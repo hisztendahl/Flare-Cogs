@@ -250,6 +250,14 @@ class TeamsetMixin(MixinMeta):
         await self.simplesign(ctx, ctx.guild, team1, player1)
         await ctx.tick()
 
+    @admintransfer.command(name="signid")
+    async def _adminsimplesignid(self, ctx, team1, player1, name):
+        """Sign a player for a team."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        await self.simplesignid(ctx, ctx.guild, team1, player1, name)
+        await ctx.tick()
+
     @admintransfer.command(name="sign")
     async def _adminsign(self, ctx, team1, player1: discord.Member, player2: discord.Member):
         """Release a player and sign a free agent."""

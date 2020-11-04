@@ -2425,6 +2425,16 @@ class SimHelper(MixinMeta):
             users.append(str(member1.id))
         await self.posttransfer(ctx, "New signing!!", member1, "(free agent)", team1)
 
+    async def simplesignid(self, ctx, guild, team1, member1, name):
+        cog = self.bot.get_cog("SimLeague")
+        users = await cog.config.guild(guild).users()
+        if str(member1) in users:
+            return await ctx.send("User is currently not a free agent.")
+        async with cog.config.guild(guild).teams() as teams:
+            teams[team1]["members"][str(member1)] = name
+        async with cog.config.guild(guild).users() as users:
+            users.append(str(member1))
+
     async def team_delete(self, ctx, team):
         cog = self.bot.get_cog("SimLeague")
         async with cog.config.guild(ctx.guild).teams() as teams:

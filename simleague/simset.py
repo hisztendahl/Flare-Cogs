@@ -87,7 +87,7 @@ class SimsetMixin(MixinMeta):
             varsuccess = proba["varsuccess"]
             comment = proba["commentchance"]
             msg = (
-                "/!\ This has the chance to break the game completely, no support is offered. \n\n"
+                "/!\\ This has the chance to break the game completely, no support is offered. \n\n"
             )
             msg += "Goal Chance: {}.\n".format(goals)
             msg += "Yellow Card Chance: {}.\n".format(yellow)
@@ -138,6 +138,7 @@ class SimsetMixin(MixinMeta):
 
     @simset.command()
     async def addstat(self, ctx, param=None):
+        """Add standings stat keys."""
         teams = await self.config.guild(ctx.guild).teams()
         headers = [
             "played",
@@ -163,11 +164,27 @@ class SimsetMixin(MixinMeta):
                 else:
                     await ctx.send(f"Stat '{param}' already exists (league).")
             async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
-                stats = cupstandings[team].keys()
-                if param not in stats:
-                    cupstandings[team][param] = 0
+                if not cupstandings[team]:
+                    cupstandings[team] = {
+                        "played": 0,
+                        "wins": 0,
+                        "losses": 0,
+                        "points": 0,
+                        "gd": 0,
+                        "gf": 0,
+                        "ga": 0,
+                        "draws": 0,
+                        "reds": 0,
+                        "yellows": 0,
+                        "fouls": 0,
+                        "chances": 0,
+                    }
                 else:
-                    await ctx.send(f"Stat '{param}' already exists (cup).")
+                    stats = cupstandings[team].keys()
+                    if param not in stats:
+                        cupstandings[team][param] = 0
+                    else:
+                        await ctx.send(f"Stat '{param}' already exists (cup).")
         await ctx.tick()
 
     @probability.command()

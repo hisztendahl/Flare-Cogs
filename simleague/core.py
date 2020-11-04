@@ -2399,7 +2399,13 @@ class SimHelper(MixinMeta):
     async def purge(self, ctx, guild, team1, member1):
         cog = self.bot.get_cog("SimLeague")
         users = await cog.config.guild(guild).users()
-        member1 = member1.replace("<","").replace("&", "").replace("!","").replace("@", "").replace(">","")
+        member1 = (
+            member1.replace("<", "")
+            .replace("&", "")
+            .replace("!", "")
+            .replace("@", "")
+            .replace(">", "")
+        )
         async with cog.config.guild(guild).teams() as teams:
             del teams[team1]["members"][str(member1)]
         async with cog.config.guild(guild).users() as users:

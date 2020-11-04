@@ -44,7 +44,7 @@ class StatsMixin(MixinMeta):
             title = "All comps"
             stats = await self.config.guild(ctx.guild).stats()
             cupstats = await self.config.guild(ctx.guild).cupstats()
-            
+
             standings = await self.config.guild(ctx.guild).standings()
             cupstandings = await self.config.guild(ctx.guild).cupstandings()
             for s in stats:
@@ -53,8 +53,9 @@ class StatsMixin(MixinMeta):
                 standings[s] = mergeDict(self, standings[s], cupstandings[s])
         members = teams[team]["members"]
         embed = discord.Embed(
-            color=ctx.author.color, title="Team Statistics for {} - ({})".format(team, title.upper()),
-            description="--------------------------------------- TEAM STATS ---------------------------------------"
+            color=ctx.author.color,
+            title="Team Statistics for {} - ({})".format(team, title.upper()),
+            description="--------------------------------------- TEAM STATS ---------------------------------------",
         )
         ts = ""
         teamstats = standings[team]
@@ -66,7 +67,10 @@ class StatsMixin(MixinMeta):
             "PPG",
         ]
         try:
-            ppg = round((int(teamstats["wins"]) * 3 + int(teamstats["draws"])) / int(teamstats["played"]), 2)
+            ppg = round(
+                (int(teamstats["wins"]) * 3 + int(teamstats["draws"])) / int(teamstats["played"]),
+                2,
+            )
         except ZeroDivisionError:
             ppg = 0.0
         res_stats = [
@@ -74,7 +78,7 @@ class StatsMixin(MixinMeta):
             teamstats["wins"],
             teamstats["draws"],
             teamstats["losses"],
-            ppg
+            ppg,
         ]
         for i, t in enumerate(res_headers):
             ts += f"{t.title()}: {res_stats[i]}\n"
@@ -92,7 +96,7 @@ class StatsMixin(MixinMeta):
         cs = cs[team] if team in cs else 0
         try:
             goal_conversion = int(teamstats["gf"]) / int(teamstats["chances"])
-            goal_conversion = round(goal_conversion*100, 2)
+            goal_conversion = round(goal_conversion * 100, 2)
         except ZeroDivisionError:
             goal_conversion = 0.0
         goals_stats = [
@@ -123,8 +127,9 @@ class StatsMixin(MixinMeta):
         await ctx.send(embed=embed)
 
         embed = discord.Embed(
-            color=ctx.author.color, title="Players Statistics for {} - ({})".format(team, title.upper()),
-            description="------------------------------------- PLAYERS STATS --------------------------------------"
+            color=ctx.author.color,
+            title="Players Statistics for {} - ({})".format(team, title.upper()),
+            description="------------------------------------- PLAYERS STATS --------------------------------------",
         )
         for m in members:
             userid = str(m)

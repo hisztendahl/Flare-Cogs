@@ -535,15 +535,9 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["gf"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["gf"]), reverse=True,):
             t.append(f"{x} - {standings[x]['gf']}")
-        embed = discord.Embed(
-            title="Goals", description="\n".join(t), colour=0xFF0000
-        )
+        embed = discord.Embed(title="Goals", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
 
     @standings.command(name="shots")
@@ -553,15 +547,9 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["chances"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["chances"]), reverse=True,):
             t.append(f"{x} - {standings[x]['chances']}")
-        embed = discord.Embed(
-            title="Shots", description="\n".join(t), colour=0xFF0000
-        )
+        embed = discord.Embed(title="Shots", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
 
     @standings.command(name="fouls")
@@ -571,15 +559,9 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["fouls"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["fouls"]), reverse=True,):
             t.append(f"{x} - {standings[x]['fouls']}")
-        embed = discord.Embed(
-            title="Fouls", description="\n".join(t), colour=0xFF0000
-        )
+        embed = discord.Embed(title="Fouls", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
 
     @standings.command(name="yellows")
@@ -589,15 +571,9 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["yellows"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["yellows"]), reverse=True,):
             t.append(f"{x} - {standings[x]['yellows']}")
-        embed = discord.Embed(
-            title="Yellow Cards", description="\n".join(t), colour=0xFF0000
-        )
+        embed = discord.Embed(title="Yellow Cards", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
 
     @standings.command(name="reds")
@@ -607,15 +583,9 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["reds"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["reds"]), reverse=True,):
             t.append(f"{x} - {standings[x]['reds']}")
-        embed = discord.Embed(
-            title="Red Cards", description="\n".join(t), colour=0xFF0000
-        )
+        embed = discord.Embed(title="Red Cards", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
 
     @standings.command(name="defence")
@@ -625,14 +595,9 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["ga"]),
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["ga"]),):
             t.append(f"{x} - {standings[x]['ga']}")
-        embed = discord.Embed(
-            title="Goals Conceded", description="\n".join(t), colour=0xFF0000
-        )
+        embed = discord.Embed(title="Goals Conceded", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
 
     @standings.command(name="conversion")
@@ -645,11 +610,11 @@ class SimLeague(
         try:
             for x in sorted(
                 standings,
-                key=lambda x: (int(standings[x]["gf"])/int(standings[x]["chances"])),
-                reverse=True
+                key=lambda x: (int(standings[x]["gf"]) / int(standings[x]["chances"])),
+                reverse=True,
             ):
                 goal_conversion = int(standings[x]["gf"]) / int(standings[x]["chances"])
-                goal_conversion = round(goal_conversion*100, 2)
+                goal_conversion = round(goal_conversion * 100, 2)
                 t.append(f"{x} - {goal_conversion}%")
         except ZeroDivisionError:
             return await ctx.send("No stat available.")
@@ -2479,7 +2444,7 @@ class SimLeague(
                         cupstandings[team1]["yellows"] += len(team1Stats[1])
                         cupstandings[team1]["reds"] += len(team1Stats[2])
                         cupstandings[team1]["chances"] += team1Stats[10]
-                        cupstandings[team1]["fouls"] += team1Stats[11]                    
+                        cupstandings[team1]["fouls"] += team1Stats[11]
                     t = await self.payout(ctx.guild, team2, awaywin)
 
                 # Handle extra time
@@ -2808,7 +2773,7 @@ class SimLeague(
                             cupstandings[team2]["yellows"] += len(team2Stats[1])
                             cupstandings[team2]["reds"] += len(team2Stats[2])
                             cupstandings[team2]["chances"] += team2Stats[11]
-                            cupstandings[team2]["fouls"] += team2Stats[12]                        
+                            cupstandings[team2]["fouls"] += team2Stats[12]
                         t = await self.payout(ctx.guild, team1, homewin)
                     if (team1Stats[8] + team1Stats[10]) < (team2Stats[8] + team2Stats[10]):
                         async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
@@ -2825,7 +2790,7 @@ class SimLeague(
                             cupstandings[team1]["yellows"] += len(team1Stats[1])
                             cupstandings[team1]["reds"] += len(team1Stats[2])
                             cupstandings[team1]["chances"] += team1Stats[11]
-                            cupstandings[team1]["fouls"] += team1Stats[12]                        
+                            cupstandings[team1]["fouls"] += team1Stats[12]
                         t = await self.payout(ctx.guild, team2, awaywin)
 
                 async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
@@ -2835,7 +2800,7 @@ class SimLeague(
                     if team1Stats[8] != 0:
                         cupstandings[team1]["gf"] += team1Stats[8]
                         cupstandings[team2]["ga"] += team1Stats[8]
-                        
+
                 async with self.config.guild(ctx.guild).cupgames() as cupgames:
                     keys = list(cupgames.keys())
                     lastround = cupgames[keys[len(keys) - 1]]

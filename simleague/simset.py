@@ -86,7 +86,9 @@ class SimsetMixin(MixinMeta):
             var = proba["varchance"]
             varsuccess = proba["varsuccess"]
             comment = proba["commentchance"]
-            msg = "/!\ This has the chance to break the game completely, no support is offered. \n\n"
+            msg = (
+                "/!\ This has the chance to break the game completely, no support is offered. \n\n"
+            )
             msg += "Goal Chance: {}.\n".format(goals)
             msg += "Yellow Card Chance: {}.\n".format(yellow)
             msg += "Red Card Chance: {}.\n".format(red)

@@ -26,30 +26,105 @@ class StatsMixin(MixinMeta):
     @commands.command()
     async def teamstats(self, ctx, team, comptype="league"):
         """Sim League Team Statistics."""
+        teams = await self.config.guild(ctx.guild).teams()
+        if team not in teams:
+            return await ctx.send("This team does not exist.")
         stats = {}
         title = "League"
         if comptype not in ["league", "cup", "all"]:
             return await ctx.send("Incorrect type. Must be one of: league, cup, all.")
         if comptype == "league":
             stats = await self.config.guild(ctx.guild).stats()
-            del stats["cleansheets"]
+            standings = await self.config.guild(ctx.guild).standings()
         elif comptype == "cup":
             title = "Cup"
             stats = await self.config.guild(ctx.guild).cupstats()
-            del stats["cleansheets"]
+            standings = await self.config.guild(ctx.guild).cupstandings()
         else:
             title = "All comps"
             stats = await self.config.guild(ctx.guild).stats()
             cupstats = await self.config.guild(ctx.guild).cupstats()
-            del stats["cleansheets"]
+            
+            standings = await self.config.guild(ctx.guild).standings()
+            cupstandings = await self.config.guild(ctx.guild).cupstandings()
             for s in stats:
                 stats[s] = mergeDict(self, stats[s], cupstats[s])
-        teams = await self.config.guild(ctx.guild).teams()
-        if team not in teams:
-            return await ctx.send("This team does not exist.")
+            for s in standings:
+                standings[s] = mergeDict(self, standings[s], cupstandings[s])
         members = teams[team]["members"]
         embed = discord.Embed(
-            color=ctx.author.color, title="Statistics for {} - ({})".format(team, title)
+            color=ctx.author.color, title="Team Statistics for {} - ({})".format(team, title.upper()),
+            description="--------------------------------------- TEAM STATS ---------------------------------------"
+        )
+        ts = ""
+        teamstats = standings[team]
+        res_headers = [
+            "played",
+            "wins",
+            "draws",
+            "losses",
+            "PPG",
+        ]
+        try:
+            ppg = round((int(teamstats["wins"]) * 3 + int(teamstats["draws"])) / int(teamstats["played"]), 2)
+        except ZeroDivisionError:
+            ppg = 0.0
+        res_stats = [
+            teamstats["played"],
+            teamstats["wins"],
+            teamstats["draws"],
+            teamstats["losses"],
+            ppg
+        ]
+        for i, t in enumerate(res_headers):
+            ts += f"{t.title()}: {res_stats[i]}\n"
+        embed.add_field(name="Results", value=ts)
+
+        ts = ""
+        goals_headers = [
+            "shots",
+            "goals scored",
+            "goal conversion",
+            "goals conceded",
+            "cleansheets",
+        ]
+        cs = stats["cleansheets"]
+        cs = cs[team] if team in cs else 0
+        try:
+            goal_conversion = int(teamstats["gf"]) / int(teamstats["chances"])
+            goal_conversion = round(goal_conversion*100, 2)
+        except ZeroDivisionError:
+            goal_conversion = 0.0
+        goals_stats = [
+            teamstats["chances"],
+            teamstats["gf"],
+            f"{goal_conversion}%",
+            teamstats["ga"],
+            cs,
+        ]
+        for i, t in enumerate(goals_headers):
+            ts += f"{t.title()}: {goals_stats[i]}\n"
+        embed.add_field(name="Shots & Goals", value=ts)
+
+        ts = ""
+        fairplay_headers = [
+            "fouls",
+            "yellow cards",
+            "red cards",
+        ]
+        fairplay_stats = [
+            teamstats["fouls"],
+            teamstats["yellows"],
+            teamstats["reds"],
+        ]
+        for i, t in enumerate(fairplay_headers):
+            ts += f"{t.title()}: {fairplay_stats[i]}\n"
+        embed.add_field(name="Fair Play", value=ts)
+        await ctx.send(embed=embed)
+
+        embed = discord.Embed(
+            color=ctx.author.color, title="Players Statistics for {} - ({})".format(team, title.upper()),
+            description="------------------------------------- PLAYERS STATS --------------------------------------"
         )
         for m in members:
             userid = str(m)

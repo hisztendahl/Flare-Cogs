@@ -75,9 +75,29 @@ class SimsetMixin(MixinMeta):
     async def probability(self, ctx):
         """Simulation Probability Settings. May break the cog if changed."""
         if ctx.invoked_subcommand is None:
-            await ctx.send(
-                box("This has the chance to break the game completely, no support is offered.")
-            )
+            proba = await self.config.guild(ctx.guild).probability()
+            goals = proba["goalchance"]
+            yellow = proba["yellowchance"]
+            red = proba["redchance"]
+            penalty = proba["penaltychance"]
+            penaltyblock = proba["penaltyblock"]
+            corner = proba["cornerchance"]
+            cornerblock = proba["cornerblock"]
+            var = proba["varchance"]
+            varsuccess = proba["varsuccess"]
+            comment = proba["commentchance"]
+            msg = "/!\ This has the chance to break the game completely, no support is offered. \n\n"
+            msg += "Goal Chance: {}.\n".format(goals)
+            msg += "Yellow Card Chance: {}.\n".format(yellow)
+            msg += "Red Card Chance: {}.\n".format(red)
+            msg += "Penalty Chance: {}.\n".format(penalty)
+            msg += "Penalty Block Chance: {}.\n".format(penaltyblock)
+            msg += "Corner Chance: {}.\n".format(corner)
+            msg += "Corner Block Chance: {}.\n".format(cornerblock)
+            msg += "VAR Chance: {}.\n".format(var)
+            msg += "VAR Success Chance: {}.\n".format(varsuccess)
+            msg += "Commentary Chance: {}.\n".format(comment)
+            await ctx.send(box(msg))
 
     @probability.command()
     async def goals(self, ctx, amount: int = 96):
@@ -114,6 +134,40 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).redcardmodifier.set(amount)
         await ctx.tick()
 
+    @simset.command()
+    async def addstat(self, ctx, param=None):
+        teams = await self.config.guild(ctx.guild).teams()
+        headers = [
+            "played",
+            "wins",
+            "losses",
+            "points",
+            "gd",
+            "gf",
+            "ga",
+            "draws",
+            "reds",
+            "yellows",
+            "fouls",
+            "chances",
+        ]
+        if param not in headers:
+            return await ctx.send(f"Stat to add must be one of {', '.join(headers)}.")
+        for team in teams:
+            async with self.config.guild(ctx.guild).standings() as standings:
+                stats = standings[team].keys()
+                if param not in stats:
+                    standings[team][param] = 0
+                else:
+                    await ctx.send(f"Stat '{param}' already exists (league).")
+            async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
+                stats = cupstandings[team].keys()
+                if param not in stats:
+                    cupstandings[team][param] = 0
+                else:
+                    await ctx.send(f"Stat '{param}' already exists (cup).")
+        await ctx.tick()
+
     @probability.command()
     async def red(self, ctx, amount: int = 398):
         """Red Card probability. Default = 398"""
@@ -133,12 +187,57 @@ class SimsetMixin(MixinMeta):
         await ctx.tick()
 
     @probability.command()
-    async def penaltyblock(self, ctx, amount: float = 0.6):
-        """Penalty Block probability. Default = 0.6"""
+    async def penaltyblock(self, ctx, amount: float = 0.25):
+        """Penalty Block probability. Default = 0.25"""
         if amount > 1 or amount < 0:
             return await ctx.send("Amount must be greater than 0 and less than 1.")
         async with self.config.guild(ctx.guild).probability() as probability:
             probability["penaltyblock"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def corner(self, ctx, amount: int = 98):
+        """Corner Chance probability. Default = 98"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["cornerchance"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def cornerblock(self, ctx, amount: float = 0.8):
+        """Corner Block probability. Default = 0.8"""
+        if amount > 1 or amount < 0:
+            return await ctx.send("Amount must be greater than 0 and less than 1.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["cornerblock"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def var(self, ctx, amount: int = 50):
+        """VAR Chance probability. Default = 50"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["varchance"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def varsuccess(self, ctx, amount: int = 50):
+        """VAR Success Chance probability. Default = 50"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["varsuccess"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def commentchance(self, ctx, amount: int = 85):
+        """Commentary Chance probability. Default = 85"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["commentchance"] = amount
         await ctx.tick()
 
     @bet.command()
@@ -675,6 +774,10 @@ class SimsetMixin(MixinMeta):
                     "gf": 0,
                     "ga": 0,
                     "draws": 0,
+                    "reds": 0,
+                    "yellows": 0,
+                    "fouls": 0,
+                    "chances": 0,
                 }
         await self.config.guild(ctx.guild).stats.set({})
         await ctx.tick()
@@ -682,6 +785,24 @@ class SimsetMixin(MixinMeta):
     @clear.command(name="cupstats")
     async def clear_cupstats(self, ctx):
         """Clear cup stats."""
+        await self.config.guild(ctx.guild).cupstandings.set({})
+        teams = await self.config.guild(ctx.guild).teams()
+        async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
+            for team in teams:
+                cupstandings[team] = {
+                    "played": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "points": 0,
+                    "gd": 0,
+                    "gf": 0,
+                    "ga": 0,
+                    "draws": 0,
+                    "reds": 0,
+                    "yellows": 0,
+                    "fouls": 0,
+                    "chances": 0,
+                }
         await self.config.guild(ctx.guild).cupstats.set({})
         await ctx.tick()
 

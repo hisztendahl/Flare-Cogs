@@ -2208,7 +2208,7 @@ class SimHelper(MixinMeta):
 
     async def cornerBlock(self, guild, probability):
         rdmint = random.randint(0, 1)
-        if rdmint > probability["cornerblock"]:  # 0.2 default
+        if rdmint > probability["cornerblock"]:  # 0.8 default
             return True
 
     async def penaltyChance(self, guild, probability):
@@ -2218,7 +2218,7 @@ class SimHelper(MixinMeta):
 
     async def penaltyBlock(self, guild, probability):
         rdmint = random.randint(0, 1)
-        if rdmint > probability["penaltyblock"]:  # 0.75 default
+        if rdmint > probability["penaltyblock"]:  # 0.25 default
             return True
 
     async def varChance(self, guild, probability):
@@ -2356,7 +2356,7 @@ class SimHelper(MixinMeta):
     async def sign(self, ctx, guild, team1, member1: discord.Member, member2: discord.Member):
         cog = self.bot.get_cog("SimLeague")
         users = await cog.config.guild(guild).users()
-        if member2.id in users:
+        if str(member2.id) in users:
             return await ctx.send("User is currently not a free agent.")
         async with cog.config.guild(guild).teams() as teams:
             role = guild.get_role(teams[team1]["role"])
@@ -2399,6 +2399,7 @@ class SimHelper(MixinMeta):
     async def purge(self, ctx, guild, team1, member1):
         cog = self.bot.get_cog("SimLeague")
         users = await cog.config.guild(guild).users()
+        member1 = member1.replace("<","").replace("&", "").replace("!","").replace("@", "").replace(">","")
         async with cog.config.guild(guild).teams() as teams:
             del teams[team1]["members"][str(member1)]
         async with cog.config.guild(guild).users() as users:
@@ -2407,7 +2408,7 @@ class SimHelper(MixinMeta):
     async def simplesign(self, ctx, guild, team1, member1: discord.Member):
         cog = self.bot.get_cog("SimLeague")
         users = await cog.config.guild(guild).users()
-        if member1.id in users:
+        if str(member1.id) in users:
             return await ctx.send("User is currently not a free agent.")
         async with cog.config.guild(guild).teams() as teams:
             role = guild.get_role(teams[team1]["role"])

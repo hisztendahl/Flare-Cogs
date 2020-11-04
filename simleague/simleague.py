@@ -89,6 +89,7 @@ class SimLeague(
                 "motm": {},
                 "cleansheets": {},
             },
+            "cupstandings": {},
             "standings": {},
             "stats": {
                 "goals": {},
@@ -115,9 +116,9 @@ class SimLeague(
                 "yellowchance": 98,
                 "redchance": 398,
                 "penaltychance": 249,
-                "penaltyblock": 0.75,
+                "penaltyblock": 0.25,
                 "cornerchance": 98,
-                "cornerblock": 0.2,
+                "cornerblock": 0.8,
                 "commentchance": 85,
                 "varchance": 50,
                 "varsuccess": 50,
@@ -253,6 +254,10 @@ class SimLeague(
                 "gf": 0,
                 "ga": 0,
                 "draws": 0,
+                "red": 0,
+                "yellows": 0,
+                "fouls": 0,
+                "chances": 0,
             }
         await self.config.guild(ctx.guild).users.set(memids + list(names.keys()))
         for uid in list(names.keys()):
@@ -466,7 +471,7 @@ class SimLeague(
                 a.append(f"{fixture[0]} vs {fixture[1]}")
             await ctx.maybe_send_embed("\n".join(a))
 
-    @commands.command()
+    @commands.group(invoke_without_command=True)
     async def standings(self, ctx, verbose: bool = False):
         """Current sim standings."""
         if await self.config.guild(ctx.guild).cupmode():
@@ -522,6 +527,136 @@ class SimLeague(
                 )
             tab = tabulate(t, headers=["Team", "Pl.", "W", "D", "L", "GF", "GA", "Pts", "Diff"],)
             await ctx.send(box(tab))
+
+    @standings.command(name="goals")
+    async def _goals(self, ctx):
+        """Teams with the most goals."""
+        standings = await self.config.guild(ctx.guild).standings()
+        if standings is None:
+            return await ctx.send("No stat available.")
+        t = []
+        for x in sorted(
+            standings,
+            key=lambda x: (standings[x]["gf"]),
+            reverse=True,
+        ):
+            t.append(f"{x} - {standings[x]['gf']}")
+        embed = discord.Embed(
+            title="Goals", description="\n".join(t), colour=0xFF0000
+        )
+        await ctx.send(embed=embed)
+
+    @standings.command(name="shots")
+    async def _shots(self, ctx):
+        """Teams with the most shots."""
+        standings = await self.config.guild(ctx.guild).standings()
+        if standings is None:
+            return await ctx.send("No stat available.")
+        t = []
+        for x in sorted(
+            standings,
+            key=lambda x: (standings[x]["chances"]),
+            reverse=True,
+        ):
+            t.append(f"{x} - {standings[x]['chances']}")
+        embed = discord.Embed(
+            title="Shots", description="\n".join(t), colour=0xFF0000
+        )
+        await ctx.send(embed=embed)
+
+    @standings.command(name="fouls")
+    async def _fouls(self, ctx):
+        """Teams with the most fouls."""
+        standings = await self.config.guild(ctx.guild).standings()
+        if standings is None:
+            return await ctx.send("No stat available.")
+        t = []
+        for x in sorted(
+            standings,
+            key=lambda x: (standings[x]["fouls"]),
+            reverse=True,
+        ):
+            t.append(f"{x} - {standings[x]['fouls']}")
+        embed = discord.Embed(
+            title="Fouls", description="\n".join(t), colour=0xFF0000
+        )
+        await ctx.send(embed=embed)
+
+    @standings.command(name="yellows")
+    async def _yellows(self, ctx):
+        """Teams with the most yellows."""
+        standings = await self.config.guild(ctx.guild).standings()
+        if standings is None:
+            return await ctx.send("No stat available.")
+        t = []
+        for x in sorted(
+            standings,
+            key=lambda x: (standings[x]["yellows"]),
+            reverse=True,
+        ):
+            t.append(f"{x} - {standings[x]['yellows']}")
+        embed = discord.Embed(
+            title="Yellow Cards", description="\n".join(t), colour=0xFF0000
+        )
+        await ctx.send(embed=embed)
+
+    @standings.command(name="reds")
+    async def _reds(self, ctx):
+        """Teams with the most reds."""
+        standings = await self.config.guild(ctx.guild).standings()
+        if standings is None:
+            return await ctx.send("No stat available.")
+        t = []
+        for x in sorted(
+            standings,
+            key=lambda x: (standings[x]["reds"]),
+            reverse=True,
+        ):
+            t.append(f"{x} - {standings[x]['reds']}")
+        embed = discord.Embed(
+            title="Red Cards", description="\n".join(t), colour=0xFF0000
+        )
+        await ctx.send(embed=embed)
+
+    @standings.command(name="defence")
+    async def _defence(self, ctx):
+        """Teams with the least goals conceded."""
+        standings = await self.config.guild(ctx.guild).standings()
+        if standings is None:
+            return await ctx.send("No stat available.")
+        t = []
+        for x in sorted(
+            standings,
+            key=lambda x: (standings[x]["ga"]),
+        ):
+            t.append(f"{x} - {standings[x]['ga']}")
+        embed = discord.Embed(
+            title="Goals Conceded", description="\n".join(t), colour=0xFF0000
+        )
+        await ctx.send(embed=embed)
+
+    @standings.command(name="conversion")
+    async def _conversion(self, ctx):
+        """Teams with the best conversion rate."""
+        standings = await self.config.guild(ctx.guild).standings()
+        if standings is None:
+            return await ctx.send("No stat available.")
+        t = []
+        try:
+            for x in sorted(
+                standings,
+                key=lambda x: (int(standings[x]["gf"])/int(standings[x]["chances"])),
+                reverse=True
+            ):
+                goal_conversion = int(standings[x]["gf"]) / int(standings[x]["chances"])
+                goal_conversion = round(goal_conversion*100, 2)
+                t.append(f"{x} - {goal_conversion}%")
+        except ZeroDivisionError:
+            return await ctx.send("No stat available.")
+        embed = discord.Embed(
+            title="Goal Conversion Rate", description="\n".join(t), colour=0xFF0000
+        )
+        await ctx.send(embed=embed)
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.cooldown(rate=1, per=30, type=commands.BucketType.guild)
@@ -1339,8 +1474,17 @@ class SimLeague(
                         standings[team1]["wins"] += 1
                         standings[team1]["points"] += 3
                         standings[team1]["played"] += 1
+                        standings[team1]["yellows"] += len(team1Stats[1])
+                        standings[team1]["reds"] += len(team1Stats[2])
+                        standings[team1]["chances"] += team1Stats[10]
+                        standings[team1]["fouls"] += team1Stats[11]
+
                         standings[team2]["losses"] += 1
                         standings[team2]["played"] += 1
+                        standings[team2]["yellows"] += len(team2Stats[1])
+                        standings[team2]["reds"] += len(team2Stats[2])
+                        standings[team2]["chances"] += team2Stats[10]
+                        standings[team2]["fouls"] += team2Stats[11]
                         t = await self.payout(ctx.guild, team1, homewin)
                 if team1Stats[8] < team2Stats[8]:
                     async with self.config.guild(ctx.guild).teams() as teams:
@@ -1359,8 +1503,17 @@ class SimLeague(
                         standings[team2]["points"] += 3
                         standings[team2]["wins"] += 1
                         standings[team2]["played"] += 1
+                        standings[team2]["yellows"] += len(team2Stats[1])
+                        standings[team2]["reds"] += len(team2Stats[2])
+                        standings[team2]["chances"] += team2Stats[10]
+                        standings[team2]["fouls"] += team2Stats[11]
+
                         standings[team1]["losses"] += 1
                         standings[team1]["played"] += 1
+                        standings[team1]["yellows"] += len(team1Stats[1])
+                        standings[team1]["reds"] += len(team1Stats[2])
+                        standings[team1]["chances"] += team1Stats[10]
+                        standings[team1]["fouls"] += team1Stats[11]
                         t = await self.payout(ctx.guild, team2, awaywin)
                 if team1Stats[8] == team2Stats[8]:
                     async with self.config.guild(ctx.guild).teams() as teams:
@@ -1376,11 +1529,20 @@ class SimLeague(
                             teams[team2]["form"]["streak"] = 1
                     async with self.config.guild(ctx.guild).standings() as standings:
                         standings[team1]["played"] += 1
-                        standings[team2]["played"] += 1
                         standings[team1]["points"] += 1
-                        standings[team2]["points"] += 1
-                        standings[team2]["draws"] += 1
                         standings[team1]["draws"] += 1
+                        standings[team1]["yellows"] += len(team1Stats[1])
+                        standings[team1]["reds"] += len(team1Stats[2])
+                        standings[team1]["chances"] += team1Stats[10]
+                        standings[team1]["fouls"] += team1Stats[11]
+
+                        standings[team2]["points"] += 1
+                        standings[team2]["played"] += 1
+                        standings[team2]["draws"] += 1
+                        standings[team2]["yellows"] += len(team2Stats[1])
+                        standings[team2]["reds"] += len(team2Stats[2])
+                        standings[team2]["chances"] += team2Stats[10]
+                        standings[team2]["fouls"] += team2Stats[11]
                         t = await self.payout(ctx.guild, "draw", draw)
                 await self.cleansheets(ctx, team1, team2, team1Stats[8], team2Stats[8])
                 team1gd = team1Stats[8] - team2Stats[8]
@@ -1715,16 +1877,16 @@ class SimLeague(
             teamStats[8] += 1
             teamStats[11] += 1
             playerGoal = await PlayerGenerator(0, teamStats[0], teamStats[1], teamStats[2])
-            async with self.config.guild(ctx.guild).stats() as stats:
-                if playerGoal[1] not in stats["goals"]:
-                    stats["goals"][playerGoal[1]] = 1
+            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                if playerGoal[1] not in cupstats["goals"]:
+                    cupstats["goals"][playerGoal[1]] = 1
                 else:
-                    stats["goals"][playerGoal[1]] += 1
+                    cupstats["goals"][playerGoal[1]] += 1
                 if len(playerGoal) == 3:
-                    if playerGoal[2] not in stats["assists"]:
-                        stats["assists"][playerGoal[2]] = 1
+                    if playerGoal[2] not in cupstats["assists"]:
+                        cupstats["assists"][playerGoal[2]] = 1
                     else:
-                        stats["assists"][playerGoal[2]] += 1
+                        cupstats["assists"][playerGoal[2]] += 1
             user = self.bot.get_user(int(playerGoal[1]))
             user2 = None
             if user is None:
@@ -1805,14 +1967,14 @@ class SimLeague(
                 await handlePenaltyGoal(self, ctx, player, min)
 
         async def handlePenaltyBlock(self, ctx, player):
-            async with self.config.guild(ctx.guild).stats() as stats:
-                if player[1] not in stats["penalties"]:
-                    stats["penalties"][player[1]] = {
+            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                if player[1] not in cupstats["penalties"]:
+                    cupstats["penalties"][player[1]] = {
                         "scored": 0,
                         "missed": 1,
                     }
                 else:
-                    stats["penalties"][player[1]]["missed"] += 1
+                    cupstats["penalties"][player[1]]["missed"] += 1
             user = self.bot.get_user(int(player[1]))
             if user is None:
                 user = await self.bot.fetch_user(int(player[1]))
@@ -1834,18 +1996,18 @@ class SimLeague(
             await ctx.send(file=image)
 
         async def handlePenaltyGoal(self, ctx, player, min):
-            async with self.config.guild(ctx.guild).stats() as stats:
-                if player[1] not in stats["goals"]:
-                    stats["goals"][player[1]] = 1
+            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                if player[1] not in cupstats["goals"]:
+                    cupstats["goals"][player[1]] = 1
                 else:
-                    stats["goals"][player[1]] += 1
-                if player[1] not in stats["penalties"]:
-                    stats["penalties"][player[1]] = {
+                    cupstats["goals"][player[1]] += 1
+                if player[1] not in cupstats["penalties"]:
+                    cupstats["penalties"][player[1]] = {
                         "scored": 1,
                         "missed": 0,
                     }
                 else:
-                    stats["penalties"][player[1]]["scored"] += 1
+                    cupstats["penalties"][player[1]]["scored"] += 1
             user = self.bot.get_user(int(player[1]))
             if user is None:
                 user = await self.bot.fetch_user(int(player[1]))
@@ -1889,14 +2051,14 @@ class SimLeague(
                 if len(playerYellow) == 4:
                     teamStats[7] += 1
                     teamStats[2].append(playerYellow[1])
-                    async with self.config.guild(ctx.guild).stats() as stats:
+                    async with self.config.guild(ctx.guild).cupstats() as cupstats:
                         reds[str(playerYellow[0])] += 1
-                        if playerYellow[1] not in stats["reds"]:
-                            stats["reds"][playerYellow[1]] = 1
-                            stats["yellows"][playerYellow[1]] += 1
+                        if playerYellow[1] not in cupstats["reds"]:
+                            cupstats["reds"][playerYellow[1]] = 1
+                            cupstats["yellows"][playerYellow[1]] += 1
                         else:
-                            stats["yellows"][playerYellow[1]] += 1
-                            stats["reds"][playerYellow[1]] += 1
+                            cupstats["yellows"][playerYellow[1]] += 1
+                            cupstats["reds"][playerYellow[1]] += 1
                     if user not in motm:
                         motm[user] = -2
                     else:
@@ -1922,11 +2084,11 @@ class SimLeague(
                     )
                     await ctx.send(file=image)
                 else:
-                    async with self.config.guild(ctx.guild).stats() as stats:
-                        if playerYellow[1] not in stats["yellows"]:
-                            stats["yellows"][playerYellow[1]] = 1
+                    async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                        if playerYellow[1] not in cupstats["yellows"]:
+                            cupstats["yellows"][playerYellow[1]] = 1
                         else:
-                            stats["yellows"][playerYellow[1]] += 1
+                            cupstats["yellows"][playerYellow[1]] += 1
                     if user not in motm:
                         motm[user] = -1
                     else:
@@ -1991,11 +2153,11 @@ class SimLeague(
         async def handleRedCardSuccess(self, ctx, player, user, teamStats):
             teamStats[7] += 1
             teamStats[12] += 1
-            async with self.config.guild(ctx.guild).stats() as stats:
-                if player[1] not in stats["reds"]:
-                    stats["reds"][player[1]] = 1
+            async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                if player[1] not in cupstats["reds"]:
+                    cupstats["reds"][player[1]] = 1
                 else:
-                    stats["reds"][player[1]] += 1
+                    cupstats["reds"][player[1]] += 1
             reds[str(player[0])] += 1
             teamStats[2].append(player[1])
             if user not in motm:
@@ -2048,15 +2210,15 @@ class SimLeague(
                     await ctx.send(file=image)
                 else:
                     teamStats[8] += 1
-                    async with self.config.guild(ctx.guild).stats() as stats:
-                        if playerCorner[2] not in stats["goals"]:
-                            stats["goals"][playerCorner[2]] = 1
+                    async with self.config.guild(ctx.guild).cupstats() as cupstats:
+                        if playerCorner[2] not in cupstats["goals"]:
+                            cupstats["goals"][playerCorner[2]] = 1
                         else:
-                            stats["goals"][playerCorner[2]] += 1
-                        if playerCorner[1] not in stats["assists"]:
-                            stats["assists"][playerCorner[1]] = 1
+                            cupstats["goals"][playerCorner[2]] += 1
+                        if playerCorner[1] not in cupstats["assists"]:
+                            cupstats["assists"][playerCorner[1]] = 1
                         else:
-                            stats["assists"][playerCorner[1]] += 1
+                            cupstats["assists"][playerCorner[1]] += 1
                     if user not in motm:
                         motm[user] = 0.75
                     else:
@@ -2286,8 +2448,38 @@ class SimLeague(
                 await timemsg.delete()
                 await ctx.send(file=im)
                 if team1Stats[8] > team2Stats[8]:
+                    async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
+                        cupstandings[team1]["wins"] += 1
+                        cupstandings[team1]["points"] += 3
+                        cupstandings[team1]["played"] += 1
+                        cupstandings[team1]["yellows"] += len(team1Stats[1])
+                        cupstandings[team1]["reds"] += len(team1Stats[2])
+                        cupstandings[team1]["chances"] += team1Stats[11]
+                        cupstandings[team1]["fouls"] += team1Stats[12]
+
+                        cupstandings[team2]["losses"] += 1
+                        cupstandings[team2]["played"] += 1
+                        cupstandings[team2]["yellows"] += len(team2Stats[1])
+                        cupstandings[team2]["reds"] += len(team2Stats[2])
+                        cupstandings[team2]["chances"] += team2Stats[11]
+                        cupstandings[team2]["fouls"] += team2Stats[12]
                     t = await self.payout(ctx.guild, team1, homewin)
                 if team1Stats[8] < team2Stats[8]:
+                    async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
+                        cupstandings[team2]["points"] += 3
+                        cupstandings[team2]["wins"] += 1
+                        cupstandings[team2]["played"] += 1
+                        cupstandings[team2]["yellows"] += len(team2Stats[1])
+                        cupstandings[team2]["reds"] += len(team2Stats[2])
+                        cupstandings[team2]["chances"] += team2Stats[10]
+                        cupstandings[team2]["fouls"] += team2Stats[11]
+
+                        cupstandings[team1]["losses"] += 1
+                        cupstandings[team1]["played"] += 1
+                        cupstandings[team1]["yellows"] += len(team1Stats[1])
+                        cupstandings[team1]["reds"] += len(team1Stats[2])
+                        cupstandings[team1]["chances"] += team1Stats[10]
+                        cupstandings[team1]["fouls"] += team1Stats[11]                    
                     t = await self.payout(ctx.guild, team2, awaywin)
 
                 # Handle extra time
@@ -2602,10 +2794,48 @@ class SimLeague(
                         )
                         await ctx.send(file=im)
                     if (team1Stats[8] + team1Stats[10]) > (team2Stats[8] + team2Stats[10]):
+                        async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
+                            cupstandings[team1]["wins"] += 1
+                            cupstandings[team1]["points"] += 3
+                            cupstandings[team1]["played"] += 1
+                            cupstandings[team1]["yellows"] += len(team1Stats[1])
+                            cupstandings[team1]["reds"] += len(team1Stats[2])
+                            cupstandings[team1]["chances"] += team1Stats[11]
+                            cupstandings[team1]["fouls"] += team1Stats[12]
+
+                            cupstandings[team2]["losses"] += 1
+                            cupstandings[team2]["played"] += 1
+                            cupstandings[team2]["yellows"] += len(team2Stats[1])
+                            cupstandings[team2]["reds"] += len(team2Stats[2])
+                            cupstandings[team2]["chances"] += team2Stats[11]
+                            cupstandings[team2]["fouls"] += team2Stats[12]                        
                         t = await self.payout(ctx.guild, team1, homewin)
                     if (team1Stats[8] + team1Stats[10]) < (team2Stats[8] + team2Stats[10]):
+                        async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
+                            cupstandings[team2]["points"] += 3
+                            cupstandings[team2]["wins"] += 1
+                            cupstandings[team2]["played"] += 1
+                            cupstandings[team2]["yellows"] += len(team2Stats[1])
+                            cupstandings[team2]["reds"] += len(team2Stats[2])
+                            cupstandings[team2]["chances"] += team2Stats[11]
+                            cupstandings[team2]["fouls"] += team2Stats[12]
+
+                            cupstandings[team1]["losses"] += 1
+                            cupstandings[team1]["played"] += 1
+                            cupstandings[team1]["yellows"] += len(team1Stats[1])
+                            cupstandings[team1]["reds"] += len(team1Stats[2])
+                            cupstandings[team1]["chances"] += team1Stats[11]
+                            cupstandings[team1]["fouls"] += team1Stats[12]                        
                         t = await self.payout(ctx.guild, team2, awaywin)
 
+                async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
+                    if team2Stats[8] != 0:
+                        cupstandings[team2]["gf"] += team2Stats[8]
+                        cupstandings[team1]["ga"] += team2Stats[8]
+                    if team1Stats[8] != 0:
+                        cupstandings[team1]["gf"] += team1Stats[8]
+                        cupstandings[team2]["ga"] += team1Stats[8]
+                        
                 async with self.config.guild(ctx.guild).cupgames() as cupgames:
                     keys = list(cupgames.keys())
                     lastround = cupgames[keys[len(keys) - 1]]

@@ -110,9 +110,11 @@ class CupStatsMixin(MixinMeta):
 
     async def statsmention(self, ctx, stats):
         if stats:
-            user = ctx.guild.get_member(int(stats[0]))
+            user = self.bot.get_user(int(stats[0]))
             if not user:
-                return "Invalid User {}".format(stats[0])
+                user = await self.bot.fetch_user(int(stats[0]))
+                if not user:
+                    return "Invalid User {}".format(stats[0])
             return f"_{user.name}_"
         else:
             return "None"

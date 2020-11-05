@@ -55,7 +55,7 @@ class StatsMixin(MixinMeta):
         embed = discord.Embed(
             color=ctx.author.color,
             title="Team Statistics for {} - ({})".format(team, title.upper()),
-            description="--------------------------------------- TEAM STATS ---------------------------------------",
+            description="-----------------------------------------------------------------",
         )
         ts = ""
         teamstats = standings[team]
@@ -129,7 +129,7 @@ class StatsMixin(MixinMeta):
         embed = discord.Embed(
             color=ctx.author.color,
             title="Players Statistics for {} - ({})".format(team, title.upper()),
-            description="------------------------------------- PLAYERS STATS --------------------------------------",
+            description="-----------------------------------------------------------------",
         )
         for m in members:
             userid = str(m)
@@ -249,7 +249,9 @@ class StatsMixin(MixinMeta):
         if stats:
             user = self.bot.get_user(int(stats[0]))
             if not user:
-                return "Invalid User {}".format(stats[0])
+                user = await self.bot.fetch_user(int(stats[0]))
+                if not user:
+                    return "Invalid User {}".format(stats[0])
             return f"_{user.name}_"
         else:
             return "None"

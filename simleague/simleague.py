@@ -274,8 +274,7 @@ class SimLeague(
             return await ctx.send("No teams have been registered.")
         if mobilefriendly:
             embed = discord.Embed(
-                colour=ctx.author.colour,
-                description="------------------------- Team List -------------------------",
+                colour=ctx.author.colour, description="------------ Team List ------------",
             )
             msg = await ctx.send(
                 "This may take some time depending on the amount of teams currently registered."
@@ -349,6 +348,7 @@ class SimLeague(
                     if teams[team]["fullname"] is not None
                     else "",
                 ),
+                description="------------ Team Details ------------",
                 colour=ctx.author.colour,
             )
             embed.add_field(
@@ -385,8 +385,7 @@ class SimLeague(
             return await ctx.send("No cup fixtures have been made.")
         if cupround is None:
             embed = discord.Embed(
-                colour=ctx.author.colour,
-                description="------------------------- Cup Fixtures -------------------------",
+                colour=ctx.author.colour, description="------------ Cup Fixtures ------------",
             )
             for rd in cupgames:
                 fixtures = cupgames[rd]

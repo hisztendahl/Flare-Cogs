@@ -487,6 +487,7 @@ class SimsetMixin(MixinMeta):
         """Create the fixtures for the current teams."""
         teams = await self.config.guild(ctx.guild).teams()
         teams = list(teams.keys())
+        random.shuffle(teams)
         if len(teams) % 2:
             teams.append("DAY OFF")
         n = len(teams)

@@ -338,7 +338,7 @@ class SimLeague(
         if not teams:
             return await ctx.send("No teams have been registered.")
         if team not in teams:
-            return await ctx.send("Team does not exist, ensure that it is correctly capitilized.")
+            return await ctx.send("Team does not exist, ensure that it is correctly capitalized.")
         async with ctx.typing():
             embeds = []
             embed = discord.Embed(

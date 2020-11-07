@@ -234,28 +234,19 @@ class TeamsetMixin(MixinMeta):
         await self.swap(ctx, ctx.guild, team1, player1, team2, player2)
         await ctx.tick()
 
-    @admintransfer.command(name="purge")
-    async def _adminpurge(self, ctx, team1, player1):
-        """Purge a player from a team."""
+    @admintransfer.command(name="swapid")
+    async def _adminswapid(self, ctx, team1, player1, team2, player2):
+        """Swap a player from your team with a player from another team."""
         if not await self.config.guild(ctx.guild).transferwindow():
             return await ctx.send("The transfer window is currently closed.")
-        await self.purge(ctx, ctx.guild, team1, player1)
-        await ctx.tick()
-
-    @admintransfer.command(name="simplesign")
-    async def _adminsimplesign(self, ctx, team1, player1: discord.Member):
-        """Sign a player for a team."""
-        if not await self.config.guild(ctx.guild).transferwindow():
-            return await ctx.send("The transfer window is currently closed.")
-        await self.simplesign(ctx, ctx.guild, team1, player1)
-        await ctx.tick()
-
-    @admintransfer.command(name="signid")
-    async def _adminsimplesignid(self, ctx, team1, player1, name):
-        """Sign a player for a team."""
-        if not await self.config.guild(ctx.guild).transferwindow():
-            return await ctx.send("The transfer window is currently closed.")
-        await self.simplesignid(ctx, ctx.guild, team1, player1, name)
+        teams = await self.config.guild(ctx.guild).teams()
+        cpt1id = list(teams[team1]["captain"].keys())[0]
+        cpt2id = list(teams[team2]["captain"].keys())[0]
+        player1 = await self.bot.fetch_user(player1)
+        player2 = await self.bot.fetch_user(player2)
+        if int(cpt1id) == player1.id or int(cpt2id) == player2.id:
+            return await ctx.send("You cannot transfer team captains.")
+        await self.swap(ctx, ctx.guild, team1, player1, team2, player2)
         await ctx.tick()
 
     @admintransfer.command(name="sign")
@@ -265,6 +256,20 @@ class TeamsetMixin(MixinMeta):
             return await ctx.send("The transfer window is currently closed.")
         teams = await self.config.guild(ctx.guild).teams()
         cptid = list(teams[team1]["captain"].keys())[0]
+        if int(cptid) == player1.id:
+            return await ctx.send("You cannot release team captains.")
+        await self.sign(ctx, ctx.guild, team1, player1, player2)
+        await ctx.tick()
+
+    @admintransfer.command(name="signid")
+    async def _adminsignid(self, ctx, team1, player1, player2):
+        """Release a player and sign a free agent."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        teams = await self.config.guild(ctx.guild).teams()
+        cptid = list(teams[team1]["captain"].keys())[0]
+        player1 = await self.bot.fetch_user(player1)
+        player2 = await self.bot.fetch_user(player2)
         if int(cptid) == player1.id:
             return await ctx.send("You cannot release team captains.")
         await self.sign(ctx, ctx.guild, team1, player1, player2)

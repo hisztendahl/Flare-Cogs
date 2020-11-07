@@ -2321,17 +2321,22 @@ class SimHelper(MixinMeta):
         async with cog.config.guild(guild).teams() as teams:
             role1 = guild.get_role(teams[team1]["role"])
             role2 = guild.get_role(teams[team2]["role"])
-            if role1 is not None:
-                await member1.remove_roles(role1, reason=f"Transfer from {team1} to {team2}")
-                await member1.add_roles(role2, reason=f"Transfer from {team1} to {team2}")
-            if role2 is not None:
-                await member2.add_roles(role1, reason=f"Transfer from {team2} to {team1}")
-                await member2.remove_roles(role2, reason=f"Transfer from {team2} to {team1}")
-
             if str(member1.id) not in teams[team1]["members"]:
                 return await ctx.send(f"{member1.name} is not on {team1}.")
             if str(member2.id) not in teams[team2]["members"]:
                 return await ctx.send(f"{member2.name} is not on {team2}.")
+            if role1 is not None:
+                try:
+                    await member1.remove_roles(role1, reason=f"Transfer from {team1} to {team2}")
+                    await member2.add_roles(role1, reason=f"Transfer from {team2} to {team1}")
+                except AttributeError:
+                    pass
+            if role2 is not None:
+                try:
+                    await member1.add_roles(role2, reason=f"Transfer from {team1} to {team2}")
+                    await member2.remove_roles(role2, reason=f"Transfer from {team2} to {team1}")
+                except AttributeError:
+                    pass
             if str(member1.id) in teams[team1]["captain"]:
                 teams[team1]["captain"] = {}
                 teams[team1]["captain"][str(member2.id)] = member2.name
@@ -2361,8 +2366,11 @@ class SimHelper(MixinMeta):
         async with cog.config.guild(guild).teams() as teams:
             role = guild.get_role(teams[team1]["role"])
             if role is not None:
-                await member1.remove_roles(role, reason=f"Released from {team1}")
-                await member2.add_roles(role, reason=f"Signed for {team1}")
+                try:
+                    await member1.remove_roles(role, reason=f"Released from {team1}")
+                    await member2.add_roles(role, reason=f"Signed for {team1}")
+                except AttributeError:
+                    pass
 
             if str(member1.id) not in teams[team1]["members"]:
                 return await ctx.send(f"{member1.name} is not on {team1}.")
@@ -2395,45 +2403,6 @@ class SimHelper(MixinMeta):
                 transferred.append(member1.id)
             await self.posttransfer(ctx, "Contract extension!", member1, team1)
             await ctx.tick()
-
-    async def purge(self, ctx, guild, team1, member1):
-        cog = self.bot.get_cog("SimLeague")
-        users = await cog.config.guild(guild).users()
-        member1 = (
-            member1.replace("<", "")
-            .replace("&", "")
-            .replace("!", "")
-            .replace("@", "")
-            .replace(">", "")
-        )
-        async with cog.config.guild(guild).teams() as teams:
-            del teams[team1]["members"][str(member1)]
-        async with cog.config.guild(guild).users() as users:
-            users.remove(str(member1))
-
-    async def simplesign(self, ctx, guild, team1, member1: discord.Member):
-        cog = self.bot.get_cog("SimLeague")
-        users = await cog.config.guild(guild).users()
-        if str(member1.id) in users:
-            return await ctx.send("User is currently not a free agent.")
-        async with cog.config.guild(guild).teams() as teams:
-            role = guild.get_role(teams[team1]["role"])
-            if role is not None:
-                await member1.add_roles(role, reason=f"Signed for {team1}")
-            teams[team1]["members"][str(member1.id)] = member1.name
-        async with cog.config.guild(guild).users() as users:
-            users.append(str(member1.id))
-        await self.posttransfer(ctx, "New signing!!", member1, "(free agent)", team1)
-
-    async def simplesignid(self, ctx, guild, team1, member1, name):
-        cog = self.bot.get_cog("SimLeague")
-        users = await cog.config.guild(guild).users()
-        if str(member1) in users:
-            return await ctx.send("User is currently not a free agent.")
-        async with cog.config.guild(guild).teams() as teams:
-            teams[team1]["members"][str(member1)] = name
-        async with cog.config.guild(guild).users() as users:
-            users.append(str(member1))
 
     async def team_delete(self, ctx, team):
         cog = self.bot.get_cog("SimLeague")

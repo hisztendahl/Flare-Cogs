@@ -847,3 +847,8 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).cupgames.set({})
         await self.config.guild(ctx.guild).cupstats.set({})
         await ctx.tick()
+
+    @clear.command(name="palmares")
+    async def clear_palmares(self, ctx):
+        await self.config.guild(ctx.guild).palmares.set({})
+        await ctx.tick()

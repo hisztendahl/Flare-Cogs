@@ -19,6 +19,7 @@ from .stats import StatsMixin
 from .cupstats import CupStatsMixin
 from .teamset import TeamsetMixin
 from .simtheme import SimthemeMixin
+from .palmares import PalmaresMixin
 
 # THANKS TO https://code.sololearn.com/ci42wd5h0UQX/#py FOR THE SIMULATION AND FIXATOR/AIKATERNA/STEVY FOR THE PILLOW HELP/LEVELER
 
@@ -61,6 +62,7 @@ class SimLeague(
     CupStatsMixin,
     SimsetMixin,
     SimthemeMixin,
+    PalmaresMixin,
     commands.Cog,
     metaclass=CompositeMetaClass,
 ):
@@ -79,6 +81,7 @@ class SimLeague(
             "levels": {},
             "teams": {},
             "fixtures": [],
+            "palmares": {},
             "cupgames": {},
             "cupstats": {
                 "goals": {},
@@ -606,17 +609,21 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        try:
-            for x in sorted(
-                standings,
-                key=lambda x: (int(standings[x]["gf"]) / int(standings[x]["chances"])),
-                reverse=True,
-            ):
+        for x in sorted(
+            standings,
+            key=lambda x: (
+                int(standings[x]["gf"]) / int(standings[x]["chances"])
+                if int(standings[x]["chances"]) > 0
+                else 0
+            ),
+            reverse=True,
+        ):
+            if int(standings[x]["chances"]) > 0:
                 goal_conversion = int(standings[x]["gf"]) / int(standings[x]["chances"])
                 goal_conversion = round(goal_conversion * 100, 2)
-                t.append(f"{x} - {goal_conversion}%")
-        except ZeroDivisionError:
-            return await ctx.send("No stat available.")
+            else:
+                goal_conversion = 0
+            t.append(f"{x} - {goal_conversion}%")
         embed = discord.Embed(
             title="Goal Conversion Rate", description="\n".join(t), colour=0xFF0000
         )

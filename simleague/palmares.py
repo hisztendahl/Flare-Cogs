@@ -59,8 +59,14 @@ class PalmaresMixin(MixinMeta):
             for p in newP:
                 if p in palmares[season]:
                     res = palmares[season][p]
-                    nth = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"]
-                    n = nth[int(res[1]) - 1]
+                    if int(res[1]) == 1:
+                        n = "1st"
+                    elif int(res[1]) == 2:
+                        n = "2nd"
+                    elif int(res[1]) == 3:
+                        n = "3rd"
+                    else:
+                        n = "{}th".format(res[1])
                     medal = ""
                     if n == "1st":
                         medal = ":first_place:"

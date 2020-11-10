@@ -10,6 +10,7 @@ class PalmaresMixin(MixinMeta):
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()
     async def addpalmares(self, ctx, user: discord.Member, season, stat, value, rank):
+        """Add palmares entry for a member."""
         validstats = ["goals", "assists", "ga", "reds", "yellows", "motms", "finish", "cupfinish"]
         if stat not in validstats:
             return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
@@ -29,7 +30,10 @@ class PalmaresMixin(MixinMeta):
 
     @commands.command(name="palmares")
     async def viewpalmares(self, ctx, user: discord.Member):
+        """View palmares for a member."""
         palmares = await self.config.guild(ctx.guild).palmares()
+        if str(user.id) not in palmares:
+            return await ctx.send("No palmares for {}.".format(user.display_name))
         palmares = palmares[str(user.id)]
         embed = discord.Embed(
             color=ctx.author.color,

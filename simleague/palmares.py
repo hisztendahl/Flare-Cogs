@@ -10,7 +10,7 @@ class PalmaresMixin(MixinMeta):
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()
     async def addpalmares(self, ctx, user: discord.Member, season, stat, value, rank):
-        validstats = ["goals", "assists", "ga", "reds", "yellows", "motms", "finish"]
+        validstats = ["goals", "assists", "ga", "reds", "yellows", "motms", "finish", "cupfinish"]
         if stat not in validstats:
             return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
         async with self.config.guild(ctx.guild).palmares() as palmares:
@@ -41,6 +41,7 @@ class PalmaresMixin(MixinMeta):
             seasontitle = "Season {}".format(season) if int(season) != 0 else "Preseason"
             a.append(f"\n**{seasontitle}**")
             finish = palmares[season]["finish"] if "finish" in palmares[season].keys() else None
+            cupfinish = palmares[season]["cupfinish"] if "cupfinish" in palmares[season].keys() else None
             goals = palmares[season]["goals"] if "goals" in palmares[season].keys() else None
             assists = palmares[season]["assists"] if "assists" in palmares[season].keys() else None
             ga = palmares[season]["ga"] if "ga" in palmares[season].keys() else None
@@ -49,6 +50,7 @@ class PalmaresMixin(MixinMeta):
             reds = palmares[season]["reds"] if "reds" in palmares[season].keys() else None
             newP = {
                 "finish": finish,
+                "cupfinish": cupfinish,
                 "goals": goals,
                 "assists": assists,
                 "ga": ga,
@@ -70,7 +72,7 @@ class PalmaresMixin(MixinMeta):
                     medal = ""
                     if n == "1st":
                         medal = ":first_place:"
-                        if p == "finish":
+                        if p == "finish" or p == "cupfinish":
                             medal = ":trophy:"
                     if n == "2nd":
                         medal = ":second_place:"
@@ -85,6 +87,13 @@ class PalmaresMixin(MixinMeta):
     def parsestat(self, stat, value, n, nth):
         if stat == "finish":
             return "Finished {} in the league with {}.".format(nth, value)
+        if stat == "cupfinish":
+            if n == 1:
+                return "Cup winner with {}.".format(value)
+            if n == 2:
+                return "Cup finalist with {}.".format(value)
+            if n == 3:
+                return "Cup semi-finalist with {}.".format(value)
         if stat in ["goals", "assists", "ga"]:
             if n == 0:
                 prefix = "Top"

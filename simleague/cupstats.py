@@ -175,7 +175,7 @@ class CupStatsMixin(MixinMeta):
             await ctx.send("No stats available.")
 
     @cupstats.command(name="yellows", aliases=["yellowcards"])
-    async def _yellows(self, ctx):
+    async def cup_yellows(self, ctx):
         """Players with the most yellow cards."""
         teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).cupstats()
@@ -200,7 +200,7 @@ class CupStatsMixin(MixinMeta):
             await ctx.send("No stats available.")
 
     @cupstats.command(name="reds", aliases=["redcards"])
-    async def _reds(self, ctx):
+    async def cup_reds(self, ctx):
         """Players with the most red cards."""
         teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).cupstats()
@@ -250,7 +250,7 @@ class CupStatsMixin(MixinMeta):
             await ctx.send("No stats available.")
 
     @cupstats.command(name="cleansheets")
-    async def _cleansheets(self, ctx):
+    async def cup_cleansheets(self, ctx):
         """Teams with the most cleansheets."""
         stats = await self.config.guild(ctx.guild).cupstats()
         stats = stats["cleansheets"]

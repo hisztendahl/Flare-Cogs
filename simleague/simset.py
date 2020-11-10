@@ -515,9 +515,13 @@ class SimsetMixin(MixinMeta):
         await ctx.tick()
 
     @simset.command()
-    async def drawcupround(self, ctx):
+    async def drawcupround(self, ctx, *teambyes):
         """Draws the current round of Sim Cup."""
         teams = await self.config.guild(ctx.guild).teams()
+        if len(teambyes):
+            for t in list(teambyes):
+                if t not in teams:
+                    return await ctx.send("{} is not a valid team.".format(t))
         cupgames = await self.config.guild(ctx.guild).cupgames()
         async with ctx.typing():
             if len(cupgames):
@@ -602,12 +606,15 @@ class SimsetMixin(MixinMeta):
                     ),
                     reverse=True,
                 )
+                byes = []
+                if len(teambyes):
+                    sortedstandings = [x for x in teams if x not in teambyes]
+                    byes = list(teambyes)
                 if len(teams):
                     roundsize = 2 ** math.ceil(math.log2(len(teams)))
-                    byes = []
                     drawables = []
                     for idx, team in enumerate(sortedstandings):
-                        if idx < (roundsize - len(teams)):
+                        if idx < (roundsize - len(teams) - len(teambyes)):
                             byes.append(team)
                         else:
                             drawables.append(team)

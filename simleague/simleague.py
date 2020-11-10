@@ -919,16 +919,17 @@ class SimLeague(
             vC = await self.varChance(ctx.guild, probability)
             if vC is True:
                 image = await self.varcheckimg(ctx, "penalty")
-                await ctx.send(file=image)
                 await asyncio.sleep(3)
+                await ctx.send(file=image)
                 vCs = await self.varSuccess(ctx.guild, probability)
                 if vCs is True:
+                    await asyncio.sleep(2)
                     image = await self.varcheckimg(ctx, "penalty", True)
                     await ctx.send(file=image)
                 else:
                     image = await self.varcheckimg(ctx, "penalty", False)
-                    await ctx.send(file=image)
                     await asyncio.sleep(2)
+                    await ctx.send(file=image)
                     await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)
             else:
                 await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)
@@ -1115,16 +1116,17 @@ class SimLeague(
                 vC = await self.varChance(ctx.guild, probability)
                 if vC is True:
                     image = await self.varcheckimg(ctx, "red card")
-                    await ctx.send(file=image)
                     await asyncio.sleep(3)
+                    await ctx.send(file=image)
                     vCs = await self.varSuccess(ctx.guild, probability)
                     if vCs is True:
                         image = await self.varcheckimg(ctx, "red card", True)
+                        await asyncio.sleep(2)
                         await ctx.send(file=image)
                     else:
                         image = await self.varcheckimg(ctx, "red card", False)
-                        await ctx.send(file=image)
                         await asyncio.sleep(2)
+                        await ctx.send(file=image)
                         await handleRedCardSuccess(self, ctx, playerRed, user, teamStats)
                 else:
                     await handleRedCardSuccess(self, ctx, playerRed, user, teamStats)
@@ -1910,16 +1912,17 @@ class SimLeague(
             vC = await self.varChance(ctx.guild, probability)
             if vC is True:
                 image = await self.varcheckimg(ctx, "penalty")
-                await ctx.send(file=image)
                 await asyncio.sleep(3)
+                await ctx.send(file=image)
                 vCs = await self.varSuccess(ctx.guild, probability)
                 if vCs is True:
                     image = await self.varcheckimg(ctx, "penalty", True)
+                    await asyncio.sleep(2)
                     await ctx.send(file=image)
                 else:
                     image = await self.varcheckimg(ctx, "penalty", False)
-                    await ctx.send(file=image)
                     await asyncio.sleep(2)
+                    await ctx.send(file=image)
                     await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)
             else:
                 await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)
@@ -2106,16 +2109,17 @@ class SimLeague(
                 vC = await self.varChance(ctx.guild, probability)
                 if vC is True:
                     image = await self.varcheckimg(ctx, "red card")
-                    await ctx.send(file=image)
                     await asyncio.sleep(3)
+                    await ctx.send(file=image)
                     vCs = await self.varSuccess(ctx.guild, probability)
                     if vCs is True:
                         image = await self.varcheckimg(ctx, "red card", True)
+                        await asyncio.sleep(2)
                         await ctx.send(file=image)
                     else:
                         image = await self.varcheckimg(ctx, "red card", False)
-                        await ctx.send(file=image)
                         await asyncio.sleep(2)
+                        await ctx.send(file=image)
                         await handleRedCardSuccess(self, ctx, playerRed, user, teamStats)
                 else:
                     await handleRedCardSuccess(self, ctx, playerRed, user, teamStats)

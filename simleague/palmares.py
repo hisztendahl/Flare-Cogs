@@ -88,11 +88,11 @@ class PalmaresMixin(MixinMeta):
         if stat == "finish":
             return "Finished {} in the league with {}.".format(nth, value)
         if stat == "cupfinish":
-            if n == 1:
+            if n == 0:
                 return "Cup winner with {}.".format(value)
-            if n == 2:
+            if n == 1:
                 return "Cup finalist with {}.".format(value)
-            if n == 3:
+            if n == 2:
                 return "Cup semi-finalist with {}.".format(value)
         if stat in ["goals", "assists", "ga"]:
             if n == 0:

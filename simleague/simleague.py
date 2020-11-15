@@ -160,7 +160,7 @@ class SimLeague(
                     "desc_text_col": (240, 240, 240, 255),
                 },
                 "fouls": {
-                    "header_text_bg": (200, 200, 255, 255),
+                    "header_text_bg": (230, 230, 230, 230),
                     "header_text_col": (110, 110, 110, 255),
                     "header_time_bg": "#AAA",
                     "header_time_col": (110, 110, 110, 255),
@@ -257,7 +257,7 @@ class SimLeague(
                 "gf": 0,
                 "ga": 0,
                 "draws": 0,
-                "red": 0,
+                "reds": 0,
                 "yellows": 0,
                 "fouls": 0,
                 "chances": 0,
@@ -1366,6 +1366,17 @@ class SimLeague(
                     ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
                 )
                 await ctx.send(file=im)
+                image = await self.matchstats(
+                    ctx,
+                    team1,
+                    team2,
+                    (team1Stats[8], team2Stats[8]),
+                    (len(team1Stats[1]), len(team2Stats[1])),
+                    (len(team1Stats[2]), len(team2Stats[2])),
+                    (team1Stats[10], team2Stats[10]),
+                    (team1Stats[11], team2Stats[11]),
+                )
+                await ctx.send(file=image)
                 ht = await self.config.guild(ctx.guild).htbreak()
                 await asyncio.sleep(ht)
                 await timemsg.delete()

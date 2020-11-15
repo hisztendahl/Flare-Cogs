@@ -45,7 +45,9 @@ class PalmaresMixin(MixinMeta):
             seasontitle = "Season {}".format(season) if int(season) != 0 else "Preseason"
             a.append(f"\n**{seasontitle}**")
             finish = palmares[season]["finish"] if "finish" in palmares[season].keys() else None
-            cupfinish = palmares[season]["cupfinish"] if "cupfinish" in palmares[season].keys() else None
+            cupfinish = (
+                palmares[season]["cupfinish"] if "cupfinish" in palmares[season].keys() else None
+            )
             goals = palmares[season]["goals"] if "goals" in palmares[season].keys() else None
             assists = palmares[season]["assists"] if "assists" in palmares[season].keys() else None
             ga = palmares[season]["ga"] if "ga" in palmares[season].keys() else None

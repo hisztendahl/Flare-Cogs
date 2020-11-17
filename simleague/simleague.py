@@ -103,6 +103,7 @@ class SimLeague(
                 "motm": {},
                 "cleansheets": {},
             },
+            "notes": {},
             "users": [],
             "resultchannel": [],
             "transferchannel": [],
@@ -119,9 +120,9 @@ class SimLeague(
                 "yellowchance": 98,
                 "redchance": 398,
                 "penaltychance": 249,
-                "penaltyblock": 0.25,
+                "penaltyblock": 0.75,
                 "cornerchance": 98,
-                "cornerblock": 0.8,
+                "cornerblock": 0.2,
                 "commentchance": 85,
                 "varchance": 50,
                 "varsuccess": 50,
@@ -1559,34 +1560,40 @@ class SimLeague(
         await ctx.send(file=image)
         if ctx.guild.id in self.bets:
             self.bets[ctx.guild.id] = {}
-        if motm:
-            motmwinner = sorted(motm, key=motm.get, reverse=True)[0]
-            if motmwinner.id in goals:
-                motmgoals = goals[motmwinner.id]
-            else:
-                motmgoals = 0
-            if motmwinner.id in assists:
-                motmassists = assists[motmwinner.id]
-            else:
-                motmassists = 0
-            try:
-                await bank.deposit_credits(
-                    self.bot.get_user(motmwinner.id), (75 * motmgoals) + (30 * motmassists)
-                )
-            except AttributeError:
-                pass
-            im = await self.motmpic(
-                ctx,
-                motmwinner,
-                team1 if str(motmwinner.id) in teams[team1]["members"].keys() else team2,
-                motmgoals,
-                motmassists,
+        motmwinner = sorted(motm, key=motm.get, reverse=True)[0]
+        if motmwinner.id in goals:
+            motmgoals = goals[motmwinner.id]
+        else:
+            motmgoals = 0
+        if motmwinner.id in assists:
+            motmassists = assists[motmwinner.id]
+        else:
+            motmassists = 0
+        try:
+            await bank.deposit_credits(
+                self.bot.get_user(motmwinner.id), (75 * motmgoals) + (30 * motmassists)
             )
-            async with self.config.guild(ctx.guild).stats() as stats:
-                if str(motmwinner.id) not in stats["motm"]:
-                    stats["motm"][str(motmwinner.id)] = 1
+        except AttributeError:
+            pass
+        im = await self.motmpic(
+            ctx,
+            motmwinner,
+            team1 if str(motmwinner.id) in teams[team1]["members"].keys() else team2,
+            motmgoals,
+            motmassists,
+        )
+        async with self.config.guild(ctx.guild).stats() as stats:
+            if str(motmwinner.id) not in stats["motm"]:
+                stats["motm"][str(motmwinner.id)] = 1
+            else:
+                stats["motm"][str(motmwinner.id)] += 1
+        async with self.config.guild(ctx.guild).notes() as notes:
+            for m in motm:
+                note = motm[m] if motm[m] < 10 else 10
+                if str(m.id) not in notes:
+                    notes[str(m.id)] = [note]
                 else:
-                    stats["motm"][str(motmwinner.id)] += 1
+                    notes[str(m.id)].append(note)
             await ctx.send(file=im)
         a = []  # PrettyTable(["Player", "G", "A", "YC, "RC", "Note"])
         for x in sorted(motm, key=motm.get, reverse=True):

@@ -25,6 +25,37 @@ class StatsMixin(MixinMeta):
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()
+    async def addnotes(self, ctx, user: discord.Member, *value):
+        """Add notes for a player."""
+        userid = str(user.id)
+        async with self.config.guild(ctx.guild).notes() as notes:
+            if userid not in notes:
+                notes[userid] = value
+            else:
+                for v in value:
+                    notes[userid].append(v)
+            await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def clearnotes(self, ctx, user: discord.Member):
+        """Clear notes for a player."""
+        userid = str(user.id)
+        async with self.config.guild(ctx.guild).notes() as notes:
+            notes.pop(userid, None)
+
+    @commands.command()
+    async def viewnotes(self, ctx, user: discord.Member):
+        """View notes for a player."""
+        notes = await self.config.guild(ctx.guild).notes()
+        userid = str(user.id)
+        if userid not in notes:
+            return await ctx.send("No note for {}.".format(user.display_name))
+        else:
+            return await ctx.send("Notes: {}".format(" / ".join(str(x) for x in notes[userid])))
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
     async def addstats(self, ctx, user: discord.Member, stat: str, value: int):
         """Add statistics for a user."""
         validstats = [
@@ -209,9 +240,14 @@ class StatsMixin(MixinMeta):
         """Sim League Statistics."""
         if user is not None:
             stats = await self.config.guild(ctx.guild).stats()
+            notes = await self.config.guild(ctx.guild).notes()
             userid = str(user.id)
+            note = notes[userid] if userid in notes else None
+            if note is not None:
+                note = round(sum(float(n) for n in note) / len(note), 2)
             pens = stats["penalties"].get(userid)
             statistics = [
+                note,
                 stats["goals"].get(userid),
                 stats["assists"].get(userid),
                 stats["yellows"].get(userid),
@@ -221,6 +257,7 @@ class StatsMixin(MixinMeta):
                 pens.get("scored") if pens else None,
             ]
             headers = [
+                "note",
                 "goals",
                 "assists",
                 "yellows",
@@ -313,6 +350,25 @@ class StatsMixin(MixinMeta):
                 team = t.upper()[:3]
                 pass
         return [user, team]
+
+    @leaguestats.command(name="notes")
+    async def _notes(self, ctx):
+        """Players with the best average note."""
+        notes = await self.config.guild(ctx.guild).notes()
+        if notes:
+            for n in notes:
+                note = round(sum(float(pn) for pn in notes[n]) / len(notes[n]), 2)
+                notes[n] = note
+            a = []
+            for i, k in enumerate(sorted(notes, key=notes.get, reverse=True)):
+                user_team = await self.get_user_with_team(ctx, k)
+                a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {notes[k]}")
+            embed = discord.Embed(
+                title="Best players", description="\n".join(a[:10]), colour=0xFF0000
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("No stats available.")
 
     @leaguestats.command(name="ga", alias=["ga", "contributions"])
     async def _goals_assists(self, ctx):

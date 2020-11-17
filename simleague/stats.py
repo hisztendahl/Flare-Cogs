@@ -23,6 +23,50 @@ class StatsMixin(MixinMeta):
                 stats["penalties"].pop(userid, None)
         await ctx.tick()
 
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def addstats(self, ctx, user: discord.Member, stat: str, value: int):
+        """Add statistics for a user."""
+        validstats = [
+            "goals",
+            "assists",
+            "ga",
+            "yellows",
+            "reds",
+            "motm",
+            "penscored",
+            "penmissed",
+        ]
+        if stat not in validstats:
+            return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
+        userid = str(user.id)
+        async with self.config.guild(ctx.guild).stats() as stats:
+            if stat in ["penscored", "penmissed"]:
+                if userid in stats["penalties"]:
+                    if stat == "penscored":
+                        if "scored" in stats["penalties"][userid]:
+                            stats["penalties"][userid]["scored"] += value
+                        else:
+                            stats["penalties"][userid]["scored"] = value
+                    if stat == "penmissed":
+                        if "missed" in stats["penalties"][userid]:
+                            stats["penalties"][userid]["missed"] += value
+                        else:
+                            stats["penalties"][userid]["missed"] = value
+                else:
+                    stats["penalties"][userid] = {
+                        "scored": value if stat == "penscored" else 0,
+                        "missed": value if stat == "penmissed" else 0,
+                    }
+            else:
+                if userid in stats[stat]:
+                    stats[stat][userid] += value
+                    if stats[stat][userid] == 0:
+                        stats[stat].pop(userid, None)
+                else:
+                    stats[stat][userid] = value
+        await ctx.tick()
+
     @commands.command()
     async def teamstats(self, ctx, team, comptype="league"):
         """Sim League Team Statistics."""

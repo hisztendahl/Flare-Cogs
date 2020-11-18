@@ -3,7 +3,7 @@ from redbot.core import checks, commands
 
 from .abc import MixinMeta
 from .utils import mergeDict
-
+from math import ceil
 
 class StatsMixin(MixinMeta):
     """Stats Settings"""
@@ -352,7 +352,7 @@ class StatsMixin(MixinMeta):
         return [user, team]
 
     @leaguestats.command(name="notes")
-    async def _notes(self, ctx):
+    async def _notes(self, ctx, page: int = 1):
         """Players with the best average note."""
         notes = await self.config.guild(ctx.guild).notes()
         if notes:
@@ -363,8 +363,13 @@ class StatsMixin(MixinMeta):
             for i, k in enumerate(sorted(notes, key=notes.get, reverse=True)):
                 user_team = await self.get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {notes[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
             embed = discord.Embed(
-                title="Best players", description="\n".join(a[:10]), colour=0xFF0000
+                title="Best players", description="\n".join(a[p1:p2]), colour=0xFF0000
             )
             await ctx.send(embed=embed)
         else:

@@ -282,7 +282,7 @@ class TeamsetMixin(MixinMeta):
 
     @teamset.command()
     async def role(self, ctx, team: str, *, role: discord.Role):
-        """Set a teams role."""
+        """Set a team's role."""
         async with self.config.guild(ctx.guild).teams() as teams:
             if team not in teams:
                 return await ctx.send("Not a valid team.")
@@ -291,7 +291,7 @@ class TeamsetMixin(MixinMeta):
 
     @teamset.command()
     async def stadium(self, ctx, team: str, *, stadium: str):
-        """Set a teams stadium."""
+        """Set a team's stadium."""
         async with self.config.guild(ctx.guild).teams() as teams:
             if team not in teams:
                 return await ctx.send("Not a valid team.")
@@ -300,7 +300,7 @@ class TeamsetMixin(MixinMeta):
 
     @teamset.command()
     async def logo(self, ctx, team: str, *, logo: str):
-        """Set a teams logo."""
+        """Set a team's logo."""
         if not validators.url(logo):
             await ctx.send("This doesn't seem to be a valid URL.")
         if not logo.endswith(".png"):
@@ -313,7 +313,7 @@ class TeamsetMixin(MixinMeta):
 
     @teamset.command(hidden=True)
     async def bonus(self, ctx, team: str, *, amount: int):
-        """Set a teams bonus multiplier."""
+        """Set a team's bonus multiplier."""
         async with self.config.guild(ctx.guild).teams() as teams:
             if team not in teams:
                 return await ctx.send("Not a valid team.")
@@ -322,7 +322,7 @@ class TeamsetMixin(MixinMeta):
 
     @teamset.command(usage="<current name> <new name>")
     async def name(self, ctx, team: str, *, newname: str):
-        """Set a teams name. Try keep names to one word if possible."""
+        """Set a team's name. Try keep names to one word if possible."""
         async with self.config.guild(ctx.guild).teams() as teams:
             if team not in teams:
                 return await ctx.send("Not a valid team.")
@@ -334,11 +334,22 @@ class TeamsetMixin(MixinMeta):
         async with self.config.guild(ctx.guild).standings() as teams:
             teams[newname] = teams[team]
             del teams[team]
+        async with self.config.guild(ctx.guild).cupstandings() as cupteams:
+            if len(dict.keys(cupteams)):
+                cupteams[newname] = cupteams[team]
+                del cupteams[team]
+        async with self.config.guild(ctx.guild).fixtures() as fixtures:
+            if len(fixtures):
+                for weekday in fixtures:
+                    for fixture in weekday:
+                        for i in range(len(fixture)):
+                            if fixture[i] == team:
+                                fixture[i] = newname
         await ctx.tick()
 
     @teamset.command()
     async def fullname(self, ctx, team: str, *, fullname: str):
-        """Set a teams full name."""
+        """Set a team's full name."""
         async with self.config.guild(ctx.guild).teams() as teams:
             if team not in teams:
                 return await ctx.send("Not a valid team.")
@@ -347,7 +358,7 @@ class TeamsetMixin(MixinMeta):
 
     @teamset.command()
     async def captain(self, ctx, team: str, captain: discord.Member):
-        """Set a teams captain."""
+        """Set a team's captain."""
         async with self.config.guild(ctx.guild).teams() as teams:
             if team not in teams:
                 return await ctx.send("Not a valid team.")
@@ -364,7 +375,7 @@ class TeamsetMixin(MixinMeta):
 
     @kits.command()
     async def home(self, ctx, team: str, *, kiturl: str):
-        """Set a teams home kit."""
+        """Set a team's home kit."""
         if not validators.url(kiturl):
             await ctx.send("This doesn't seem to be a valid URL.")
         if not kiturl.endswith(".png"):
@@ -377,7 +388,7 @@ class TeamsetMixin(MixinMeta):
 
     @kits.command()
     async def away(self, ctx, team: str, *, kiturl: str):
-        """Set a teams away kit."""
+        """Set a team's away kit."""
         if not validators.url(kiturl):
             await ctx.send("This doesn't seem to be a valid URL.")
             return
@@ -391,7 +402,7 @@ class TeamsetMixin(MixinMeta):
 
     @kits.command()
     async def third(self, ctx, team: str, *, kiturl: str):
-        """Set a teams third kit."""
+        """Set a team's third kit."""
         if not validators.url(kiturl):
             await ctx.send("This doesn't seem to be a valid URL.")
         if not kiturl.endswith(".png"):

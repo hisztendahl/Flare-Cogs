@@ -68,7 +68,7 @@ class SimLeague(
 ):
     """SimLeague"""
 
-    __version__ = "3.1.0"
+    __version__ = "4.0.0"
 
     def format_help_for_context(self, ctx):
         """Thanks Sinbad."""

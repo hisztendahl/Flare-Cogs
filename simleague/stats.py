@@ -43,7 +43,7 @@ class StatsMixin(MixinMeta):
         """Remove note for a player (at index)."""
         userid = str(user.id)
         async with self.config.guild(ctx.guild).notes() as notes:
-            del notes[userid][index]
+            del notes[userid][int(index)]
             await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)

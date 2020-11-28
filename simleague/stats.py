@@ -39,6 +39,15 @@ class StatsMixin(MixinMeta):
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()
+    async def removenote(self, ctx, user: discord.Member, index):
+        """Remove note for a player (at index)."""
+        userid = str(user.id)
+        async with self.config.guild(ctx.guild).notes() as notes:
+            del notes[userid][index]
+            await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
     async def clearnotes(self, ctx, user: discord.Member):
         """Clear notes for a player."""
         userid = str(user.id)
@@ -385,7 +394,6 @@ class StatsMixin(MixinMeta):
         notes = await self.config.guild(ctx.guild).notes()
         if notes:
             for n in notes:
-                print(f"Note for {n}")                
                 note = round(sum(float(pn) for pn in notes[n]) / len(notes[n]), 2)
                 notes[n] = note
             a = []

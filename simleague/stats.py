@@ -385,6 +385,7 @@ class StatsMixin(MixinMeta):
         notes = await self.config.guild(ctx.guild).notes()
         if notes:
             for n in notes:
+                print(f"Note for {n}")                
                 note = round(sum(float(pn) for pn in notes[n]) / len(notes[n]), 2)
                 notes[n] = note
             a = []

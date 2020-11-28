@@ -23,6 +23,94 @@ class CupStatsMixin(MixinMeta):
                 stats["penalties"].pop(userid, None)
         await ctx.tick()
 
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def addcupstats(self, ctx, user: discord.Member, stat: str, value: int):
+        """Add cup statistics for a user."""
+        validstats = [
+            "goals",
+            "assists",
+            "ga",
+            "yellows",
+            "reds",
+            "motm",
+            "penscored",
+            "penmissed",
+        ]
+        if stat not in validstats:
+            return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
+        userid = str(user.id)
+        async with self.config.guild(ctx.guild).cupstats() as cupstats:
+            if stat in ["penscored", "penmissed"]:
+                if userid in cupstats["penalties"]:
+                    if stat == "penscored":
+                        if "scored" in cupstats["penalties"][userid]:
+                            cupstats["penalties"][userid]["scored"] += value
+                        else:
+                            cupstats["penalties"][userid]["scored"] = value
+                    if stat == "penmissed":
+                        if "missed" in cupstats["penalties"][userid]:
+                            cupstats["penalties"][userid]["missed"] += value
+                        else:
+                            cupstats["penalties"][userid]["missed"] = value
+                else:
+                    cupstats["penalties"][userid] = {
+                        "scored": value if stat == "penscored" else 0,
+                        "missed": value if stat == "penmissed" else 0,
+                    }
+            else:
+                if userid in cupstats[stat]:
+                    cupstats[stat][userid] += value
+                    if cupstats[stat][userid] == 0:
+                        cupstats[stat].pop(userid, None)
+                else:
+                    cupstats[stat][userid] = value
+        await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def addteamcupstats(self, ctx, team: str, stat: str, value: int):
+        """Add cup statistics for a team."""
+        validstats = [
+            "played",
+            "wins",
+            "losses",
+            "points",
+            "gd",
+            "gf",
+            "ga",
+            "draws",
+            "reds",
+            "yellows",
+            "fouls",
+            "chances",
+        ]
+        teams = await self.config.guild(ctx.guild).teams()
+        if team not in teams:
+            return await ctx.send("Team does not exist.")
+        if stat not in validstats:
+            return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
+        async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
+            if team in cupstandings:
+                cupstandings[team][stat] += value
+            else:
+                cupstandings[team] = {
+                    "played": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "points": 0,
+                    "gd": 0,
+                    "gf": 0,
+                    "ga": 0,
+                    "draws": 0,
+                    "reds": 0,
+                    "yellows": 0,
+                    "fouls": 0,
+                    "chances": 0,
+                }
+                cupstandings[team][stat] += value
+        await ctx.tick()
+
     @commands.group(invoke_without_command=True)
     async def cupstats(self, ctx, user: discord.Member = None):
         """Sim Cup Statistics."""

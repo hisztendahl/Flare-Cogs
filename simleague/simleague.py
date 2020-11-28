@@ -176,7 +176,7 @@ class SimLeague(
         self.bot = bot
         self.bets = {}
         self.cache = time.time()
-        self.session = aiohttp.ClientSession(loop=self.bot.loop)
+        self.session = aiohttp.ClientSession()
 
     async def red_delete_data_for_user(
         self,
@@ -380,53 +380,67 @@ class SimLeague(
                     embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def addcupresult(self, ctx, team1, team2, score1, score2):
+        """Add result for a cup game. (only works for games in the last round available)"""
+        async with self.config.guild(ctx.guild).cupgames() as cupgames:
+            keys = list(cupgames.keys())
+            lastround = cupgames[keys[len(keys) - 1]]
+            for game in lastround:
+                if game["team1"] == team1 and game["team2"] == team2:
+                    game["score1"] = int(score1)
+                    game["score2"] = int(score2)
+                    return await ctx.tick()
+                else:
+                    pass
+        await ctx.tick()
+            
     @commands.command(name="cupfixtures")
-    async def cupfixtures(self, ctx, cupround: Optional[int] = None):
+    async def cupfixtures(self, ctx):
         """Show all cup fixtures."""
         cupgames = await self.config.guild(ctx.guild).cupgames()
-
         if not cupgames:
             return await ctx.send("No cup fixtures have been made.")
-        if cupround is None:
-            embed = discord.Embed(
-                colour=ctx.author.colour, description="------------ Cup Fixtures ------------",
-            )
-            for rd in cupgames:
-                fixtures = cupgames[rd]
-                a = []
-                for fixture in fixtures:
-                    if fixture["team2"] == "BYE":
-                        a.append(f"**{fixture['team1']}** _(qualified directly)_")
-                    elif fixture["score1"] == fixture["score2"]:
-                        if fixture["penscore1"] == fixture["penscore2"]:
-                            a.append(f"{fixture['team1']} vs {fixture['team2']}")
-                        elif fixture["penscore1"] > fixture["penscore2"]:
-                            a.append(
-                                f"**{fixture['team1']} {fixture['score1']} ({fixture['penscore1']})**-({fixture['penscore2']}) {fixture['score2']} {fixture['team2']}"
-                            )
-                        else:
-                            a.append(
-                                f"{fixture['team1']} {fixture['score1']} ({fixture['penscore1']})-**({fixture['penscore2']}) {fixture['score2']} {fixture['team2']}**"
-                            )
-                    elif fixture["score1"] > fixture["score2"]:
+        embed = discord.Embed(
+            colour=ctx.author.colour, description="------------ Cup Fixtures ------------",
+        )
+        for rd in cupgames:
+            fixtures = cupgames[rd]
+            a = []
+            for fixture in fixtures:
+                if fixture["team2"] == "BYE":
+                    a.append(f"**{fixture['team1']}** _(qualified directly)_")
+                elif fixture["score1"] == fixture["score2"]:
+                    if fixture["penscore1"] == fixture["penscore2"]:
+                        a.append(f"{fixture['team1']} vs {fixture['team2']}")
+                    elif fixture["penscore1"] > fixture["penscore2"]:
                         a.append(
-                            f"**{fixture['team1']} {fixture['score1']}**-{fixture['score2']} {fixture['team2']}"
+                            f"**{fixture['team1']} {fixture['score1']} ({fixture['penscore1']})**-({fixture['penscore2']}) {fixture['score2']} {fixture['team2']}"
                         )
                     else:
                         a.append(
-                            f"{fixture['team1']} {fixture['score1']}-**{fixture['score2']} {fixture['team2']}**"
+                            f"{fixture['team1']} {fixture['score1']} ({fixture['penscore1']})-**({fixture['penscore2']}) {fixture['score2']} {fixture['team2']}**"
                         )
-                title = ""
-                if int(rd) >= 16:
-                    title = "Round of {}".format(rd)
-                elif rd == "8":
-                    title = "Quarter Finals"
-                elif rd == "4":
-                    title = "Semi Finals"
+                elif fixture["score1"] > fixture["score2"]:
+                    a.append(
+                        f"**{fixture['team1']} {fixture['score1']}**-{fixture['score2']} {fixture['team2']}"
+                    )
                 else:
-                    title = "Final"
-                embed.add_field(name=title, value="\n".join(a))
-            await ctx.send(embed=embed)
+                    a.append(
+                        f"{fixture['team1']} {fixture['score1']}-**{fixture['score2']} {fixture['team2']}**"
+                    )
+            title = ""
+            if int(rd) >= 16:
+                title = "Round of {}".format(rd)
+            elif rd == "8":
+                title = "Quarter Finals"
+            elif rd == "4":
+                title = "Semi Finals"
+            else:
+                title = "Final"
+            embed.add_field(name=title, value="\n".join(a))
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def fixtures(self, ctx, week: Optional[int] = None):

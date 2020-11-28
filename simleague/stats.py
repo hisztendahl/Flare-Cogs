@@ -12,15 +12,16 @@ class StatsMixin(MixinMeta):
     @commands.command()
     async def clearstats(self, ctx, user: discord.Member = None):
         """Clear statistics for a user."""
-        if user is not None:
-            userid = str(user.id)
-            async with self.config.guild(ctx.guild).stats() as stats:
-                stats["goals"].pop(userid, None)
-                stats["assists"].pop(userid, None)
-                stats["yellows"].pop(userid, None)
-                stats["reds"].pop(userid, None)
-                stats["motm"].pop(userid, None)
-                stats["penalties"].pop(userid, None)
+        if user is None:
+            return await ctx.send_help()
+        userid = str(user.id)
+        async with self.config.guild(ctx.guild).stats() as stats:
+            stats["goals"].pop(userid, None)
+            stats["assists"].pop(userid, None)
+            stats["yellows"].pop(userid, None)
+            stats["reds"].pop(userid, None)
+            stats["motm"].pop(userid, None)
+            stats["penalties"].pop(userid, None)
         await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)
@@ -53,6 +54,33 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No note for {}.".format(user.display_name))
         else:
             return await ctx.send("Notes: {}".format(" / ".join(str(x) for x in notes[userid])))
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def addteamstats(self, ctx, team: str, stat: str, value: int):
+        """Add statistics for a team."""
+        validstats = [
+            "played",
+            "wins",
+            "losses",
+            "points",
+            "gd",
+            "gf",
+            "ga",
+            "draws",
+            "reds",
+            "yellows",
+            "fouls",
+            "chances",
+        ]
+        teams = await self.config.guild(ctx.guild).teams()
+        if team not in teams:
+            return await ctx.send("Team does not exist.")
+        if stat not in validstats:
+            return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
+        async with self.config.guild(ctx.guild).standings() as standings:
+            standings[team][stat] += value
+        await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()

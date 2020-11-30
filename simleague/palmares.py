@@ -9,6 +9,145 @@ class PalmaresMixin(MixinMeta):
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()
+    async def genseasonpalmares(self, ctx, season: int):
+        """Generate palmares for a season."""
+        teams = await self.config.guild(ctx.guild).teams()
+        stats = await self.config.guild(ctx.guild).stats()
+        notes = await self.config.guild(ctx.guild).notes()
+        standings = await self.config.guild(ctx.guild).standings()
+        cupgames = await self.config.guild(ctx.guild).cupgames()
+        async with self.config.guild(ctx.guild).palmares() as palmares:
+            seasonstats = ["goals", "assists", "reds", "yellows", "motm"]
+            for s in seasonstats:
+                stat = stats[s]
+                for i, userid in list(enumerate(sorted(stat, key=stat.get, reverse=True)))[:10]:
+                    if userid in palmares:
+                        if str(season) in palmares[userid]:
+                            if s in palmares[userid][str(season)]:
+                                pass
+                            else:
+                                palmares[userid][str(season)][s] = (stat[userid], i + 1)
+                        else:
+                            palmares[userid][season][s] = (stat[userid], i + 1)
+                    else:
+                        palmares[userid] = {}
+                        palmares[userid][season] = {}
+                        palmares[userid][season][s] = (stat[userid], i + 1)
+            contributions = mergeDict(self, stats["goals"], stats["assists"])
+            for i, userid in list(
+                enumerate(sorted(contributions, key=contributions.get, reverse=True))
+            )[:10]:
+                if userid in palmares:
+                    if str(season) in palmares[userid]:
+                        if "ga" in palmares[userid][str(season)]:
+                            palmares[userid][str(season)]["ga"] = (contributions[userid], i + 1)
+                            pass
+                        else:
+                            palmares[userid][str(season)]["ga"] = (contributions[userid], i + 1)
+                    else:
+                        palmares[userid][season]["ga"] = (contributions[userid], i + 1)
+                else:
+                    palmares[userid] = {}
+                    palmares[userid][season] = {}
+                    palmares[userid][season]["ga"] = (contributions[userid], i + 1)
+            for n in notes:
+                note = round(sum(float(pn) for pn in notes[n]) / len(notes[n]), 2)
+                notes[n] = note
+            for i, userid in list(enumerate(sorted(notes, key=notes.get, reverse=True)))[:15]:
+                if userid in palmares:
+                    if str(season) in palmares[userid]:
+                        if "note" in palmares[userid][str(season)]:
+                            pass
+                        else:
+                            palmares[userid][str(season)]["note"] = (notes[userid], i + 1)
+                    else:
+                        palmares[userid][season]["note"] = (notes[userid], i + 1)
+                else:
+                    palmares[userid] = {}
+                    palmares[userid][season] = {}
+                    palmares[userid][season]["note"] = (notes[userid], i + 1)
+            for i, t in enumerate(
+                sorted(
+                    standings,
+                    key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
+                    reverse=True,
+                )
+            ):
+                team = teams[t]
+                for userid in team["members"]:
+                    if userid in palmares:
+                        if str(season) in palmares[userid]:
+                            if "finish" in palmares[userid][str(season)]:
+                                pass
+                            else:
+                                palmares[userid][str(season)]["finish"] = (t, i + 1)
+                        else:
+                            palmares[userid][season]["finish"] = (t, i + 1)
+                    else:
+                        palmares[userid] = {}
+                        palmares[userid][season] = {}
+                        palmares[userid][season]["finish"] = (t, i + 1)
+            if len(cupgames):
+                final = cupgames["2"][0]
+                semifinals = cupgames["4"]
+                winner = (
+                    final["team1"]
+                    if (final["score1"] + final["penscore1"])
+                    > (final["score2"] + final["penscore2"])
+                    else final["team2"]
+                )
+                second = final["team2"] if winner == final["team1"] else final["team2"]
+                third = (
+                    semifinals[0]["team1"]
+                    if (semifinals[0]["score1"] + semifinals[0]["penscore1"])
+                    < (semifinals[0]["score2"] + semifinals[0]["penscore2"])
+                    else semifinals[0]["team2"]
+                )
+                fourth = (
+                    semifinals[1]["team1"]
+                    if (semifinals[1]["score1"] + semifinals[1]["penscore1"])
+                    < (semifinals[0]["score2"] + semifinals[1]["penscore2"])
+                    else semifinals[1]["team2"]
+                )
+                cupteams = {
+                    "winner": {"team": winner, "finish": 1},
+                    "second": {"team": second, "finish": 2},
+                    "third": {"team": third, "finish": 3},
+                    "fourth": {"team": fourth, "finish": 3},
+                }
+                for t in enumerate(cupteams):
+                    team = cupteams[t[1]]["team"]
+                    if team != "BYE":
+                        for userid in teams[team]["members"]:
+                            if userid in palmares:
+                                if str(season) in palmares[userid]:
+                                    if "cupfinish" in palmares[userid][str(season)]:
+                                        palmares[userid][str(season)]["cupfinish"] = (
+                                            team,
+                                            cupteams[t[1]]["finish"],
+                                        )
+                                        pass
+                                    else:
+                                        palmares[userid][str(season)]["cupfinish"] = (
+                                            team,
+                                            cupteams[t[1]]["finish"],
+                                        )
+                                else:
+                                    palmares[userid][season]["cupfinish"] = (
+                                        team,
+                                        cupteams[t[1]]["finish"],
+                                    )
+                            else:
+                                palmares[userid] = {}
+                                palmares[userid][season] = {}
+                                palmares[userid][season]["cupfinish"] = (
+                                    team,
+                                    cupteams[t[1]]["finish"],
+                                )
+        await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
     async def addpalmares(self, ctx, user: discord.Member, season, stat, value, rank):
         """Add palmares entry for a member."""
         validstats = ["goals", "assists", "ga", "reds", "yellows", "motms", "finish", "cupfinish"]
@@ -49,6 +188,7 @@ class PalmaresMixin(MixinMeta):
                 palmares[season]["cupfinish"] if "cupfinish" in palmares[season].keys() else None
             )
             goals = palmares[season]["goals"] if "goals" in palmares[season].keys() else None
+            note = palmares[season]["note"] if "note" in palmares[season].keys() else None
             assists = palmares[season]["assists"] if "assists" in palmares[season].keys() else None
             ga = palmares[season]["ga"] if "ga" in palmares[season].keys() else None
             motms = palmares[season]["motms"] if "motms" in palmares[season].keys() else None
@@ -57,6 +197,7 @@ class PalmaresMixin(MixinMeta):
             newP = {
                 "finish": finish,
                 "cupfinish": cupfinish,
+                "note": note,
                 "goals": goals,
                 "assists": assists,
                 "ga": ga,
@@ -100,7 +241,7 @@ class PalmaresMixin(MixinMeta):
                 return "Cup finalist with {}.".format(value)
             if n == 2:
                 return "Cup semi-finalist with {}.".format(value)
-        if stat in ["goals", "assists", "ga"]:
+        if stat in ["goals", "assists", "ga", "note"]:
             if n == 0:
                 prefix = "Top"
             else:
@@ -109,8 +250,10 @@ class PalmaresMixin(MixinMeta):
                 s = ["goal scorer", "goals"]
             elif stat == "assists":
                 s = ["assister", "assists"]
-            else:
+            elif stat == "ga":
                 s = ["goal contributor", "goals + assists"]
+            else:
+                s = ["average note", ""]
             return "{} {} with {} {}.".format(prefix, s[0], value, s[1])
         if stat in ["yellows", "reds", "motms"]:
             if n == 0:

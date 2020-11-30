@@ -1092,6 +1092,272 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="extratime.png")
         return image
 
+    async def totswalkout(self, ctx, team):
+        theme = await self.config.guild(ctx.guild).theme()
+        tots = await self.config.guild(ctx.guild).tots()
+        font_bold_file = f"{bundled_data_path(self)}/LeagueSpartan-Bold.otf"
+        general_u_fnt = ImageFont.truetype(font_bold_file, 45)
+        name_fnt = ImageFont.truetype(font_bold_file, 18)
+        # set canvas
+        width = 800
+        height = 511
+        bg_color = (255, 255, 255, 0)
+        bg = Image.open(
+            await self.getimg(
+                "https://cdn.discordapp.com/attachments/743974536650948678/779841536883949638/tots2.png"
+            )
+        )
+        result = Image.new("RGBA", (width, height), bg_color)
+        process = Image.new("RGBA", (width, height), bg_color)
+        process.paste(bg, (0, 0))
+        draw = ImageDraw.Draw(process)
+
+        # draw transparent overlay
+        vert_pos = 5
+        title_height = 22
+
+        # draw level circle
+        multiplier = 6
+        lvl_circle_dia = 120
+        circle_left = 120
+        circle_top = int((height - lvl_circle_dia) / 5)
+        raw_length = lvl_circle_dia * multiplier
+
+        # create mask
+        mask = Image.new("L", (raw_length, raw_length), 0)
+        draw_thumb = ImageDraw.Draw(mask)
+        draw_thumb.ellipse((0, 0) + (raw_length, raw_length), fill=255, outline=0)
+
+        # draws mask
+        total_gap = 20
+        border = int(total_gap / 2)
+        profile_size = lvl_circle_dia - total_gap
+        raw_length = profile_size * multiplier
+        x = 240
+        for player in team:
+            player = await self.bot.fetch_user(player)
+            rank_avatar = BytesIO()
+            await player.avatar_url.save(rank_avatar, seek_begin=True)
+            profile_image = Image.open(rank_avatar).convert("RGBA")
+            # put in profile picture
+            output = ImageOps.fit(profile_image, (raw_length, raw_length), centering=(0.5, 0.5))
+            output.resize((profile_size, profile_size), Image.ANTIALIAS)
+            mask = mask.resize((profile_size, profile_size), Image.ANTIALIAS)
+            profile_image = profile_image.resize((profile_size, profile_size), Image.ANTIALIAS)
+            process.paste(profile_image, (circle_left + border + 20, circle_top + border), mask)
+            if len(player.name) > 10:
+                name = player.name[:10] + "..."
+            else:
+                name = player.name
+            text_color = list_to_tuple(theme["walkout"]["name_text"])
+            draw.text((circle_left + border + 20, 200), name, font=name_fnt, fill=text_color)
+            circle_left += 135
+
+        vert_pos = 5
+        title_height = 22
+        gap = 3
+
+        content_top = vert_pos + title_height + gap
+        content_bottom = 100 - vert_pos
+        server_icon_image = await self.getimg(tots["kit"])
+        server_size = content_bottom - content_top - 10
+        server_border_size = server_size + 4
+        radius = 20
+
+        draw_server_border = Image.new(
+            "RGBA", (server_border_size * multiplier, server_border_size * multiplier), "#d4a11e",
+        )
+        draw_server_border = self._add_corners(draw_server_border, int(radius * multiplier / 2))
+        draw_server_border = draw_server_border.resize((184, 184), Image.ANTIALIAS)
+        server_icon_image = server_icon_image.resize(
+            (server_size * multiplier, server_size * multiplier), Image.ANTIALIAS
+        )
+        server_icon_image = self._add_corners(server_icon_image, int(radius * multiplier / 2) - 10)
+        server_icon_image = server_icon_image.resize((180, 180), Image.ANTIALIAS)
+        process.paste(draw_server_border, (x - 80, 258), draw_server_border)
+        process.paste(server_icon_image, (x - 78, 260), server_icon_image)
+        text_color = "#37003c"
+        draw.text((x + 140, 300), "TEAM OF", font=general_u_fnt, fill=text_color)
+        draw.text((x + 110, 360), "THE SEASON", font=general_u_fnt, fill=text_color)
+
+        result = Image.alpha_composite(result, process)
+        file = BytesIO()
+        result.save(file, "PNG", quality=100)
+        file.seek(0)
+        image = discord.File(file, filename="tots.png")
+        return image
+
+    async def potswalkout(self, ctx, player, stats):
+        theme = await self.config.guild(ctx.guild).theme()
+        font_bold_file = f"{bundled_data_path(self)}/LeagueSpartan-Bold.otf"
+        general_u_fnt = ImageFont.truetype(font_bold_file, 20)
+        stats_fnt = ImageFont.truetype(font_bold_file, 15)
+        # set canvas
+        width = 745
+        height = 400
+        bg_color = (255, 255, 255, 0)
+        bg = Image.open(
+            await self.getimg(
+                "https://cdn.discordapp.com/attachments/743974536650948678/780041489081172018/pots2.png"
+            )
+        )
+        result = Image.new("RGBA", (width, height), bg_color)
+        process = Image.new("RGBA", (width, height), bg_color)
+        process.paste(bg, (0, 0))
+        draw = ImageDraw.Draw(process)
+
+        # draw transparent overlay
+        right_pos = width - 75
+
+        # draw level circle
+        multiplier = 6
+        lvl_circle_dia = 98
+        circle_left = 317
+        circle_top = int((height - lvl_circle_dia) / 2)
+        raw_length = lvl_circle_dia * multiplier
+
+        # create mask
+        mask = Image.new("L", (raw_length, raw_length), 0)
+        draw_thumb = ImageDraw.Draw(mask)
+        draw_thumb.ellipse((0, 0) + (raw_length, raw_length), fill=255, outline=0)
+
+        # draws mask
+        total_gap = 20
+        border = int(total_gap / 2)
+        profile_size = lvl_circle_dia - total_gap
+        raw_length = profile_size * multiplier
+        x = 240
+        player = await self.bot.fetch_user(player)
+        rank_avatar = BytesIO()
+        await player.avatar_url.save(rank_avatar, seek_begin=True)
+        profile_image = Image.open(rank_avatar).convert("RGBA")
+        # put in profile picture
+        output = ImageOps.fit(profile_image, (raw_length, raw_length), centering=(0.5, 0.5))
+        output.resize((profile_size, profile_size), Image.ANTIALIAS)
+        mask = mask.resize((profile_size, profile_size), Image.ANTIALIAS)
+        profile_image = profile_image.resize((profile_size, profile_size), Image.ANTIALIAS)
+        process.paste(profile_image, (circle_left + border, circle_top + border - 15), mask)
+        circle_left += 90
+
+        fill = list_to_tuple(theme["chances"]["header_text_bg"])
+        text_color = "#37003c"
+        draw.text((x + 65, 260), player.name, font=general_u_fnt, fill=text_color)
+        # NOTE
+        indent = 0
+        stat = str(stats[0])
+        indent = -4 * len(stat)
+        draw.rectangle(
+            [(450, circle_top + border - 40), (right_pos, circle_top + border - 15)], fill=fill
+        )  # title box
+        draw.text((455, circle_top + border - 35), "Average Note", font=stats_fnt, fill=text_color)
+        draw.rectangle(
+            [(right_pos - 60, circle_top + border - 40), (right_pos, circle_top + border - 15)],
+            fill=text_color,
+        )  # title box
+        draw.text(
+            (right_pos - 30 + indent, circle_top + border - 35),
+            str(stats[0]),
+            font=stats_fnt,
+            fill=fill,
+        )
+
+        stat = str(stats[1])
+        indent = -4 * len(stat)
+        # MOTMS
+        draw.rectangle(
+            [(450, circle_top + border), (right_pos, circle_top + border + 25)], fill=fill
+        )  # title box
+        draw.text((455, circle_top + border + 5), "MOTMS", font=stats_fnt, fill=text_color)
+        draw.rectangle(
+            [(right_pos - 60, circle_top + border), (right_pos, circle_top + border + 25)],
+            fill=text_color,
+        )  # title box
+        draw.text(
+            (right_pos - 30 + indent, circle_top + border + 5),
+            str(stats[1]),
+            font=stats_fnt,
+            fill=fill,
+        )
+
+        stat = str(stats[2])
+        indent = -4 * len(stat)
+        # GOALS
+        draw.rectangle(
+            [(450, circle_top + border + 40), (right_pos, circle_top + border + 65)], fill=fill
+        )  # title box
+        draw.text((455, circle_top + border + 45), "Goals", font=stats_fnt, fill=text_color)
+        draw.rectangle(
+            [(right_pos - 60, circle_top + border + 40), (right_pos, circle_top + border + 65)],
+            fill=text_color,
+        )  # title box
+        draw.text(
+            (right_pos - 30 + indent, circle_top + border + 45),
+            str(stats[2]),
+            font=stats_fnt,
+            fill=fill,
+        )
+
+        stat = str(stats[3])
+        indent = -4 * len(stat)
+        # ASSISTS
+        draw.rectangle(
+            [(450, circle_top + border + 80), (right_pos, circle_top + border + 105)], fill=fill
+        )  # title box
+        draw.text((455, circle_top + border + 85), "Assists", font=stats_fnt, fill=text_color)
+        draw.rectangle(
+            [(right_pos - 60, circle_top + border + 80), (right_pos, circle_top + border + 105)],
+            fill=text_color,
+        )  # title box
+        draw.text(
+            (right_pos - 30 + indent, circle_top + border + 85),
+            str(stats[3]),
+            font=stats_fnt,
+            fill=fill,
+        )
+
+        stat = str(stats[4])
+        indent = -4 * len(stat)
+        # YELLOWS
+        draw.rectangle(
+            [(450, circle_top + border + 120), (right_pos, circle_top + border + 145)], fill=fill
+        )  # title box
+        draw.text((455, circle_top + border + 125), "Yellows", font=stats_fnt, fill=text_color)
+        draw.rectangle(
+            [(right_pos - 60, circle_top + border + 120), (right_pos, circle_top + border + 145)],
+            fill=text_color,
+        )  # title box
+        draw.text(
+            (right_pos - 30 + indent, circle_top + border + 125),
+            str(stats[4]),
+            font=stats_fnt,
+            fill=fill,
+        )
+
+        stat = str(stats[5])
+        indent = -4 * len(stat)
+        # REDS
+        draw.rectangle(
+            [(450, circle_top + border + 160), (right_pos, circle_top + border + 185)], fill=fill
+        )  # title box
+        draw.text((455, circle_top + border + 165), "Reds", font=stats_fnt, fill=text_color)
+        draw.rectangle(
+            [(right_pos - 60, circle_top + border + 160), (right_pos, circle_top + border + 185)],
+            fill=text_color,
+        )  # title box
+        draw.text(
+            (right_pos - 30 + indent, circle_top + border + 165),
+            str(stats[5]),
+            font=stats_fnt,
+            fill=fill,
+        )
+
+        result = Image.alpha_composite(result, process)
+        file = BytesIO()
+        result.save(file, "PNG", quality=100)
+        file.seek(0)
+        image = discord.File(file, filename="pots.png")
+        return image
+
     async def motmpic(self, ctx, user, team, goals, assists):
         theme = await self.config.guild(ctx.guild).theme()
         font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
@@ -1385,6 +1651,290 @@ class SimHelper(MixinMeta):
         result.save(file, "PNG", quality=100)
         file.seek(0)
         image = discord.File(file, filename="pikaleague.png")
+        return image
+
+    async def totsteamstats(self, ctx, stats):
+        theme = await self.config.guild(ctx.guild).theme()
+        teams = await self.config.guild(ctx.guild).teams()
+        font_bold_file = f"{bundled_data_path(self)}/LeagueSpartan-Bold.otf"
+        general_u_fnt = ImageFont.truetype(font_bold_file, 14)
+        stats_fnt = ImageFont.truetype(font_bold_file, 14)
+        # set canvas
+        width = 745
+        height = 400
+        bg_color = (255, 255, 255, 0)
+        bg = Image.open(
+            await self.getimg(
+                "https://cdn.discordapp.com/attachments/743974536650948678/780797461530279986/teamstats.png"
+            )
+        )
+        result = Image.new("RGBA", (width, height), bg_color)
+        process = Image.new("RGBA", (width, height), bg_color)
+        process.paste(bg, (0, 0))
+        draw = ImageDraw.Draw(process)
+
+        # draw level circle
+        multiplier = 6
+        lvl_circle_dia = 30
+        vert_pos = 5
+
+        gap = 3
+        # draws mask
+        total_gap = 20
+        profile_size = lvl_circle_dia - total_gap
+        raw_length = profile_size * multiplier
+        circle_left = 12
+        content_top = vert_pos + gap + 30
+        info_color = (30, 30, 30, 160)
+        server_size = lvl_circle_dia
+        server_border_size = server_size + 4
+        radius = 20
+        light_border = (150, 150, 150, 180)
+        dark_border = (90, 90, 90, 180)
+        border_color = self._contrast(info_color, light_border, dark_border)
+
+        # create mask
+        mask = Image.new("L", (raw_length, raw_length), 0)
+        draw_thumb = ImageDraw.Draw(mask)
+        draw_thumb.ellipse((0, 0) + (raw_length, raw_length), fill=255, outline=0)
+        for stat in list(enumerate(stats))[:4]:
+            content_top = vert_pos + gap + 30
+            text_color = "#37003c"
+            fill = list_to_tuple(theme["chances"]["header_text_bg"])
+            fill2 = list_to_tuple(theme["chances"]["header_text_col"])
+            draw.rectangle(
+                [(circle_left, content_top + 70), (circle_left + 170, content_top + 200)],
+                fill=fill,
+            )  # title box
+            draw.rectangle(
+                [(circle_left, content_top + 70), (circle_left + 170, content_top + 92)],
+                fill=fill2,
+            )  # title box
+            draw.text(
+                (circle_left + 10, content_top + 75),
+                stat[1].upper(),
+                font=general_u_fnt,
+                fill=fill,
+            )
+
+            for t in stats[stat[1]]:
+                team = teams[t[0]]
+                server_icon = await self.getimg(
+                    team["logo"] if team["logo"] is not None else DEFAULT_URL
+                )
+                try:
+                    server_icon_image = Image.open(server_icon).convert("RGBA")
+                except:
+                    server_icon = await self.getimg(DEFAULT_URL)
+                    server_icon_image = Image.open(server_icon).convert("RGBA")
+
+                # put in server picture
+                draw_server_border = Image.new(
+                    "RGBA",
+                    (server_border_size * multiplier, server_border_size * multiplier),
+                    border_color,
+                )
+                draw_server_border = self._add_corners(
+                    draw_server_border, int(radius * multiplier / 2)
+                )
+                draw_server_border = draw_server_border.resize(
+                    (server_border_size, server_border_size), Image.ANTIALIAS
+                )
+                server_icon_image = server_icon_image.resize(
+                    (server_size * multiplier, server_size * multiplier), Image.ANTIALIAS
+                )
+                server_icon_image = server_icon_image.resize(
+                    (server_size, server_size), Image.ANTIALIAS
+                )
+                process.paste(
+                    server_icon_image, (circle_left + 5, content_top + 95), server_icon_image
+                )
+                teamname = t[0]
+                if len(teamname) > 9:
+                    teamname = teamname[:9] + "..."
+                offset = 15 - (len(str(t[1])) * 5)
+                draw.text(
+                    (38 + circle_left, content_top + 103),
+                    teamname,
+                    font=stats_fnt,
+                    fill=text_color,
+                )
+                draw.text(
+                    (135 + circle_left + offset, content_top + 103),
+                    str(t[1]),
+                    font=stats_fnt,
+                    fill=text_color,
+                )
+                content_top += 35
+            circle_left += 183
+
+        circle_left = 100
+        for stat in list(enumerate(stats))[4:7]:
+            content_top = vert_pos + gap + 180
+            text_color = "#37003c"
+            fill = list_to_tuple(theme["chances"]["header_text_bg"])
+            fill2 = list_to_tuple(theme["chances"]["header_text_col"])
+            draw.rectangle(
+                [(circle_left, content_top + 70), (circle_left + 170, content_top + 200)],
+                fill=fill,
+            )  # title box
+            draw.rectangle(
+                [(circle_left, content_top + 70), (circle_left + 170, content_top + 92)],
+                fill=fill2,
+            )  # title box
+            draw.text(
+                (circle_left + 10, content_top + 75),
+                stat[1].upper(),
+                font=general_u_fnt,
+                fill=fill,
+            )
+
+            for t in stats[stat[1]]:
+                team = teams[t[0]]
+                server_icon = await self.getimg(
+                    team["logo"] if team["logo"] is not None else DEFAULT_URL
+                )
+                try:
+                    server_icon_image = Image.open(server_icon).convert("RGBA")
+                except:
+                    server_icon = await self.getimg(DEFAULT_URL)
+                    server_icon_image = Image.open(server_icon).convert("RGBA")
+
+                # put in server picture
+                draw_server_border = Image.new(
+                    "RGBA",
+                    (server_border_size * multiplier, server_border_size * multiplier),
+                    border_color,
+                )
+                draw_server_border = self._add_corners(
+                    draw_server_border, int(radius * multiplier / 2)
+                )
+                draw_server_border = draw_server_border.resize(
+                    (server_border_size, server_border_size), Image.ANTIALIAS
+                )
+                server_icon_image = server_icon_image.resize(
+                    (server_size * multiplier, server_size * multiplier), Image.ANTIALIAS
+                )
+                server_icon_image = server_icon_image.resize(
+                    (server_size, server_size), Image.ANTIALIAS
+                )
+                process.paste(
+                    server_icon_image, (circle_left + 5, content_top + 95), server_icon_image
+                )
+                teamname = t[0]
+                if len(teamname) > 9:
+                    teamname = teamname[:9] + "..."
+                offset = 15 - (len(str(t[1])) * 5)
+                draw.text(
+                    (38 + circle_left, content_top + 103),
+                    teamname,
+                    font=stats_fnt,
+                    fill=text_color,
+                )
+                draw.text(
+                    (135 + circle_left + offset, content_top + 103),
+                    str(t[1]),
+                    font=stats_fnt,
+                    fill=text_color,
+                )
+                content_top += 35
+            circle_left += 183
+
+        result = Image.alpha_composite(result, process)
+        file = BytesIO()
+        result.save(file, "PNG", quality=100)
+        file.seek(0)
+        image = discord.File(file, filename="teamstats.png")
+        return image
+
+    async def totsplayerstats(self, ctx, stats):
+        theme = await self.config.guild(ctx.guild).theme()
+        font_bold_file = f"{bundled_data_path(self)}/LeagueSpartan-Bold.otf"
+        general_u_fnt = ImageFont.truetype(font_bold_file, 14)
+        stats_fnt = ImageFont.truetype(font_bold_file, 14)
+        # set canvas
+        width = 745
+        height = 400
+        bg_color = (255, 255, 255, 0)
+        bg = Image.open(
+            await self.getimg(
+                "https://cdn.discordapp.com/attachments/743974536650948678/782371181445513236/playerstats.png"
+            )
+        )
+        result = Image.new("RGBA", (width, height), bg_color)
+        process = Image.new("RGBA", (width, height), bg_color)
+        process.paste(bg, (0, 0))
+        draw = ImageDraw.Draw(process)
+
+        # draw level circle
+        multiplier = 6
+        lvl_circle_dia = 30
+        vert_pos = 5
+
+        gap = 3
+        profile_size = lvl_circle_dia
+        raw_length = profile_size * multiplier
+        circle_left = 100
+        content_top = vert_pos + gap + 30
+
+        # create mask
+        mask = Image.new("L", (raw_length, raw_length), 0)
+        draw_thumb = ImageDraw.Draw(mask)
+        draw_thumb.ellipse((0, 0) + (raw_length, raw_length), fill=255, outline=0)
+        for i, stat in list(enumerate(stats)):
+            content_top = vert_pos + gap + 30
+            if i == 3:
+                circle_left = 100
+            if i > 2:
+                content_top = vert_pos + gap + 180
+            text_color = "#37003c"
+            fill = list_to_tuple(theme["chances"]["header_text_bg"])
+            fill2 = list_to_tuple(theme["chances"]["header_text_col"])
+            draw.rectangle(
+                [(circle_left, content_top + 70), (circle_left + 170, content_top + 200)],
+                fill=fill,
+            )  # title box
+            draw.rectangle(
+                [(circle_left, content_top + 70), (circle_left + 170, content_top + 92)],
+                fill=fill2,
+            )  # title box
+            draw.text(
+                (circle_left + 10, content_top + 75), stat.upper(), font=general_u_fnt, fill=fill
+            )
+
+            for uid in stats[stat]:
+                player = self.bot.get_user(uid[0])
+                if player is None:
+                    player = await self.bot.fetch_user(uid[0])
+                rank_avatar = BytesIO()
+                await player.avatar_url.save(rank_avatar, seek_begin=True)
+                profile_image = Image.open(rank_avatar).convert("RGBA")
+                output = ImageOps.fit(
+                    profile_image, (raw_length, raw_length), centering=(0.5, 0.5)
+                )
+                output.resize((profile_size, profile_size), Image.ANTIALIAS)
+                mask = mask.resize((profile_size, profile_size), Image.ANTIALIAS)
+                profile_image = profile_image.resize((profile_size, profile_size), Image.ANTIALIAS)
+                process.paste(profile_image, (circle_left + 5, content_top + 95), mask)
+                name = player.name
+                if len(name) > 9:
+                    name = name[:9] + "..."
+                draw.text(
+                    (38 + circle_left, content_top + 103), name, font=stats_fnt, fill=text_color
+                )
+                draw.text(
+                    (135 + circle_left, content_top + 103),
+                    str(uid[1]),
+                    font=stats_fnt,
+                    fill=text_color,
+                )
+                content_top += 35
+            circle_left += 183
+        result = Image.alpha_composite(result, process)
+        file = BytesIO()
+        result.save(file, "PNG", quality=100)
+        file.seek(0)
+        image = discord.File(file, filename="playerstats.png")
         return image
 
     async def matchinfo(self, ctx, teamlist, weather, stadium, homeodds, awayodds, drawodds):
@@ -2418,9 +2968,9 @@ class SimHelper(MixinMeta):
                     user = ctx.guild.get_member(int(uid))
                     if user is not None:
                         cptrole = [r for r in user.roles if r.name == "Sim Captain"][0]
+                        users.remove(uid)
                         if cptrole:
                             await user.remove_roles(cptrole)
-                        users.remove(uid)
             del teams[team]
             async with cog.config.guild(ctx.guild).standings() as standings:
                 del standings[team]

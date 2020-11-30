@@ -781,6 +781,7 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).stats.set({})
         await self.config.guild(ctx.guild).transfers.set({})
         await self.config.guild(ctx.guild).transferred.set([])
+        await self.config.guild(ctx.guild).tots.set({"players": {}, "kit": None, "logo": None})
         await ctx.tick()
 
     @clear.command(name="stats")
@@ -858,4 +859,9 @@ class SimsetMixin(MixinMeta):
     @clear.command(name="palmares")
     async def clear_palmares(self, ctx):
         await self.config.guild(ctx.guild).palmares.set({})
+        await ctx.tick()
+
+    @clear.command(name="tots")
+    async def clear_tots(self, ctx):
+        await self.config.guild(ctx.guild).tots.set({"players": {}, "kit": None, "logo": None})
         await ctx.tick()

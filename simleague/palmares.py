@@ -16,6 +16,7 @@ class PalmaresMixin(MixinMeta):
         notes = await self.config.guild(ctx.guild).notes()
         standings = await self.config.guild(ctx.guild).standings()
         cupgames = await self.config.guild(ctx.guild).cupgames()
+        tots = await self.config.guild(ctx.guild).tots()
         async with self.config.guild(ctx.guild).palmares() as palmares:
             seasonstats = ["goals", "assists", "reds", "yellows", "motm"]
             for s in seasonstats:
@@ -96,7 +97,7 @@ class PalmaresMixin(MixinMeta):
                     > (final["score2"] + final["penscore2"])
                     else final["team2"]
                 )
-                second = final["team2"] if winner == final["team1"] else final["team2"]
+                second = final["team2"] if winner == final["team1"] else final["team1"]
                 third = (
                     semifinals[0]["team1"]
                     if (semifinals[0]["score1"] + semifinals[0]["penscore1"])
@@ -144,6 +145,33 @@ class PalmaresMixin(MixinMeta):
                                     team,
                                     cupteams[t[1]]["finish"],
                                 )
+            tots = tots["players"]
+            for i, userid in enumerate(list(tots)):
+                if userid in palmares:
+                    if str(season) in palmares[userid]:
+                        if "tots" in palmares[userid][str(season)]:
+                            pass
+                        else:
+                            palmares[userid][str(season)]["tots"] = (i + 1, 1)
+                    else:
+                        palmares[userid][season]["tots"] = (i + 1, 1)
+                else:
+                    palmares[userid] = {}
+                    palmares[userid][season] = {}
+                    palmares[userid][season]["tots"] = (i + 1, 1)
+            userid = list(tots)[0]
+            if userid in palmares:
+                if str(season) in palmares[userid]:
+                    if "pots" in palmares[userid][str(season)]:
+                        pass
+                    else:
+                        palmares[userid][str(season)]["pots"] = (i + 1, 1)
+                else:
+                    palmares[userid][season]["pots"] = (i + 1, 1)
+            else:
+                palmares[userid] = {}
+                palmares[userid][season] = {}
+                palmares[userid][season]["pots"] = (i + 1, 1)
         await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)
@@ -194,7 +222,11 @@ class PalmaresMixin(MixinMeta):
             motms = palmares[season]["motms"] if "motms" in palmares[season].keys() else None
             yellows = palmares[season]["yellows"] if "yellows" in palmares[season].keys() else None
             reds = palmares[season]["reds"] if "reds" in palmares[season].keys() else None
+            tots = palmares[season]["tots"] if "tots" in palmares[season].keys() else None
+            pots = palmares[season]["pots"] if "pots" in palmares[season].keys() else None
             newP = {
+                "pots": pots,
+                "tots": tots,
                 "finish": finish,
                 "cupfinish": cupfinish,
                 "note": note,
@@ -221,6 +253,10 @@ class PalmaresMixin(MixinMeta):
                         medal = ":first_place:"
                         if p == "finish" or p == "cupfinish":
                             medal = ":trophy:"
+                        if p == "tots":
+                            medal = ":medal:"
+                        if p == "pots":
+                            medal = ":military_medal:"
                     if n == "2nd":
                         medal = ":second_place:"
                     if n == "3rd":
@@ -241,6 +277,10 @@ class PalmaresMixin(MixinMeta):
                 return "Cup finalist with {}.".format(value)
             if n == 2:
                 return "Cup semi-finalist with {}.".format(value)
+        if stat == "pots":
+            return "Won player of the season."
+        if stat == "tots":
+            return "Voted in the team of the season."
         if stat in ["goals", "assists", "ga", "note"]:
             if n == 0:
                 prefix = "Top"

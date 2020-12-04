@@ -203,10 +203,12 @@ class SimLeague(
             await self.config.user(ctx.author).notify.set(toggle)
             await ctx.send("You will no longer recieve a notification on matches and results.")
 
+    @checks.admin_or_permissions(manage_guild=True)
     @commands.group(autohelp=True)
     async def tots(self, ctx):
         """TOTS Commands."""
 
+    @checks.admin_or_permissions(manage_guild=True)
     @tots.command(name="kit")
     async def tots_kit(self, ctx, kiturl: str):
         """Set TOTS kit."""
@@ -218,6 +220,7 @@ class SimLeague(
             tots["kit"] = kiturl
             await ctx.tick()
 
+    @checks.admin_or_permissions(manage_guild=True)
     @tots.command(name="logo")
     async def tots_logo(self, ctx, logourl: str):
         """Set TOTS logo."""
@@ -229,6 +232,7 @@ class SimLeague(
             tots["logo"] = logourl
             await ctx.tick()
 
+    @checks.admin_or_permissions(manage_guild=True)
     @tots.command(name="getranking")
     async def getplayersranking(self, ctx):
         """Ranks player to select team of the season and player of the season."""
@@ -310,6 +314,7 @@ class SimLeague(
                 embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
+    @checks.admin_or_permissions(manage_guild=True)
     @tots.command(name="walkout")
     async def tots_walkout(self, ctx):
         """Team of the season walkout. Warning: Tailored for 4 teams members"""
@@ -324,6 +329,7 @@ class SimLeague(
         im = await self.totswalkout(ctx, tots)
         await ctx.send(file=im)
 
+    @checks.admin_or_permissions(manage_guild=True)
     @tots.command(name="teamstats")
     async def tots_teamstats(self, ctx):
         """Team stats recap for the season."""
@@ -384,6 +390,7 @@ class SimLeague(
         image = await self.totsteamstats(ctx, stats)
         await ctx.send(file=image)
 
+    @checks.admin_or_permissions(manage_guild=True)
     @tots.command(name="playerstats")
     async def tots_playerstats(self, ctx):
         """Player stats recap for the season."""
@@ -465,6 +472,7 @@ class SimLeague(
         else:
             await ctx.send("No tots ranking available.")
 
+    @checks.admin_or_permissions(manage_guild=True)
     @tots.command(name="pots")
     async def pots_walkout(self, ctx):
         """Player of the season infographic."""

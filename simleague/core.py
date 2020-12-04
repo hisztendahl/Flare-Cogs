@@ -1665,7 +1665,7 @@ class SimHelper(MixinMeta):
         bg_color = (255, 255, 255, 0)
         bg = Image.open(
             await self.getimg(
-                "https://cdn.discordapp.com/attachments/743974536650948678/780797461530279986/teamstats.png"
+                "https://cdn.discordapp.com/attachments/743974536650948678/784448983661019146/teamstats.png"
             )
         )
         result = Image.new("RGBA", (width, height), bg_color)
@@ -1858,7 +1858,7 @@ class SimHelper(MixinMeta):
         bg_color = (255, 255, 255, 0)
         bg = Image.open(
             await self.getimg(
-                "https://cdn.discordapp.com/attachments/743974536650948678/782371181445513236/playerstats.png"
+                "https://cdn.discordapp.com/attachments/743974536650948678/784448984508006460/playerstats.png"
             )
         )
         result = Image.new("RGBA", (width, height), bg_color)

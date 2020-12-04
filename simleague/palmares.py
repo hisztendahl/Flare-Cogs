@@ -9,11 +9,12 @@ class PalmaresMixin(MixinMeta):
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()
-    async def genseasonpalmares(self, ctx, season: int):
+    async def genseasonpalmares(self, ctx, season: str):
         """Generate palmares for a season."""
         teams = await self.config.guild(ctx.guild).teams()
         stats = await self.config.guild(ctx.guild).stats()
         notes = await self.config.guild(ctx.guild).notes()
+        maxplayers = await self.config.guild(ctx.guild).maxplayers()
         standings = await self.config.guild(ctx.guild).standings()
         cupgames = await self.config.guild(ctx.guild).cupgames()
         tots = await self.config.guild(ctx.guild).tots()
@@ -23,12 +24,13 @@ class PalmaresMixin(MixinMeta):
                 stat = stats[s]
                 for i, userid in list(enumerate(sorted(stat, key=stat.get, reverse=True)))[:10]:
                     if userid in palmares:
-                        if str(season) in palmares[userid]:
-                            if s in palmares[userid][str(season)]:
+                        if season in palmares[userid]:
+                            if s in palmares[userid][season]:
                                 pass
                             else:
-                                palmares[userid][str(season)][s] = (stat[userid], i + 1)
+                                palmares[userid][season][s] = (stat[userid], i + 1)
                         else:
+                            palmares[userid][season] = {}
                             palmares[userid][season][s] = (stat[userid], i + 1)
                     else:
                         palmares[userid] = {}
@@ -39,13 +41,13 @@ class PalmaresMixin(MixinMeta):
                 enumerate(sorted(contributions, key=contributions.get, reverse=True))
             )[:10]:
                 if userid in palmares:
-                    if str(season) in palmares[userid]:
-                        if "ga" in palmares[userid][str(season)]:
-                            palmares[userid][str(season)]["ga"] = (contributions[userid], i + 1)
+                    if season in palmares[userid]:
+                        if "ga" in palmares[userid][season]:
                             pass
                         else:
-                            palmares[userid][str(season)]["ga"] = (contributions[userid], i + 1)
+                            palmares[userid][season]["ga"] = (contributions[userid], i + 1)
                     else:
+                        palmares[userid][season] = {}
                         palmares[userid][season]["ga"] = (contributions[userid], i + 1)
                 else:
                     palmares[userid] = {}
@@ -56,12 +58,13 @@ class PalmaresMixin(MixinMeta):
                 notes[n] = note
             for i, userid in list(enumerate(sorted(notes, key=notes.get, reverse=True)))[:15]:
                 if userid in palmares:
-                    if str(season) in palmares[userid]:
-                        if "note" in palmares[userid][str(season)]:
+                    if season in palmares[userid]:
+                        if "note" in palmares[userid][season]:
                             pass
                         else:
-                            palmares[userid][str(season)]["note"] = (notes[userid], i + 1)
+                            palmares[userid][season]["note"] = (notes[userid], i + 1)
                     else:
+                        palmares[userid][season] = {}
                         palmares[userid][season]["note"] = (notes[userid], i + 1)
                 else:
                     palmares[userid] = {}
@@ -77,12 +80,13 @@ class PalmaresMixin(MixinMeta):
                 team = teams[t]
                 for userid in team["members"]:
                     if userid in palmares:
-                        if str(season) in palmares[userid]:
-                            if "finish" in palmares[userid][str(season)]:
+                        if season in palmares[userid]:
+                            if "finish" in palmares[userid][season]:
                                 pass
                             else:
-                                palmares[userid][str(season)]["finish"] = (t, i + 1)
+                                palmares[userid][season]["finish"] = (t, i + 1)
                         else:
+                            palmares[userid][season] = {}
                             palmares[userid][season]["finish"] = (t, i + 1)
                     else:
                         palmares[userid] = {}
@@ -121,19 +125,16 @@ class PalmaresMixin(MixinMeta):
                     if team != "BYE":
                         for userid in teams[team]["members"]:
                             if userid in palmares:
-                                if str(season) in palmares[userid]:
-                                    if "cupfinish" in palmares[userid][str(season)]:
-                                        palmares[userid][str(season)]["cupfinish"] = (
-                                            team,
-                                            cupteams[t[1]]["finish"],
-                                        )
+                                if season in palmares[userid]:
+                                    if "cupfinish" in palmares[userid][season]:
                                         pass
                                     else:
-                                        palmares[userid][str(season)]["cupfinish"] = (
+                                        palmares[userid][season]["cupfinish"] = (
                                             team,
                                             cupteams[t[1]]["finish"],
                                         )
                                 else:
+                                    palmares[userid][season] = {}
                                     palmares[userid][season]["cupfinish"] = (
                                         team,
                                         cupteams[t[1]]["finish"],
@@ -146,14 +147,15 @@ class PalmaresMixin(MixinMeta):
                                     cupteams[t[1]]["finish"],
                                 )
             tots = tots["players"]
-            for i, userid in enumerate(list(tots)):
+            for i, userid in enumerate(list(tots)[:maxplayers]):
                 if userid in palmares:
-                    if str(season) in palmares[userid]:
-                        if "tots" in palmares[userid][str(season)]:
+                    if season in palmares[userid]:
+                        if "tots" in palmares[userid][season]:
                             pass
                         else:
-                            palmares[userid][str(season)]["tots"] = (i + 1, 1)
+                            palmares[userid][season]["tots"] = (i + 1, 1)
                     else:
+                        palmares[userid][season] = {}
                         palmares[userid][season]["tots"] = (i + 1, 1)
                 else:
                     palmares[userid] = {}
@@ -161,12 +163,13 @@ class PalmaresMixin(MixinMeta):
                     palmares[userid][season]["tots"] = (i + 1, 1)
             userid = list(tots)[0]
             if userid in palmares:
-                if str(season) in palmares[userid]:
-                    if "pots" in palmares[userid][str(season)]:
+                if season in palmares[userid]:
+                    if "pots" in palmares[userid][season]:
                         pass
                     else:
-                        palmares[userid][str(season)]["pots"] = (i + 1, 1)
+                        palmares[userid][season]["pots"] = (i + 1, 1)
                 else:
+                    palmares[userid][season] = {}
                     palmares[userid][season]["pots"] = (i + 1, 1)
             else:
                 palmares[userid] = {}

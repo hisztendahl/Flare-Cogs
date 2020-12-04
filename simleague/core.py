@@ -1159,7 +1159,7 @@ class SimHelper(MixinMeta):
 
         content_top = vert_pos + title_height + gap
         content_bottom = 100 - vert_pos
-        server_icon_image = await self.getimg(tots["kit"])
+        server_icon_image = Image.open(await self.getimg(tots["kit"]))
         server_size = content_bottom - content_top - 10
         server_border_size = server_size + 4
         radius = 20

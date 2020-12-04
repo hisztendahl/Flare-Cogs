@@ -12,6 +12,7 @@ from redbot.core import Config, bank, checks, commands
 from redbot.core.utils.chat_formatting import box
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 from tabulate import tabulate
+from math import ceil
 
 from .core import SimHelper
 from .functions import WEATHER
@@ -137,7 +138,6 @@ class SimLeague(
             "transferred": [],
             "transferwindow": False,
             "extensionwindow": False,
-            "cupmode": False,
             "tots": {"players": {}, "kit": None, "logo": None,},
             "theme": {
                 "general": {"bg_color": (255, 255, 255, 0),},
@@ -233,7 +233,6 @@ class SimLeague(
     async def getplayersranking(self, ctx):
         """Ranks player to select team of the season and player of the season."""
         users = await self.config.guild(ctx.guild).users()
-        maxplayers = await self.config.guild(ctx.guild).maxplayers()
         stats = await self.config.guild(ctx.guild).stats()
         cupstats = await self.config.guild(ctx.guild).cupstats()
         notes = await self.config.guild(ctx.guild).notes()
@@ -272,10 +271,8 @@ class SimLeague(
             ranking = {
                 k: v for k, v in sorted(ranking.items(), key=lambda item: item[1], reverse=True)
             }
-
-        tots = list(ranking)[:maxplayers]
+        tots = list(ranking)
         async with self.config.guild(ctx.guild).tots() as simtots:
-            simtots["players"] = {}
             simtots["pots"] = tots[0]
             for t in tots:
                 simtots["players"][t] = ranking[t]
@@ -283,7 +280,9 @@ class SimLeague(
 
     @tots.command(name="view")
     async def view_tots(self, ctx):
+        """View Team of the Season."""
         tots = await self.config.guild(ctx.guild).tots()
+        maxplayers = await self.config.guild(ctx.guild).maxplayers()
         if not len(tots["players"]):
             return await ctx.send("No TOTS available.")
         async with ctx.typing():
@@ -294,7 +293,7 @@ class SimLeague(
                 colour=ctx.author.colour,
             )
             players = {}
-            for player in list(tots["players"].keys()):
+            for player in list(tots["players"].keys())[:maxplayers]:
                 user = self.bot.get_user(player)
                 if user is None:
                     user = await self.bot.fetch_user(player)
@@ -315,10 +314,11 @@ class SimLeague(
     async def tots_walkout(self, ctx):
         """Team of the season walkout. Warning: Tailored for 4 teams members"""
         tots = await self.config.guild(ctx.guild).tots()
+        maxplayers = await self.config.guild(ctx.guild).maxplayers()
         tots = tots["players"]
         if not len(tots):
             return await ctx.send("No TOTS available.")
-        totslist = list(tots.items())
+        totslist = list(tots.items())[:maxplayers]
         random.shuffle(totslist)
         tots = dict(totslist)
         im = await self.totswalkout(ctx, tots)
@@ -386,6 +386,7 @@ class SimLeague(
 
     @tots.command(name="playerstats")
     async def tots_playerstats(self, ctx):
+        """Player stats recap for the season."""
         notes = await self.config.guild(ctx.guild).notes()
         for n in notes:
             note = round(sum(float(pn) for pn in notes[n]) / len(notes[n]), 2)
@@ -427,6 +428,42 @@ class SimLeague(
         t = []
         image = await self.totsplayerstats(ctx, playerstats)
         await ctx.send(file=image)
+
+    async def get_user_with_team(self, ctx, userid):
+        teams = await self.config.guild(ctx.guild).teams()
+        user = self.bot.get_user(int(userid))
+        if not user:
+            user = await self.bot.fetch_user(int(userid))
+        if not user:
+            user = "Invalid User {}".format(userid)
+        team = ""
+        for t in teams:
+            if userid in teams[t]["members"]:
+                team = t.upper()[:3]
+                pass
+        return [user, team]
+
+    @tots.command(name="ranking")
+    async def tots_ranking(self, ctx, page: int = 1):
+        """POTS Ranking."""
+        tots = await self.config.guild(ctx.guild).tots()
+        tots = tots["players"]
+        if tots:
+            a = []
+            for i, k in enumerate(sorted(tots, key=tots.get, reverse=True)):
+                user_team = await self.get_user_with_team(ctx, k)
+                a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {round(float(tots[k]), 2)}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
+            embed = discord.Embed(
+                title="POTS Ranking", description="\n".join(a[p1:p2]), colour=0xFF0000
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("No tots ranking available.")
 
     @tots.command(name="pots")
     async def pots_walkout(self, ctx):
@@ -758,10 +795,6 @@ class SimLeague(
     @commands.group(invoke_without_command=True)
     async def standings(self, ctx, verbose: bool = False):
         """Current sim standings."""
-        if await self.config.guild(ctx.guild).cupmode():
-            return await ctx.send(
-                "This simulation league is in cup mode, contact the maintainer of the league for the current standings."
-            )
         standings = await self.config.guild(ctx.guild).standings()
         if standings is None:
             return await ctx.send("The table is empty.")

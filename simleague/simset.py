@@ -59,18 +59,6 @@ class SimsetMixin(MixinMeta):
         """Simulation Betting Settings."""
 
     @checks.guildowner()
-    @simset.command(autohelp=True, hidden=True)
-    async def cupmode(self, ctx, bool: bool):
-        """Set if the simulation is in cup mode.
-        It disables the standings command."""
-        if bool:
-            await ctx.send("Cup mode is now active.")
-            await self.config.guild(ctx.guild).cupmode.set(bool)
-        else:
-            await ctx.send("Cup mode is now disabled.")
-            await self.config.guild(ctx.guild).cupmode.set(bool)
-
-    @checks.guildowner()
     @simset.group(autohelp=True, hidden=True)
     async def probability(self, ctx):
         """Simulation Probability Settings. May break the cog if changed."""

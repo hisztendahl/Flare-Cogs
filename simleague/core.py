@@ -1092,6 +1092,85 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="extratime.png")
         return image
 
+    async def championscup(self, ctx, team1, trophy, season):
+        theme = await self.config.guild(ctx.guild).theme()
+        teams = await self.config.guild(ctx.guild).teams()
+        team = teams[team1]["members"]
+        font_bold_file = f"{bundled_data_path(self)}/LeagueSpartan-Bold.otf"
+        title_u_fnt = ImageFont.truetype(font_bold_file, 40)
+        general_u_fnt = ImageFont.truetype(font_bold_file, 12)
+        name_fnt = ImageFont.truetype(font_bold_file, 18)
+        # set canvas
+        width = 800
+        height = 500
+        bg_color = list_to_tuple(theme["general"]["bg_color"])
+        result = Image.new("RGBA", (width, height), bg_color)
+        process = Image.new("RGBA", (width, height), bg_color)
+        if trophy == "league":
+            cup = await self.getimg(
+                "https://cdn.discordapp.com/attachments/743974536650948678/785119331549052938/trophy2resize.png"
+            )
+        else:
+            cup = await self.getimg(
+                "https://cdn.discordapp.com/attachments/743974536650948678/785119338088497162/trophy3resize.png"
+            )
+        cup = Image.open(cup)
+        process.paste(cup, (50, 50))
+        draw = ImageDraw.Draw(process)
+
+        # draw level circle
+        multiplier = 6
+        lvl_circle_dia = 100
+        circle_left = 340
+        circle_top = int((height - lvl_circle_dia) / 5) + 15
+        raw_length = lvl_circle_dia * multiplier
+
+        # create mask
+        mask = Image.new("L", (raw_length, raw_length), 0)
+        draw_thumb = ImageDraw.Draw(mask)
+        draw_thumb.ellipse((0, 0) + (raw_length, raw_length), fill=255, outline=0)
+
+        # draws mask
+        total_gap = 20
+        border = int(total_gap / 2)
+        profile_size = lvl_circle_dia - total_gap
+        raw_length = profile_size * multiplier
+        for player in team:
+            player = await self.bot.fetch_user(player)
+            rank_avatar = BytesIO()
+            await player.avatar_url.save(rank_avatar, seek_begin=True)
+            profile_image = Image.open(rank_avatar).convert("RGBA")
+            # put in profile picture
+            output = ImageOps.fit(profile_image, (raw_length, raw_length), centering=(0.5, 0.5))
+            output.resize((profile_size, profile_size), Image.ANTIALIAS)
+            mask = mask.resize((profile_size, profile_size), Image.ANTIALIAS)
+            profile_image = profile_image.resize((profile_size, profile_size), Image.ANTIALIAS)
+            process.paste(profile_image, (circle_left + border + 20, circle_top + border), mask)
+            text_color = list_to_tuple(theme["walkout"]["name_text"])
+            draw.text(
+                (circle_left + border + 120, circle_top + border + profile_size / 2),
+                player.name,
+                font=name_fnt,
+                fill=text_color,
+            )
+            circle_top += 90
+
+        text_color = list_to_tuple(theme["chances"]["header_text_col"])
+        draw.text((circle_left + border + 20, 30), team1, font=title_u_fnt, fill=text_color)
+        if trophy == "league":
+            draw.text((162, 385), "SimLeague", font=general_u_fnt, fill=text_color)
+            draw.text((162, 400), "SEASON 2", font=general_u_fnt, fill=text_color)
+        else:
+            draw.text((180, 362), "SimCup", font=general_u_fnt, fill=text_color)
+            draw.text((172, 374), "SEASON {}".format(season), font=general_u_fnt, fill=text_color)
+
+        result = Image.alpha_composite(result, process)
+        file = BytesIO()
+        result.save(file, "PNG", quality=100)
+        file.seek(0)
+        image = discord.File(file, filename="tots.png")
+        return image
+
     async def totswalkout(self, ctx, team):
         theme = await self.config.guild(ctx.guild).theme()
         tots = await self.config.guild(ctx.guild).tots()
@@ -2329,7 +2408,7 @@ class SimHelper(MixinMeta):
         offset = len(team2) * 8
         _write_unicode(
             "{}".format(team2.upper()),
-            width - offset - 10,
+            width - offset - 14,
             vert_pos + 3,
             name_fnt,
             header_u_fnt,

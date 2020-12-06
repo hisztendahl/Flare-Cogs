@@ -203,7 +203,6 @@ class SimLeague(
             await self.config.user(ctx.author).notify.set(toggle)
             await ctx.send("You will no longer recieve a notification on matches and results.")
 
-    @checks.admin_or_permissions(manage_guild=True)
     @commands.group(autohelp=True)
     async def tots(self, ctx):
         """TOTS Commands."""
@@ -313,6 +312,26 @@ class SimLeague(
                 embed.set_image(url=tots["kit"])
                 embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @tots.command(name="champion")
+    async def trophy_champion(self, ctx, trophy: str, season: str):
+        if trophy not in ["league", "cup"]:
+            return await ctx.send(
+                "Invalid argument. Must be one of {}".format(", ".join(["league", "cup"]))
+            )
+        if trophy == "league":
+            standings = await self.config.guild(ctx.guild).standings()
+        else:
+            standings = await self.config.guild(ctx.guild).cupstandings()
+        standings = sorted(
+            standings,
+            key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
+            reverse=True,
+        )
+        champion = standings[0]
+        image = await self.championscup(ctx, champion, trophy, season)
+        await ctx.send(file=image)
 
     @checks.admin_or_permissions(manage_guild=True)
     @tots.command(name="walkout")
@@ -459,7 +478,9 @@ class SimLeague(
             a = []
             for i, k in enumerate(sorted(tots, key=tots.get, reverse=True)):
                 user_team = await self.get_user_with_team(ctx, k)
-                a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {round(float(tots[k]), 2)}")
+                a.append(
+                    f"{i+1}. {user_team[0].name} ({user_team[1]}) - {round(float(tots[k]), 2)}"
+                )
                 p1 = (page - 1) * 10 if page > 1 else page - 1
                 p2 = page * 10
             if p1 > len(a):
@@ -2699,6 +2720,17 @@ class SimLeague(
                     ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
                 )
                 await ctx.send(file=im)
+                image = await self.matchstats(
+                    ctx,
+                    team1,
+                    team2,
+                    (team1Stats[8], team2Stats[8]),
+                    (len(team1Stats[1]), len(team2Stats[1])),
+                    (len(team1Stats[2]), len(team2Stats[2])),
+                    (team1Stats[11], team2Stats[11]),
+                    (team1Stats[12], team2Stats[12]),
+                )
+                await ctx.send(file=image)
                 await asyncio.sleep(ht)
                 await timemsg.delete()
                 timemsg = await ctx.send("Second Half!")

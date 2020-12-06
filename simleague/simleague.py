@@ -433,7 +433,13 @@ class SimLeague(
         fairplay = mergeDict(self, stats["yellows"], stats["reds"])
         fairplay = sorted(fairplay, key=fairplay.get)
         for x in fairplay[:3]:
-            t.append([x, int(stats["yellows"][x]) + 3 * int(stats["reds"][x])])
+            t.append(
+                [
+                    x,
+                    int(stats["yellows"][x] if x in stats["yellows"] else 0)
+                    + 3 * int(stats["reds"][x] if x in stats["reds"] else 0),
+                ]
+            )
         playerstats["fair-play"] = t
         t = []
         goals = sorted(stats["goals"], key=stats["goals"].get, reverse=True)

@@ -15,6 +15,14 @@ class HungerGames:
         self.active_games[channel_id] = Game(owner_name, owner_id, title)
         return True
 
+    def take_ownership(self, channel_id, owner_id, owner_name):
+        if channel_id not in self.active_games:
+            return ErrorCode.NO_GAME        
+        this_game = self.active_games[channel_id]
+        this_game.owner_id = owner_id
+        this_game.owner_name = owner_name
+        return "{} is now the host.".format(owner_name)
+
     def add_player(self, channel_id, name, gender=None, volunteer=False):
         if channel_id not in self.active_games:
             return ErrorCode.NO_GAME
@@ -52,8 +60,8 @@ class HungerGames:
             return ErrorCode.PLAYER_EXISTS
         gender_symbol = "♂" if is_male else "♀"
         if volunteer:
-            return "**District {0} {1} | {2}** volunteers as tribute!".format(p.district, gender_symbol, p.name)
-        return "**District {0} {1} | {2}** is selected to be a tribute!".format(p.district, gender_symbol, p.name)
+            return "**District {0} {1}** | {2} volunteers as tribute!".format(p.district, gender_symbol, p.name)
+        return "**District {0} {1}** | {2} is selected to be a tribute!".format(p.district, gender_symbol, p.name)
 
     def remove_player(self, channel_id, name):
         if channel_id not in self.active_games:

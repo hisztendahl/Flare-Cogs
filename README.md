@@ -32,3 +32,4 @@ You can contact me in the Red 3rd party server in #support_flare-cogs
 | --- | --- |
 | SimLeague | Football simulation cog (forked from https://github.com/flaree/Flare-Cogs) |
 | Tweet | Tweets anything posted in a channel (forked from https://github.com/ismaeelakram/Mahjestic-Cogs) |
+| HungerGames | HungerGames simulation (cog version of https://github.com/DiamondIceNS/Hungrybot) |

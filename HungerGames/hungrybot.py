@@ -8,12 +8,12 @@ from typing import Literal, Optional
 from .default_players import default_players
 from .hungergames import HungerGames
 from .enums import ErrorCode
+from .utils import sanitize_here_everyone, sanitize_special_chars, strip_mentions
 from redbot.core.bot import Red
 from redbot.core import Config, bank, checks, commands
 
 prefix = '''!hg '''
 hg = HungerGames()
-
 
 class HungryBot(commands.Cog):
     """Hunger Games."""
@@ -52,9 +52,9 @@ class HungryBot(commands.Cog):
         if title is None or title == "":
             title = "The Hunger Games"
         else:
-            title = __strip_mentions(ctx.message, title)
-            title = __sanitize_here_everyone(title)
-            title = __sanitize_special_chars(title)
+            title = strip_mentions(ctx.message, title)
+            title = sanitize_here_everyone(title)
+            title = sanitize_special_chars(title)
         owner = ctx.author
         ret = hg.new_game(ctx.channel.id, owner.id, owner.name, title)
         if not await self.__check_errors(ctx, ret):
@@ -72,11 +72,22 @@ class HungryBot(commands.Cog):
         gender (Optional) - Use `-m` or `-f` to set male or female gender. Defaults to a random gender.
         """
         name = ctx.author.nick if ctx.author.nick is not None else ctx.author.name
+        name = f"**{name}**"
         ret = hg.add_player(ctx.channel.id, name, gender=gender, volunteer=True)
         if not await self.__check_errors(ctx, ret):
             return
         await ctx.send(ret)
 
+    @hg.command()
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.guild_only()
+    async def change_owner(self, ctx):
+        """Change owner of the current active game."""
+        name = ctx.author.nick if ctx.author.nick is not None else ctx.author.name
+        ret = hg.take_ownership(ctx.channel.id, ctx.author.id, name)
+        if not await self.__check_errors(ctx, ret):
+            return
+        await ctx.send(ret)
 
     @hg.command(rest_is_raw=True)
     @commands.guild_only()
@@ -88,9 +99,9 @@ class HungryBot(commands.Cog):
         Special chars @*_`~ count for two characters each.
         \tPrepend the name with a `-m ` or `-f ` flag to set male or female gender. Defaults to a random gender.
         """
-        name = __strip_mentions(ctx.message, name)
-        name = __sanitize_here_everyone(name)
-        name = __sanitize_special_chars(name)
+        name = strip_mentions(ctx.message, name)
+        name = sanitize_here_everyone(name)
+        name = sanitize_special_chars(name)
 
         ret = hg.add_player(ctx.channel.id, name)
         if not await self.__check_errors(ctx, ret):
@@ -107,9 +118,9 @@ class HungryBot(commands.Cog):
 
         name - The name of the tribute to remove.
         """
-        name = __strip_mentions(ctx.message, name)
-        name = __sanitize_here_everyone(name)
-        name = __sanitize_special_chars(name)
+        name = strip_mentions(ctx.message, name)
+        name = sanitize_here_everyone(name)
+        name = sanitize_special_chars(name)
 
         ret = hg.remove_player(ctx.channel.id, name)
         if not await self.__check_errors(ctx, ret):
@@ -129,9 +140,9 @@ class HungryBot(commands.Cog):
             group = []
             for m in list(ctx.message.guild.members):
                 if m.nick is not None:
-                    group.append(m.nick)
+                    group.append(f"**{m.nick}**")
                 else:
-                    group.append(m.name)
+                    group.append(f"**{m.name}**")
         else:
             group = default_players.get(group_name)
 
@@ -235,34 +246,3 @@ class HungryBot(commands.Cog):
             return False
 
 
-def __strip_mentions(message: discord.Message, text):
-    members = message.mentions
-    channels = message.channel_mentions
-    roles = message.role_mentions
-
-    for m in members:
-        name = m.nick if m.nick is not None else m.name
-        text = re.sub(m.mention, name, text)
-
-    for c in channels:
-        text = re.sub(c.mention, c.name, text)
-
-    for r in roles:
-        text = re.sub(r.mention, r.name, text)
-
-    return text
-
-
-def __sanitize_here_everyone(text):
-    text = re.sub('@here', '@\u180Ehere', text)
-    text = re.sub('@everyone', '@\u180Eeveryone', text)
-    return text
-
-
-def __sanitize_special_chars(text):
-    text = re.sub('@', '\\@', text)
-    text = re.sub('~~', '\\~\\~', text)
-    text = re.sub('\*', '\\*', text)
-    text = re.sub('`', '\\`', text)
-    text = re.sub('_', '\\_', text)
-    return text.strip()

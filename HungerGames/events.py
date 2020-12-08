@@ -1510,8 +1510,8 @@ events = {
             {
                 'msg': "{0} dies from the poison of {1}'s punji stick trap.",
                 'tributes': 2,
-                'killer': [0],
-                'killed': [1]
+                'killer': [1],
+                'killed': [0]
             },
             {
                 'msg': "{0} digs a hole, throws {1} in, and buries {1.him_her} alive.",

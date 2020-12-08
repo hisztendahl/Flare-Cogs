@@ -122,7 +122,7 @@ class HungryBot(commands.Cog):
         name = sanitize_here_everyone(name)
         name = sanitize_special_chars(name)
 
-        ret = hg.remove_player(ctx.channel.id, name)
+        ret = hg.remove_player(ctx.author.id, ctx.channel.id, name)
         if not await self.__check_errors(ctx, ret):
             return
         await ctx.send(ret)
@@ -146,7 +146,7 @@ class HungryBot(commands.Cog):
         else:
             group = default_players.get(group_name)
 
-        ret = hg.pad_players(ctx.channel.id, group)
+        ret = hg.pad_players(ctx.author.id, ctx.channel.id, group)
         if not await self.__check_errors(ctx, ret):
             return
         await ctx.send(ret)

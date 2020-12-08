@@ -1,10 +1,125 @@
 events = {
-
     'bloodbath': {
         'title': "The Bloodbath",
         'description': "As the tributes stand on their podiums, the horn sounds.",
         'color': 0x9f0000,
         'nonfatal': [
+            {
+                'msg': "{0} clumsily flirts with {1}. {1.he_she_cap} punches {0.him_her} in the nose.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} gives {1} flowers.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} has a dream in which {1} is plotting to kill {0.him_her}.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} has nightmares over what {1} did to {0.him_her} the other day.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} hides in the bushes, aiming an arrow at {1}'s head. {0.he_she_cap} breaks down crying.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} kicks {1}, who then desperately runs away from {0.him_her}.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} kicks sand in {1}'s face.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} kisses {1}, leaving the latter stunned.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} knocks out {1} with a boomerang.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} lets {1} cry on {0.his_her} shoulder.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} reveals to {1} that {0.he_she} doesn't know the meaning of friendship.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} reveals to {1} that {0.he_she} doesn't know the meaning of love.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} punches {1} in the face.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} pushes {1} in a mud puddle.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} pushes {1} off a ledge, but {1.he_she} survives and swears vengeance.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} sings a threatening lullaby to {1}, who gets scared and flees the area",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} blows up some of the supplies with an explosive.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} does not know what to do and has a panic attack.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} finds a map.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} finds an absurdly large sword, but has a hard time picking it up.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} grabs a machete from the cornucopia.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} grabs a scythe from the cornucopia.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} stumbles away from the cornucopia.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} grabs a fistful of fishing bait.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} takes a crossbow from the cornucopia.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} blows a kiss at {1} before running away from the Cornucopia.",
+                "tributes": 2
+            },
+            {
+                'msg': "{0} and {1} exchange a hug before running their separate ways.",
+                "tributes": 2
+            },                                                                      
+            {
+                'msg': "{0} grabs a rope, hoping to commit suicide later.",
+                "tributes": 1
+            },
+            {
+                'msg': "{0} gives a stunned {1} half {0.he_she} supplies.",
+                "tributes": 2
+            },            
             {
                 'msg': "{0} grabs a shovel.",
                 'tributes': 1
@@ -115,6 +230,62 @@ events = {
             },
             {
                 'msg': "{0} snatches a pair of sais.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} accidentally blows up {1}'s camp.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} accidentally falls near a pool of lava and is severely burnt.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} accidentally runs into a tree.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} attempts suicide, but stops at the last moment.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} cannot handle the circumstances and commits self-harm.",
+                'tributes': 1
+            },
+            {
+                'msg': "Unable to find any other food source, {0} has to consume human flesh.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} cleans {0.his_her} weapons.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} cuts free from a snare trap.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} destroys {0.his_her} camp to deny anyone {0.his_her} supplies before moving on.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} falls from a ledge and breaks {0.his_her} arm.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} falls into a pit, but somehow lives.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} gazes at a beautiful aurora.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} gets struck by lightning. {0.he_she_cap} survives.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} goes for a swim in the lake.",
                 'tributes': 1
             },
         ],
@@ -437,6 +608,108 @@ events = {
                 'killer': [0],
                 'killed': [1]
             },
+            {
+                'msg': "{0} ambushes {1} and drowns {0.him_her}.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} ambushes {1} and tries to drown {0.him_her} in the river but is drowned instead.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} and {1} scale a cliffface. {0}'s grip slips and {0.he_she} plummets.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} and {1} scale a cliffface. {1}'s grip slips and {1.he_she} plummets.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [1]
+            },                         
+            {
+                'msg': "{0} ambushes {1} and drowns {0.his_her}.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },            
+            {
+                'msg': "{0} ambushes {1} and drowns {0.his_her}.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} asks {1} for an alliance. {1} responds by snapping {0}'s neck.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [0]
+            },            
+            {
+                'msg': "{0} betrays {1} by shoving {1.him_her} off a cliff.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },                   
+            {
+                'msg': "{0} catches {1} unaware and impales {1.him_her} through the back.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} and {1} team up and kill {2}. They disagree on who gets {2.his_her} weapons, and {0} ends up murdering {1} as well.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1, 2]
+            },
+            {
+                'msg': "{0} and {1} attempt to track down and kill {2}, but {2.he_she} sees them coming and kills them both.",
+                'tributes': 3,
+                'killer': [2],
+                'killed': [0, 1]
+            },
+            {
+                'msg': "{0}  fires two arrows in quick succession, hitting and killing {1} and {2}.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1, 2]
+            },
+            {
+                'msg': "{0} holds {1} from behind as {2} stabs {1.him_her} repeatedly in the chest.",
+                'tributes': 3,
+                'killer': [2],
+                'killed': [1]
+            },
+            {
+                'msg': "{0}, {1}, and {2} attempt to track down and kill {3}, but {3.he_she} sees them coming and kills them all.",
+                'tributes': 4,
+                'killer': [3],
+                'killed': [0, 1, 2]
+            },
+            {
+                'msg': "{0} goes berserk and kills {1}, {2}, and {2}.",
+                'tributes': 4,
+                'killer': [0],
+                'killed': [1, 2, 3]
+            },
+            {
+                'msg': "{0} forces {1} to kill {2} or {3}. {4} suddenly appears and kills them all.",
+                'tributes': 5,
+                'killer': [4],
+                'killed': [0, 1, 2, 3]
+            },
+            {
+                'msg': "{0} steps on a landmine, also killing {1}, {2}, {3}, and {4}.",
+                'tributes': 5,
+                'killer': [0],
+                'killed': [0, 1, 2, 3 , 4]
+            },
         ]
     },
 
@@ -445,6 +718,70 @@ events = {
         'description': None,
         'color': 0xf9eb0f,
         'nonfatal': [
+            {
+                'msg': "{0} reassures {1} that it is safe to sleep.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} refuses to leave an injured {1}'s side.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} saves {1} from drowning.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} saves {1} from falling into a gorge.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} saves {1} from falling into a pit.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} saves {1} from falling off a cliff.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} tries to appease the sponsors by talking about their families.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} saves {1} from getting crushed by a falling tree.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} says to {1} that {0.he_she} trusts {1} with {0.his_her} life.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} screams loudly, causing {1} to scream loudly as well. They both end up screaming at each other.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} sees {1} contemplating suicide and decides to keep watch of {1.him_her}.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} sees {1} shivering in {1.his_her} sleep and quietly gives {1.him_her} a blanket.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} refuses to let {1} into {0.his_her} camp, but throws {1.him_her} a flask of water.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} serenades {1}.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} sets an explosive off, but misses killing {1} by mere moments.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} shoots an arrow at {1}, but misses.",
+                'tributes': 2
+            },
             {
                 'msg': "{0} goes hunting.",
                 'tributes': 1
@@ -631,6 +968,66 @@ events = {
             },
             {
                 'msg': "{0} questions {0.his_her} sanity.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} hurts {0.himself_herself} in {0.his_her} confusion.",
+                'tributes': 1
+            },            
+            {
+                'msg': "{0} knocks out {1} with a boomerang.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} looks at {0.his_her} own reflection in a body of water.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} looks directly at the moon.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} plans {0.his_her} next attack.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} receives a hat and a cool pair of sunglasses from an unknown sponsor.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} receives a map of the arena from an unknown sponsor.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} receives a trident from an unknown sponsor.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} reflects on what {0.he_she} has done so far.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} thinks about how badly {0.he_she} wants to win.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} relaxes in a clearing, coming to terms with {0.his_her} inevitable death.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} relaxes in the warm sunlight.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} reminisces about all the dead tributes so far.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} rubs {0.his_her} weapons down with toxins.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} has a vivid dream about escaping the game, and cries when {0.he_she} wakes up still in the arena.",
                 'tributes': 1
             },
         ],
@@ -1092,6 +1489,200 @@ events = {
                 'killer': [0],
                 'killed': [1]
             },
+            {
+                'msg': "{0} catches up to {1} and smashes a mallet agaist {1.his_her} head.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} crucifies {1} on a tall tree.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} curls a sickle up from underneath and around {1}'s ribcage.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} dies from the poison of {1}'s punji stick trap.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} digs a hole, throws {1} in, and buries {1.him_her} alive.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} disarms {1}'s bow but {1} runs up and stabs {0.him_her} with an arrow up close.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} drops a tracker jacker nest on {1}.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} eviscerates {1} with a meathook.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },              
+            {
+                'msg': "{0} falls into a pit and survives, but is then crushed when {1} falls into the same pit.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [0, 1]
+            },              
+            {
+                'msg': "{0} grabs {1}'s neck and slams {1.his_her} head repeatedly against the ground.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} throws a blade, landing it squarely in {1}'s backside.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} throws a trident into {1}'s face.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} ties {1} up while they're asleep, and throws them into a nearby river.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} sleepily attempts to cook for {0.himself_herself} and {1}, and poisons them both",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [0, 1]
+            },
+            {
+                'msg': "{0} knocks {1} out and spends the day torturing them to death.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} throws all of {0.his_her} extra weapons into the air. They kill {1} as they fall.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} cradles {1} in {0.his_her} arms as {1.he_she} dies.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} overpowers and drowns {1}, who was sleeping near a water source.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} hugs {1}. A short while in, {0.he_she} inserts a knife into {1.his_her} back and leaves {1.him_her} to die",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} locks {1} in an old shack drenched with gasoline and sets it on fire.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} lures {1} into the woods and beats {1.him_her} to death with a rock.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} is lulled to sleep from the sound of {1} brutally massacring {2}.",
+                'tributes': 3,
+                'killer': [1],
+                'killed': [2]
+            },
+            {
+                'msg': "{0} kills {1} in order to have {2} all to {0.himself_herself}.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} sets an explosive off, killing {1}. {2} survives with injuries.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} shoots {1} with an arrow. {2} flees from the area unnoticed.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} shoots an arrow at {1}, but {2} takes the shot for {1.him_her}.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [2]
+            },
+            {
+                'msg': "{0} shoots an arrow at {1}. {2} jumps between them, but it misses {2.him_her} and kills {1} anyway.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} shoots an arrow into {1}'s back right as {1.he_she} is about to kill {2}.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} sets an explosive off, killing {1} and {2}. {3} survives with injuries.", 
+                'tributes': 4,
+                'killer': [0],
+                'killed': [1, 2]
+            },            
+            {
+                'msg': "{0} steps on a landmine, also killing {1}, {2}, and {3}.",
+                'tributes': 4,
+                'killer': [0],
+                'killed': [0, 1, 2, 3]
+            },
+
+            {
+                'msg': "{0} sets an explosive off, killing {1}, {2}, and {3}. {4} survives with injuries.",
+                'tributes': 5,
+                'killer': [0],
+                'killed': [1, 2, 3]
+            },
+            {
+                'msg': "{0}, {1}, {2}, and {3} attempt to track down and kill {4}, but {4.he_she} sees them coming and kills them all.",
+                'tributes': 5,
+                'killer': [4],
+                'killed': [0, 1, 2, 3]
+            },
+
         ]
     },
 
@@ -1100,6 +1691,94 @@ events = {
         'description': None,
         'color': 0x001233,
         'nonfatal': [
+            {
+                'msg': "{0} sings {1} a lullaby.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} steals {1}'s supplies while {1.he_she} is asleep.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} swings a burning torch at {1}, searing {1.his_her} hair.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} tortures {1} by prying off {1.his_her} nails one by one.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} tries to sneak up on {1} but makes noise, prompting {1}'s escape.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} tries to stab {1} while {1.he_she}'s sleeping but stops at the last moment.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} unknowingly drinks from {1}'s bottle, but {1.he_she} doesn't seem to mind at all.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} vividly dreams about skewering {1} with a spear.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} wakes up {1} by splashing {1.his_her} head with cold water.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} wakes up {1} from a nightmare by shaking {1.him_her2}.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} wonders how {0.he_she} can end {1}'s life in the most painful way possible.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} wounds {1} and leaves {1.him_her}, stating that this was mercy.",
+                'tributes': 2
+            },
+            {
+                'msg': "Crossing {0}'s path, {1} finds {1.himself_herself} relieved to see {0.him_her} alive.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} have some tea.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} accidentally gets caught in the trap {0.he_she} set up for {1}. {2} breaks {1.him_her} free.",
+                'tributes': 3
+            },
+            {
+                'msg': "{0}, {1} and {2} all sleep mere meters away from each other without noticing.",
+                'tributes': 3
+            },
+            {
+                'msg': "{0} and {1} drive {2} insane.",
+                'tributes': 3
+            },
+            {
+                'msg': "{0} and {1} pin {2} to the ground and scar {2.his_her} face before tying {2.him_her} to a tree.",
+                'tributes': 3
+            },
+            {
+                'msg': "{0} and {1} attempt to track down and kill {2}, but {2.he_she} manages to avoid them.",
+                'tributes': 3
+            },
+            {
+                'msg': "{0} and {1} encounter a wounded {2}, and mock {2.him_her} in passing.",
+                'tributes': 3
+            },
+            {
+                'msg': "{0} feasts on raw meat, and spends the night throwing up.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} spends the entire night trying to build a hut, only to have it fall down in the morning.",
+                'tributes': 1
+            },
             {
                 'msg': "{0} starts a fire.",
                 'tributes': 1
@@ -1283,6 +1962,70 @@ events = {
             {
                 'msg': "{0} questions {0.his_her} sanity.",
                 'tributes': 1
+            },
+            {
+                'msg': "{0} screeches agitatedly.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} seriously contemplates suicide.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} sets an explosive off, but no one was in the blast radius.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} silently moves through {0.his_her} surroundings.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} slips on wet rocks and nearly falls into a gorge.",
+                'tributes': 1
+            },
+            {
+                'msg': "Crossing {0}'s path, {1} finds {1.himself_herself} relieved to see {0.him_her} alive.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} spontaneously bursts into song.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} starts digging a hole.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} tries to climb a tree to sleep, but by the time {0.he_she} climbs it the sun rises.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} realizes how much {0.he_she} enjoys the violence of the game.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} tries to find the edge of the arena.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} violently shakes a tree to knock loose some fruit.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} accidentally burns the meal {0.he_she} had made for {1}. {1} eats it anyway.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} accidentally gets caught in the trap {0.he_she} set up for {1}. {0} breaks {0.himself_herself} free.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} almost kills {1}, but makes sure {1.he_she} survives as an act of spite.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} argue over the map directions and end up getting lost.",
+                'tributes': 2
             },
         ],
         'fatal': [
@@ -1743,6 +2486,133 @@ events = {
                 'killer': [0],
                 'killed': [1]
             },
+            {
+                'msg': "{0} holds a knife to {1}'s neck but {1} reverses the hold and kills {0}.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} holds a knife to {1}'s neck but is forced to kill {1.him_her} when {1.he_she} resists.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} is lacerated by {1}'s barbed wire trap.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} is noosed by {1}'s bagstrap as {0.he_she} falls from a tree.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} kills {1} in {1.his_her} sleep.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} pretends to confess {0.his_her} love for {1}, who sees through {0.him_her} and kills {0.him_her}.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} kills {1} in a fit of insanity.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} kills {1} out of pity when {0.he_she} sees how scared {1} was of fighting.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} maims {1} with a dagger.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} pummels {1} to death.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} steps on a landmine, also killing {1} and {2}.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [0, 1, 2]
+            },
+            {
+                'msg': "{0} tortures {1} for the location of {2}, who {0.he_she} tracks down and kills.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1, 2]
+            },
+            {
+                'msg': "{0} tortures and kills {1} in front of {2}.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} tries to help {1} hanging from a cliff. {2} simply watches as {1} falls.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} wakes up beside a dead {1}, a note from {2} is on {1.his_her} body.",
+                'tributes': 3,
+                'killer': [2],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} tries to teach {1} the meaning of hate by torturing {2}. {0.he_she_cap} succeeds, and {1} kills {0}.",
+                'tributes': 3,
+                'killer': [1],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} forces {1} to kill {2} or {3}. {1.he_she_cap} gleefully kills both.",
+                'tributes': 4,
+                'killer': [1],
+                'killed': [2, 3]
+            },            
+            {
+                'msg': "{0} forces {1} to kill {2} or {3}. {1.he_she_cap} takes a third option and kills {0} instead.",
+                'tributes': 4,
+                'killer': [1],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} forces {1} to kill {2} or {3}. {1.he_she_cap} gleefully decides to kill them all.",
+                'tributes': 4,
+                'killer': [1],
+                'killed': [0, 2, 3]
+            },
+            {
+                'msg': "{0}, {1}, and {2} ambush {3}, but {4} protects {3.him_her}, killing them.",
+                'tributes': 5,
+                'killer': [4],
+                'killed': [0, 1, 2]
+            },            
+            {
+                'msg': "{0} kills {1} in a fight over leadership in front of {2}, {3}, and {4}.",
+                'tributes': 5,
+                'killer': [0],
+                'killed': [1]
+            },
+
         ]
     },
 
@@ -1791,6 +2661,191 @@ events = {
             {
                 'msg': "{0} stuffs a bundle of dry clothing into a backpack before sprinting away.",
                 'tributes': 1
+            },
+
+            {
+                'msg': "{0} accidentally misses the Feast.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} comes late to the Feast and finds an empty Cornucopia.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} goes to the Feast but leaves it only seconds later.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} takes a bread basket from the coruncopia.",
+                'tributes': 1
+            },
+            {
+                'msg': "{0} takes {1}'s memoir to use as a bribe later",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} engage in a friendly knife fight.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} explore the arena together.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} fight, but call a truce when it starts to rain.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} get into a heated argument. {0} flies into a fit of rage and runs away.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} get into a heated argument. {1} flies into a fit of rage and runs away.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} go fishing together.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} kiss to put on a show for the sponsors.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} lie down on the grass look at cloud formations together.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} lie down on the grass and stargaze at the constellations together.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} punch each other in the face.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} run into each other. They are both startled and flee from each other.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} spar.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} spend the day stuck in a ditch.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} vow to protect each other.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} watch the sunrise together.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} and {1} watch the sunset together.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} asks {1} for advice on killing others.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} attacks {1}, but {1} blocks {0.his_her} attacks with a shield and runs away.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} attempts suicide, but {1} talks {0.him_her} out of it.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} attempts to track down and kill {1}, but {1.he_she} manages to avoid {0.him_her}.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} blows up {1}'s camp.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} breaks {1}'s legs, but lets {1.him_her} live.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} breaks down crying. {1} comforts {0.him_her}.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} pushes {1} into a lava pit. {1.he_she_cap} survives, but is horribly disfigured.",
+                'tributes': 2
+            },
+            {
+                'msg': "After defeating {0} in combat, {1} write {1.his_her} name on {0}'s face with a blade as a reminder of {0.his_her} defeat.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} brutally beats up {1} and leaves {1.him_her} to die. {1.he_she_cap} just barely survives.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} can't say {1}'s name correctly out of nervousness. {1} smiles endearingly.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} can't say {1}'s name correctly, much to the latter's annoyance.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} catches {1}'s sword with {0.his_her} hand right before it would've sliced {0.him_her} and runs off.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} charges at {1}, but realizes how big of a threat {1.he_she} is and runs away.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} comforts {1} when {1.he_she} has a panic attack.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} confides {0.his_her} personal secrets to {1}.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} convinces {1} not to kill {0.him_her} by giving up {0.his_her} supplies.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} declares {0.his_her} desire to kill {1}",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} cooks and eats some bugs. {0.he_she_cap} offers a portion to {1}, who politely declines.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} etches a threat against {1} into tree bark.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} faints from heat exhaustion, but {1} cools {0.him_her} off by pouring water on {0.him_her}.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} falls asleep on {1}.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} falls asleep thinking about {0.his_her} last encounter with {1}.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} gets stuck in a cave. {1} enters the cave to rescue {0.him_her} and succeeds.",
+                'tributes': 2
+            },
+            {
+                'msg': "{0} comforts {1} when {1.he_she} has a panic attack.",
+                'tributes': 2
             },
         ],
         'fatal': [
@@ -2147,6 +3202,114 @@ events = {
                 'tributes': 2,
                 'killer': [0],
                 'killed': [1]
+            },
+            {
+                'msg': "{0} repeatedly shoots {1} with a crossbow.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} shoots {1} in the head with a crossbow.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} shoves {1} off a cliff during a fight.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} slashes {1} with a scythe.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} slits {1}'s throat from behind.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} stabs {1} in the abdomen with an arrow.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} steps on a landmine, also killing {1}.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [0, 1]
+            },
+            {
+                'msg': "{0} strangles {1} to death with {0.his_her} bare hands.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} switches out {1}'s safe berries with identical, toxic ones.",
+                'tributes': 2,
+                'killer': [0],
+                'killed': [1]
+            },
+            {
+                'msg': "{0} takes multiple arrows from {1} to the body before succumbing.",
+                'tributes': 2,
+                'killer': [1],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} tries to teach {1} the meaning of hate by killing {2} in front of {1.him_her}. {0.he_she_cap} succeeds, and {1} kills {0}.",
+                'tributes': 3,
+                'killer': [0, 1],
+                'killed': [0, 2]
+            },
+            {
+                'msg': "{0} holds {1} hostage to lure {2} out of hiding. When {2} doesn't show, {0.he_she} kills {1}.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [0, 1]
+            },
+            {
+                'msg': "{0} sets {1} and {2}'s camp on fire. It quickly spreads and they both die.",
+                'tributes': 3,
+                'killer': [0],
+                'killed': [1, 2]
+            },
+            {
+                'msg': "{0} and {1} work together to hang {2} to a tree.",
+                'tributes': 3,
+                'killer': [0, 1],
+                'killed': [2]
+            },
+            {
+                'msg': "An injured {0} sacrifice {0.himself_herself} for {1} by pushing {1.him_her} out of the way before {1.he_she} got hit by {2}'s arrow.",
+                'tributes': 3,
+                'killer': [2],
+                'killed': [0]
+            },
+            {
+                'msg': "{0} and {1} shoot a barrage of arrows at {2}, who uses {3} as a shield.",
+                'tributes': 4,
+                'killer': [0, 1],
+                'killed': [3]
+            },
+            {
+                'msg': "{0} caves in {1}, {2}, and {3}, suffocating them.",
+                'tributes': 4,
+                'killer': [0],
+                'killed': [1, 2, 3]
+            },
+            {
+                'msg': "{0} fires three arrows in quick succession, hitting and killing {1}, {2}, and {3}.", 
+                'tributes': 4,
+                'killer': [0],
+                'killed': [1, 2, 3]
             },
         ]
     },

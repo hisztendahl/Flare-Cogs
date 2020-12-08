@@ -63,11 +63,13 @@ class HungerGames:
             return "**District {0} {1}** | {2} volunteers as tribute!".format(p.district, gender_symbol, p.name)
         return "**District {0} {1}** | {2} is selected to be a tribute!".format(p.district, gender_symbol, p.name)
 
-    def remove_player(self, channel_id, name):
+    def remove_player(self, member_id, channel_id, name):
         if channel_id not in self.active_games:
             return ErrorCode.NO_GAME
         this_game = self.active_games[channel_id]
 
+        if member_id != this_game.owner_id:
+            return ErrorCode.NOT_OWNER
         if this_game.has_started:
             return ErrorCode.GAME_STARTED
 
@@ -75,11 +77,13 @@ class HungerGames:
             return ErrorCode.PLAYER_DOES_NOT_EXIST
         return "Player {0} was removed from the game.".format(name)
 
-    def pad_players(self, channel_id, group):
+    def pad_players(self, member_id, channel_id, group):
         if channel_id not in self.active_games:
             return ErrorCode.NO_GAME
         this_game = self.active_games[channel_id]
 
+        if member_id != this_game.owner_id:
+            return ErrorCode.NOT_OWNER
         if this_game.has_started:
             return ErrorCode.GAME_STARTED
         if len(this_game.players) >= 24:

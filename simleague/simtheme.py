@@ -296,6 +296,30 @@ class SimthemeMixin(MixinMeta):
         )
         await ctx.send(file=image)
 
+    @preview.command(name="owngoal")
+    async def powngoal(self, ctx):
+        """Preview own goal."""
+        min = random.randint(1, 90)
+        teams = await self.config.guild(ctx.guild).teams()
+        team1 = list(teams.keys())[random.randint(0, len(teams) - 1)]
+        team2 = list(teams.keys())[random.randint(0, len(teams) - 1)]
+        score1 = random.randint(1, 5)
+        score2 = random.randint(1, 5)
+        user = await self.bot.fetch_user(ctx.author.id)
+        image = await self.simpic(
+            ctx,
+            str(min),
+            "goal",
+            user,
+            team1,
+            team2,
+            random.choice([team1, team2]),
+            score1,
+            score2,
+            user,
+        )
+        await ctx.send(file=image)
+
     @preview.command(name="yellow")
     async def pyellow(self, ctx):
         """Preview yellow card."""
@@ -380,10 +404,46 @@ class SimthemeMixin(MixinMeta):
         score2 = random.randint(1, 5)
         user = await self.bot.fetch_user(ctx.author.id)
         event = "cornerscore" if score == True else "cornermiss"
-        image = await self.cornerimg(ctx, team1, str(min), user)
+        image = await self.kickimg(ctx, "corner", team1, str(min), user)
         await ctx.send(file=image)
         image = await self.simpic(
-            ctx, str(min), event, user, team1, team2, team1, score1, score2, user,
+            ctx,
+            str(min),
+            event,
+            user,
+            team1,
+            team2,
+            team1,
+            score1,
+            score2,
+            user,
+        )
+        await ctx.send(file=image)
+
+    @preview.command(name="freekick")
+    async def pfreekick(self, ctx, score=False):
+        """Preview free kick."""
+        min = random.randint(1, 90)
+        teams = await self.config.guild(ctx.guild).teams()
+        team1 = list(teams.keys())[random.randint(0, len(teams) - 1)]
+        team2 = list(teams.keys())[random.randint(0, len(teams) - 1)]
+        score1 = random.randint(1, 5)
+        score2 = random.randint(1, 5)
+        user = await self.bot.fetch_user(ctx.author.id)
+        event = "freekickscore" if score == True else "freekickmiss"
+        image = await self.kickimg(ctx, "freekick", team1, str(min), user)
+        await ctx.send(file=image)
+        image = await self.simpic(
+            ctx,
+            str(min),
+            event,
+            user,
+            team1,
+            team2,
+            team1,
+            score1,
+            score2,
+            user,
         )
         await ctx.send(file=image)
 
@@ -398,10 +458,19 @@ class SimthemeMixin(MixinMeta):
         score2 = random.randint(1, 5)
         user = await self.bot.fetch_user(ctx.author.id)
         event = "penscore" if score == True else "penmiss"
-        image = await self.penaltyimg(ctx, team1, str(min), user)
+        image = await self.kickimg(ctx, "penalty", team1, str(min), user)
         await ctx.send(file=image)
         image = await self.simpic(
-            ctx, str(min), event, user, team1, team2, team1, score1, score2, user,
+            ctx,
+            str(min),
+            event,
+            user,
+            team1,
+            team2,
+            team1,
+            score1,
+            score2,
+            user,
         )
         await ctx.send(file=image)
 
@@ -431,7 +500,13 @@ class SimthemeMixin(MixinMeta):
         teams = await self.config.guild(ctx.guild).teams()
         team = list(teams.keys())[random.randint(0, len(teams) - 1)]
         user = await self.bot.fetch_user(ctx.author.id)
-        image = await self.motmpic(ctx, user, team, random.randint(0, 3), random.randint(0, 3),)
+        image = await self.motmpic(
+            ctx,
+            user,
+            team,
+            random.randint(0, 3),
+            random.randint(0, 3),
+        )
         await ctx.send(file=image)
 
     @preview.command(name="walkout")
@@ -440,7 +515,11 @@ class SimthemeMixin(MixinMeta):
         teams = await self.config.guild(ctx.guild).teams()
         team = list(teams.keys())[random.randint(0, len(teams) - 1)]
         home_or_away = random.choice(["home", "away"])
-        image = await self.walkout(ctx, team, home_or_away,)
+        image = await self.walkout(
+            ctx,
+            team,
+            home_or_away,
+        )
         await ctx.send(file=image)
 
     @preview.command(name="matchinfo")
@@ -455,7 +534,13 @@ class SimthemeMixin(MixinMeta):
         stadium = teams[team1]["stadium"] if teams[team1]["stadium"] is not None else None
         weather = random.choice(WEATHER)
         image = await self.matchinfo(
-            ctx, [team1, team2], weather, stadium, homewin, awaywin, draw,
+            ctx,
+            [team1, team2],
+            weather,
+            stadium,
+            homewin,
+            awaywin,
+            draw,
         )
         await ctx.send(file=image)
 

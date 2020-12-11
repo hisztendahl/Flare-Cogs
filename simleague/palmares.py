@@ -181,7 +181,17 @@ class PalmaresMixin(MixinMeta):
     @commands.command()
     async def addpalmares(self, ctx, user: discord.Member, season, stat, value, rank):
         """Add palmares entry for a member."""
-        validstats = ["goals", "assists", "ga", "reds", "yellows", "motms", "finish", "cupfinish"]
+        validstats = [
+            "goals",
+            "assists",
+            "ga",
+            "reds",
+            "yellows",
+            "motms",
+            "finish",
+            "cupfinish",
+            "communityshield",
+        ]
         if stat not in validstats:
             return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
         async with self.config.guild(ctx.guild).palmares() as palmares:
@@ -227,11 +237,17 @@ class PalmaresMixin(MixinMeta):
             reds = palmares[season]["reds"] if "reds" in palmares[season].keys() else None
             tots = palmares[season]["tots"] if "tots" in palmares[season].keys() else None
             pots = palmares[season]["pots"] if "pots" in palmares[season].keys() else None
+            communityshield = (
+                palmares[season]["communityshield"]
+                if "communityshield" in palmares[season].keys()
+                else None
+            )
             newP = {
                 "pots": pots,
                 "tots": tots,
                 "finish": finish,
                 "cupfinish": cupfinish,
+                "communityshield": communityshield,
                 "note": note,
                 "goals": goals,
                 "assists": assists,
@@ -254,7 +270,7 @@ class PalmaresMixin(MixinMeta):
                     medal = ""
                     if n == "1st":
                         medal = ":first_place:"
-                        if p == "finish" or p == "cupfinish":
+                        if p in ["finish", "cupfinish", "communityshield"]:
                             medal = ":trophy:"
                         if p == "tots":
                             medal = ":medal:"
@@ -271,6 +287,8 @@ class PalmaresMixin(MixinMeta):
         await ctx.send(embed=embed)
 
     def parsestat(self, stat, value, n, nth):
+        if stat == "communityshield":
+            return "Won the community shield with {}.".format(value)
         if stat == "finish":
             return "Finished {} in the league with {}.".format(nth, value)
         if stat == "cupfinish":

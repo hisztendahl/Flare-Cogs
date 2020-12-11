@@ -65,10 +65,13 @@ class SimsetMixin(MixinMeta):
         if ctx.invoked_subcommand is None:
             proba = await self.config.guild(ctx.guild).probability()
             goals = proba["goalchance"]
+            goals = proba["owngoalchance"]
             yellow = proba["yellowchance"]
             red = proba["redchance"]
             penalty = proba["penaltychance"]
             penaltyblock = proba["penaltyblock"]
+            freekick = proba["freekickchance"]
+            freekickblock = proba["freekickblock"]
             corner = proba["cornerchance"]
             cornerblock = proba["cornerblock"]
             var = proba["varchance"]
@@ -76,10 +79,13 @@ class SimsetMixin(MixinMeta):
             comment = proba["commentchance"]
             msg = "/!\\ This has the chance to break the game completely, no support is offered. \n\n"
             msg += "Goal Chance: {}.\n".format(goals)
+            msg += "Own Goal Chance: {}.\n".format(owngoals)
             msg += "Yellow Card Chance: {}.\n".format(yellow)
             msg += "Red Card Chance: {}.\n".format(red)
             msg += "Penalty Chance: {}.\n".format(penalty)
             msg += "Penalty Block Chance: {}.\n".format(penaltyblock)
+            msg += "Free Kick Chance: {}.\n".format(freekick)
+            msg += "Free Kick Block Chance: {}.\n".format(freekickblock)
             msg += "Corner Chance: {}.\n".format(corner)
             msg += "Corner Block Chance: {}.\n".format(cornerblock)
             msg += "VAR Chance: {}.\n".format(var)
@@ -94,6 +100,15 @@ class SimsetMixin(MixinMeta):
             return await ctx.send("Amount must be greater than 0 and less than 100.")
         async with self.config.guild(ctx.guild).probability() as probability:
             probability["goalchance"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def owngoals(self, ctx, amount: int = 399):
+        """Own Goal probability. Default = 399"""
+        if amount > 400 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 400.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["owngoalchance"] = amount
         await ctx.tick()
 
     @probability.command()
@@ -192,10 +207,10 @@ class SimsetMixin(MixinMeta):
         await ctx.tick()
 
     @probability.command()
-    async def penaltyblock(self, ctx, amount: float = 0.25):
-        """Penalty Block probability. Default = 0.25"""
-        if amount > 1 or amount < 0:
-            return await ctx.send("Amount must be greater than 0 and less than 1.")
+    async def penaltyblock(self, ctx, amount: int = 75):
+        """Penalty Block probability. Default = 75"""
+        if amount > 100 or amount < 0:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
         async with self.config.guild(ctx.guild).probability() as probability:
             probability["penaltyblock"] = amount
         await ctx.tick()
@@ -210,12 +225,30 @@ class SimsetMixin(MixinMeta):
         await ctx.tick()
 
     @probability.command()
-    async def cornerblock(self, ctx, amount: float = 0.8):
-        """Corner Block probability. Default = 0.8"""
-        if amount > 1 or amount < 0:
-            return await ctx.send("Amount must be greater than 0 and less than 1.")
+    async def cornerblock(self, ctx, amount: int = 20):
+        """Corner Block probability. Default = 20"""
+        if amount > 100 or amount < 0:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
         async with self.config.guild(ctx.guild).probability() as probability:
             probability["cornerblock"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def freekick(self, ctx, amount: int = 98):
+        """Free Kick Chance probability. Default = 98"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["freekickchance"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def freekickblock(self, ctx, amount: int = 15):
+        """Free Kick Block probability. Default = 15"""
+        if amount > 100 or amount < 0:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["freekickblock"] = amount
         await ctx.tick()
 
     @probability.command()
@@ -272,7 +305,7 @@ class SimsetMixin(MixinMeta):
     @bet.command()
     async def toggle(self, ctx, toggle: bool):
         """Set if betting is enabled or not.
-            Toggle must be a valid bool."""
+        Toggle must be a valid bool."""
         await self.config.guild(ctx.guild).bettoggle.set(toggle)
         await ctx.tick()
 

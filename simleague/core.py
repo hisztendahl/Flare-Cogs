@@ -63,7 +63,10 @@ class SimHelper(MixinMeta):
         maps = {
             "cornerscore": "GOALLLLL! (CORNER)",
             "cornermiss": "CHANCE MISSED!",
+            "freekickscore": "GOALLLLL! (FREEKICK)",
+            "freekickmiss": "CHANCE MISSED!",
             "goal": "GOALLLLL!",
+            "owngoal": "OWN GOALLLLL!",
             "yellow": "YELLOW CARD!",
             "red": "RED CARD! ({} Men!)".format(men),
             "2yellow": "2nd YELLOW! RED!",
@@ -123,14 +126,15 @@ class SimHelper(MixinMeta):
         gap = 3
 
         fill = theme["chances"]["header_text_bg"]
-        if event in ["penscore", "cornerscore", "goal"]:
+        if event in ["penscore", "cornerscore", "goal", "freekickscore", "owngoal"]:
             fill = theme["goals"]["header_text_bg"]
-        if event in ["penmiss", "cornermiss", "yellow", "red", "2yellow"]:
+        if event in ["penmiss", "cornermiss", "yellow", "red", "2yellow", "freekickmiss"]:
             fill = theme["fouls"]["header_text_bg"]
         fill = list_to_tuple(fill)
 
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
+            fill=fill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -210,7 +214,7 @@ class SimHelper(MixinMeta):
         level_left = 290
         level_right = right_pos
         fill = theme["chances"]["header_time_bg"]
-        if event in ["penscore", "cornerscore", "goal"]:
+        if event in ["penscore", "cornerscore", "goal", "freekickscore", "owngoal"]:
             fill = theme["goals"]["header_time_bg"]
         if event in ["yellow", "red", "2yellow"]:
             fill = theme["fouls"]["header_time_bg"]
@@ -229,7 +233,7 @@ class SimHelper(MixinMeta):
         )  # Level #
         left_text_align = 130
         goal_text_color = theme["chances"]["header_text_col"]
-        if event in ["penscore", "cornerscore", "goal"]:
+        if event in ["penscore", "cornerscore", "goal", "freekickscore", "owngoal"]:
             goal_text_color = theme["goals"]["header_text_col"]
         if event in ["yellow", "red", "2yellow"]:
             goal_text_color = theme["fouls"]["header_text_col"]
@@ -462,7 +466,7 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="score.png")
         return image
 
-    async def penaltyimg(self, ctx, teamevent, time, player):
+    async def kickimg(self, ctx, event, teamevent, time, player):
         theme = await self.config.guild(ctx.guild).theme()
         font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
         name_fnt = ImageFont.truetype(font_bold_file, 22)
@@ -501,7 +505,8 @@ class SimHelper(MixinMeta):
 
         fill = list_to_tuple(theme["chances"]["header_text_bg"])
         draw.rectangle(
-            [(left_pos - 10, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
+            [(left_pos - 10, vert_pos), (right_pos, vert_pos + title_height)],
+            fill=fill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -580,7 +585,7 @@ class SimHelper(MixinMeta):
         text_color = list_to_tuple(theme["chances"]["header_text_col"])
         # goal text
         _write_unicode(
-            "PENALTY!   ({})".format(teamevent[:6].upper()),
+            "{}!   ({})".format(event.upper(), teamevent[:6].upper()),
             left_text_align - 7,
             vert_pos + 3,
             name_fnt,
@@ -595,163 +600,19 @@ class SimHelper(MixinMeta):
             font=general_info_fnt,
             fill=label_text_color,
         )
+        comment = "{} takes up position to shoot!"
+        if event == "corner":
+            comment = random.choice(
+                [
+                    "{} lines up an inswinging corner...",
+                    "{} lines up an outswinging corner...",
+                    "{} takes it short...",
+                ]
+            )
+
         draw.text(
             (label_align, 58),
-            "{} takes up position to shoot!".format(player.name),
-            font=general_u_font,
-            fill=label_text_color,
-        )
-
-        result = Image.alpha_composite(result, process)
-        file = BytesIO()
-        result.save(file, "PNG", quality=100)
-        file.seek(0)
-        image = discord.File(file, filename="pikaleague.png")
-        return image
-
-    async def cornerimg(self, ctx, teamevent, time, player):
-        theme = await self.config.guild(ctx.guild).theme()
-        font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
-        name_fnt = ImageFont.truetype(font_bold_file, 22)
-        header_u_fnt = ImageFont.truetype(font_bold_file, 18)
-        general_u_font = ImageFont.truetype(font_bold_file, 18)
-        general_info_fnt = ImageFont.truetype(font_bold_file, 18, encoding="utf-8")
-        level_label_fnt = ImageFont.truetype(font_bold_file, 22, encoding="utf-8")
-        cog = self.bot.get_cog("SimLeague")
-        teams = await cog.config.guild(ctx.guild).teams()
-        server_icon = await self.getimg(
-            teams[teamevent]["logo"] if teams[teamevent]["logo"] is not None else DEFAULT_URL
-        )
-
-        try:
-            server_icon_image = Image.open(server_icon).convert("RGBA")
-        except:
-            server_icon = await self.getimg(DEFAULT_URL)
-            server_icon_image = Image.open(server_icon).convert("RGBA")
-
-        # set canvas
-        width = 360
-        height = 100
-        bg_color = list_to_tuple(theme["general"]["bg_color"])
-        result = Image.new("RGBA", (width, height), bg_color)
-        process = Image.new("RGBA", (width, height), bg_color)
-
-        # draw
-        draw = ImageDraw.Draw(process)
-
-        # draw transparent overlay
-        vert_pos = 5
-        left_pos = 13
-        right_pos = width - vert_pos
-        title_height = 22
-        gap = 3
-
-        fill = list_to_tuple(theme["chances"]["header_text_bg"])
-        draw.rectangle(
-            [(left_pos - 10, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
-        )  # title box
-
-        content_top = vert_pos + title_height + gap
-        content_bottom = 100 - vert_pos
-
-        info_color = (30, 30, 30, 160)
-
-        # draw level circle
-        multiplier = 6
-        lvl_circle_dia = 94
-        raw_length = lvl_circle_dia * multiplier
-
-        # create mask
-        mask = Image.new("L", (raw_length, raw_length), 0)
-        draw_thumb = ImageDraw.Draw(mask)
-        draw_thumb.ellipse((0, 0) + (raw_length, raw_length), fill=255, outline=0)
-
-        # draws mask
-        total_gap = 10
-        profile_size = lvl_circle_dia - total_gap
-        raw_length = profile_size * multiplier
-        # put in profile picture
-
-        # put in server picture
-        server_size = content_bottom - content_top - 10
-        server_border_size = server_size + 4
-        radius = 20
-        light_border = (150, 150, 150, 180)
-        dark_border = (90, 90, 90, 180)
-        border_color = self._contrast(info_color, light_border, dark_border)
-
-        draw_server_border = Image.new(
-            "RGBA",
-            (server_border_size * multiplier, server_border_size * multiplier),
-            border_color,
-        )
-        draw_server_border = self._add_corners(draw_server_border, int(radius * multiplier / 2))
-        draw_server_border = draw_server_border.resize(
-            (server_border_size, server_border_size), Image.ANTIALIAS
-        )
-        server_icon_image = server_icon_image.resize(
-            (server_size * multiplier, server_size * multiplier), Image.ANTIALIAS
-        )
-        server_icon_image = self._add_corners(server_icon_image, int(radius * multiplier / 2) - 10)
-        server_icon_image = server_icon_image.resize((server_size, server_size), Image.ANTIALIAS)
-        process.paste(draw_server_border, (8, content_top + 3), draw_server_border)
-        process.paste(server_icon_image, (10, content_top + 5), server_icon_image)
-
-        def _write_unicode(text, init_x, y, font, unicode_font, fill):
-            write_pos = init_x
-
-            for char in text:
-                if char.isalnum() or char in string.punctuation or char in string.whitespace:
-                    draw.text((write_pos, y), char, font=font, fill=fill)
-                    write_pos += font.getsize(char)[0]
-                else:
-                    draw.text((write_pos, y), "{}".format(char), font=unicode_font, fill=fill)
-                    write_pos += unicode_font.getsize(char)[0]
-
-        # draw level box
-        level_left = 185
-        level_right = right_pos
-        fill = list_to_tuple(theme["chances"]["header_time_bg"])
-        draw.rectangle(
-            [(level_left, vert_pos), (level_right, vert_pos + title_height)], fill=fill
-        )  # box
-        lvl_text = str(time) + "'"
-        fill = list_to_tuple(theme["chances"]["header_time_col"])
-        draw.text(
-            (self._center(level_left, level_right, lvl_text, level_label_fnt), vert_pos + 3),
-            lvl_text,
-            font=level_label_fnt,
-            fill=fill,
-        )  # Level #
-        left_text_align = 13
-        text_color = list_to_tuple(theme["chances"]["header_text_col"])
-        # goal text
-        _write_unicode(
-            "CORNER!   ({})".format(teamevent[:6].upper()),
-            left_text_align - 7,
-            vert_pos + 3,
-            name_fnt,
-            header_u_fnt,
-            text_color,
-        )
-        label_align = 80
-        label_text_color = list_to_tuple(theme["chances"]["desc_text_col"])
-        draw.text(
-            (label_align, 38),
-            "Team: {}".format(teamevent.upper()),
-            font=general_info_fnt,
-            fill=label_text_color,
-        )
-        corner_comment = random.choice(
-            [
-                "{} lines up an inswinging corner...",
-                "{} lines up an outswinging corner...",
-                "{} takes it short...",
-            ]
-        )
-        draw.text(
-            (label_align, 58),
-            textwrap.fill(corner_comment.format(player.name), 40),
+            comment.format(player.name),
             font=general_u_font,
             fill=label_text_color,
         )
@@ -969,7 +830,8 @@ class SimHelper(MixinMeta):
 
         fill = list_to_tuple(theme["chances"]["header_text_bg"])
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
+            fill=fill,
         )  # title box
 
         # draw level circle
@@ -1244,7 +1106,9 @@ class SimHelper(MixinMeta):
         radius = 20
 
         draw_server_border = Image.new(
-            "RGBA", (server_border_size * multiplier, server_border_size * multiplier), "#d4a11e",
+            "RGBA",
+            (server_border_size * multiplier, server_border_size * multiplier),
+            "#d4a11e",
         )
         draw_server_border = self._add_corners(draw_server_border, int(radius * multiplier / 2))
         draw_server_border = draw_server_border.resize((184, 184), Image.ANTIALIAS)
@@ -1477,7 +1341,8 @@ class SimHelper(MixinMeta):
 
         fill = list_to_tuple(theme["chances"]["header_text_bg"])
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
+            fill=fill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -2120,10 +1985,16 @@ class SimHelper(MixinMeta):
         fill = list_to_tuple(theme["matchinfo"]["odds"])
         # odds
         draw.text(
-            (10, 120), f"HOME ODDS:\n{str(homeodds)[:7]}", font=general_info_fnt, fill=fill,
+            (10, 120),
+            f"HOME ODDS:\n{str(homeodds)[:7]}",
+            font=general_info_fnt,
+            fill=fill,
         )
         draw.text(
-            (400, 120), f"AWAY ODDS:\n{str(awayodds)[:7]}", font=general_info_fnt, fill=fill,
+            (400, 120),
+            f"AWAY ODDS:\n{str(awayodds)[:7]}",
+            font=general_info_fnt,
+            fill=fill,
         )
         draw.text(
             (self._center(0, width, f"Draw:", general_info_fnt), 120),
@@ -2403,7 +2274,12 @@ class SimHelper(MixinMeta):
         # goal text
 
         _write_unicode(
-            "{}".format(team1.upper()), 7, vert_pos + 3, name_fnt, header_u_fnt, text_color,
+            "{}".format(team1.upper()),
+            7,
+            vert_pos + 3,
+            name_fnt,
+            header_u_fnt,
+            text_color,
         )
         offset = len(team2) * 8
         _write_unicode(
@@ -2830,14 +2706,29 @@ class SimHelper(MixinMeta):
         if rdmint > probability["goalchance"]:  # 96 default
             return True
 
+    async def owngoalChance(self, guild, probability):
+        rdmint = random.randint(0, 400)
+        if rdmint > probability["owngoalchance"]:  # 399 default
+            return True
+
     async def cornerChance(self, guild, probability):
         rdmint = random.randint(0, 100)
         if rdmint > probability["cornerchance"]:  # 98 default
             return True
 
     async def cornerBlock(self, guild, probability):
-        rdmint = random.randint(0, 1)
-        if rdmint > probability["cornerblock"]:  # 0.8 default
+        rdmint = random.randint(0, 100)
+        if rdmint > probability["cornerblock"]:  # 20 default
+            return True
+
+    async def freekickChance(self, guild, probability):
+        rdmint = random.randint(0, 100)
+        if rdmint > probability["freekickchance"]:  # 98 default
+            return True
+
+    async def freekickBlock(self, guild, probability):
+        rdmint = random.randint(0, 100)
+        if rdmint > probability["freekickblock"]:  # 15 default
             return True
 
     async def penaltyChance(self, guild, probability):
@@ -2846,8 +2737,8 @@ class SimHelper(MixinMeta):
             return True
 
     async def penaltyBlock(self, guild, probability):
-        rdmint = random.randint(0, 1)
-        if rdmint > probability["penaltyblock"]:  # 0.25 default
+        rdmint = random.randint(0, 100)
+        if rdmint > probability["penaltyblock"]:  # 75 default
             return True
 
     async def varChance(self, guild, probability):

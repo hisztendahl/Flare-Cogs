@@ -179,7 +179,8 @@ class TeamsetMixin(MixinMeta):
                 embed.add_field(
                     name="Team {}".format(team1),
                     value="\n_Available_:\n{}\n\n_Unavailable_:\n{}".format(
-                        "\n".join(avmems), "\n".join(unavmems),
+                        "\n".join(avmems),
+                        "\n".join(unavmems),
                     ),
                     inline=True,
                 )
@@ -208,7 +209,8 @@ class TeamsetMixin(MixinMeta):
                     embed.add_field(
                         name="Team {}".format(team),
                         value="\n_Available_:\n{}\n\n_Unavailable_:\n{}".format(
-                            "\n".join(avmems), "\n".join(unavmems),
+                            "\n".join(avmems),
+                            "\n".join(unavmems),
                         ),
                         inline=True,
                     )
@@ -338,6 +340,9 @@ class TeamsetMixin(MixinMeta):
             if len(dict.keys(cupteams)):
                 cupteams[newname] = cupteams[team]
                 del cupteams[team]
+        async with self.config.guild(ctx.guild).transfers() as transfers:
+            transfers[newname] = transfers[team]
+            del transfers[team]
         async with self.config.guild(ctx.guild).fixtures() as fixtures:
             if len(fixtures):
                 for weekday in fixtures:

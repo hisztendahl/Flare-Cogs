@@ -237,15 +237,19 @@ class TeamsetMixin(MixinMeta):
         await ctx.tick()
 
     @admintransfer.command(name="swapid")
-    async def _adminswapid(self, ctx, team1, player1, team2, player2):
+    async def _adminswapid(self, ctx, team1, player1id, team2, player2id):
         """Swap a player from your team with a player from another team."""
         if not await self.config.guild(ctx.guild).transferwindow():
             return await ctx.send("The transfer window is currently closed.")
         teams = await self.config.guild(ctx.guild).teams()
         cpt1id = list(teams[team1]["captain"].keys())[0]
         cpt2id = list(teams[team2]["captain"].keys())[0]
-        player1 = await self.bot.fetch_user(player1)
-        player2 = await self.bot.fetch_user(player2)
+        player1 = await self.bot.fetch_user(player1id)
+        if player1 is None:
+            player1 = await self.bot.fetch_user(player1id)
+        player2 = await self.bot.fetch_user(player1id)
+        if player2 is None:
+            player2 = await self.bot.fetch_user(player2id)
         if int(cpt1id) == player1.id or int(cpt2id) == player2.id:
             return await ctx.send("You cannot transfer team captains.")
         await self.swap(ctx, ctx.guild, team1, player1, team2, player2)
@@ -264,14 +268,18 @@ class TeamsetMixin(MixinMeta):
         await ctx.tick()
 
     @admintransfer.command(name="signid")
-    async def _adminsignid(self, ctx, team1, player1, player2):
+    async def _adminsignid(self, ctx, team1, player1id, player2id):
         """Release a player and sign a free agent."""
         if not await self.config.guild(ctx.guild).transferwindow():
             return await ctx.send("The transfer window is currently closed.")
         teams = await self.config.guild(ctx.guild).teams()
         cptid = list(teams[team1]["captain"].keys())[0]
-        player1 = await self.bot.fetch_user(player1)
-        player2 = await self.bot.fetch_user(player2)
+        player1 = await self.bot.fetch_user(player1id)
+        if player1 is None:
+            player1 = await self.bot.fetch_user(player1id)
+        player2 = await self.bot.fetch_user(player1id)
+        if player2 is None:
+            player2 = await self.bot.fetch_user(player2id)
         if int(cptid) == player1.id:
             return await ctx.send("You cannot release team captains.")
         await self.sign(ctx, ctx.guild, team1, player1, player2)

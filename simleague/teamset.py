@@ -247,7 +247,7 @@ class TeamsetMixin(MixinMeta):
         player1 = await self.bot.fetch_user(player1id)
         if player1 is None:
             player1 = await self.bot.fetch_user(player1id)
-        player2 = await self.bot.fetch_user(player1id)
+        player2 = await self.bot.fetch_user(player2id)
         if player2 is None:
             player2 = await self.bot.fetch_user(player2id)
         if int(cpt1id) == player1.id or int(cpt2id) == player2.id:
@@ -277,7 +277,7 @@ class TeamsetMixin(MixinMeta):
         player1 = await self.bot.fetch_user(player1id)
         if player1 is None:
             player1 = await self.bot.fetch_user(player1id)
-        player2 = await self.bot.fetch_user(player1id)
+        player2 = await self.bot.fetch_user(player2id)
         if player2 is None:
             player2 = await self.bot.fetch_user(player2id)
         if int(cptid) == player1.id:

@@ -2927,11 +2927,12 @@ class SimHelper(MixinMeta):
     async def team_delete(self, ctx, team):
         cog = self.bot.get_cog("SimLeague")
         async with cog.config.guild(ctx.guild).teams() as teams:
-            if teams[team]["role"] is not None:
-                role = ctx.guild.get_role(teams[team]["role"])
-                if role is not None:
-                    await role.delete()
-            if team not in teams:
+            if team in teams:
+                if teams[team]["role"] is not None:
+                    role = ctx.guild.get_role(teams[team]["role"])
+                    if role is not None:
+                        await role.delete()
+            else:
                 return await ctx.send("Team was not found, ensure capitilization is correct.")
             async with cog.config.guild(ctx.guild).users() as users:
                 for uid in teams[team]["members"]:

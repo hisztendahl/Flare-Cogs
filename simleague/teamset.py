@@ -221,6 +221,20 @@ class TeamsetMixin(MixinMeta):
     async def admintransfer(self, ctx):
         """Admin Transfers."""
 
+    @admintransfer.command(name="lock")
+    async def _adminlock(self, ctx, team):
+        """Lock players from a team."""
+        teams = await self.config.guild(ctx.guild).teams()
+        if team not in teams:
+            return await ctx.send("Not a valid team.")
+        async with self.config.guild(ctx.guild).transferred() as transferred:
+            await ctx.send(f"transferred: {transferred}")
+            for player in teams[team]["members"]:
+                player = str(player)
+                if player != teams[team]["captain"]:
+                    transferred.append(int(player))
+        await ctx.tick()
+        
     @admintransfer.command(name="swap")
     async def _adminswap(
         self, ctx, team1, player1: discord.Member, team2, player2: discord.Member
@@ -349,7 +363,8 @@ class TeamsetMixin(MixinMeta):
                 cupteams[newname] = cupteams[team]
                 del cupteams[team]
         async with self.config.guild(ctx.guild).transfers() as transfers:
-            transfers[newname] = transfers[team]
+            if team in transfers:
+                transfers[newname] = transfers[team]
             del transfers[team]
         async with self.config.guild(ctx.guild).fixtures() as fixtures:
             if len(fixtures):

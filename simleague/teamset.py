@@ -324,7 +324,7 @@ class TeamsetMixin(MixinMeta):
         await ctx.tick()
 
     @admintransfer.command(name="release")
-    async def _adminsimplesignid(self, ctx, team1, player1id):
+    async def _adminrelease(self, ctx, team1, player1id):
         """Release a player."""
         if not await self.config.guild(ctx.guild).transferwindow():
             return await ctx.send("The transfer window is currently closed.")

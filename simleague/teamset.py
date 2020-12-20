@@ -16,6 +16,8 @@ class TeamsetMixin(MixinMeta):
     @transfer.command(name="swap")
     async def _swap(self, ctx, team1, player1: discord.Member, team2, player2: discord.Member):
         """Swap a player from your team with a player from another team."""
+        if team1 == team2:
+            return await ctx.sent("You cannot swap players from the same team.")
         teams = await self.config.guild(ctx.guild).teams()
         cpt1id = list(teams[team1]["captain"].keys())[0]
         cpt2id = list(teams[team2]["captain"].keys())[0]
@@ -228,13 +230,20 @@ class TeamsetMixin(MixinMeta):
         if team not in teams:
             return await ctx.send("Not a valid team.")
         async with self.config.guild(ctx.guild).transferred() as transferred:
-            await ctx.send(f"transferred: {transferred}")
             for player in teams[team]["members"]:
                 player = str(player)
                 if player != teams[team]["captain"]:
                     transferred.append(int(player))
         await ctx.tick()
         
+    @admintransfer.command(name="reset")
+    async def _adminresetplayerstatus(self, ctx, player: discord.Member):
+        """Remove player from transferred list."""
+        async with self.config.guild(ctx.guild).transferred() as transferred:
+            if int(player.id) in transferred:
+                transferred.remove(int(player.id))
+        await ctx.tick()
+
     @admintransfer.command(name="swap")
     async def _adminswap(
         self, ctx, team1, player1: discord.Member, team2, player2: discord.Member

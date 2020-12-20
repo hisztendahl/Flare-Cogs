@@ -2912,7 +2912,7 @@ class SimHelper(MixinMeta):
         await self.posttransfer(ctx, "Player released!", member1, team1, "(free agent)")
         await self.posttransfer(ctx, "New signing!!", member2, "(free agent)", team1)
 
-    async def simplesign(self, ctx, guild, team1, member1: discord.Member):
+    async def simplesign(self, ctx, guild, team1, member1: discord.Member, lock):
         cog = self.bot.get_cog("SimLeague")
         users = await cog.config.guild(guild).users()
         async with cog.config.guild(guild).teams() as teams:
@@ -2926,11 +2926,32 @@ class SimHelper(MixinMeta):
                 transfers[team1]["sign"] = {"in": member1.name, "out": None}
                 await self.setnextteam(ctx, transfers, team1)
             async with self.config.guild(ctx.guild).transferred() as transferred:
-                transferred.append(member1.id)
+                if lock == True:
+                    transferred.append(member1.id)
             teams[team1]["members"][str(member1.id)] = member1.name
         async with cog.config.guild(guild).users() as users:
             users.append(str(member1.id))
         await self.posttransfer(ctx, "New signing!!", member1, "(free agent)", team1)
+
+    async def release(self, ctx, guild, team1, member1: discord.Member):
+        cog = self.bot.get_cog("SimLeague")
+        users = await cog.config.guild(guild).users()
+        async with cog.config.guild(guild).teams() as teams:
+            role = guild.get_role(teams[team1]["role"])
+            if role is not None:
+                try:
+                    await member1.remove_roles(role, reason=f"Released from {team1}")
+                except AttributeError:
+                    pass
+            if str(member1.id) not in teams[team1]["members"]:
+                return await ctx.send(f"{member1.name} is not on {team1}.")
+            async with self.config.guild(ctx.guild).transfers() as transfers:
+                transfers[team1]["sign"] = {"in": None, "out": member1.name}
+                await self.setnextteam(ctx, transfers, team1)
+            del teams[team1]["members"][str(member1.id)]
+        async with cog.config.guild(guild).users() as users:
+            users.remove(str(member1.id))
+        await self.posttransfer(ctx, "Player released!", member1, team1, "(free agent)")
 
     async def lock(self, ctx, guild, team1, member1: discord.Member):
         cog = self.bot.get_cog("SimLeague")

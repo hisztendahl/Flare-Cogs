@@ -308,6 +308,21 @@ class TeamsetMixin(MixinMeta):
         await self.sign(ctx, ctx.guild, team1, player1, player2)
         await ctx.tick()
 
+    @admintransfer.command(name="simplesign")
+    async def _adminsignid(self, ctx, team1, player1id):
+        """Sign a free agent."""
+        if not await self.config.guild(ctx.guild).transferwindow():
+            return await ctx.send("The transfer window is currently closed.")
+        teams = await self.config.guild(ctx.guild).teams()
+        cptid = list(teams[team1]["captain"].keys())[0]
+        player1 = await self.bot.fetch_user(player1id)
+        if player1 is None:
+            player1 = await self.bot.fetch_user(player1id)
+        if int(cptid) == player1.id:
+            return await ctx.send("You cannot release team captains.")
+        await self.simplesign(ctx, ctx.guild, team1, player1)
+        await ctx.tick()
+
     @checks.admin_or_permissions(manage_guild=True)
     @commands.group(autohelp=True)
     async def teamset(self, ctx):

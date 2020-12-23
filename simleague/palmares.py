@@ -288,7 +288,7 @@ class PalmaresMixin(MixinMeta):
 
     def parsestat(self, stat, value, n, nth):
         if stat == "communityshield":
-            return "Won the community shield with {}.".format(value)
+            return "Won the Community Shield with {}.".format(value)
         if stat == "finish":
             return "Finished {} in the league with {}.".format(nth, value)
         if stat == "cupfinish":

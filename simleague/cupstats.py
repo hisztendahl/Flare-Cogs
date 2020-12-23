@@ -16,6 +16,7 @@ class CupStatsMixin(MixinMeta):
             userid = str(user.id)
             async with self.config.guild(ctx.guild).cupstats() as stats:
                 stats["goals"].pop(userid, None)
+                stats["owngoals"].pop(userid, None)
                 stats["assists"].pop(userid, None)
                 stats["yellows"].pop(userid, None)
                 stats["reds"].pop(userid, None)
@@ -29,6 +30,7 @@ class CupStatsMixin(MixinMeta):
         """Add cup statistics for a user."""
         validstats = [
             "goals",
+            "owngoals",
             "assists",
             "ga",
             "yellows",
@@ -120,6 +122,7 @@ class CupStatsMixin(MixinMeta):
             pens = stats["penalties"].get(userid)
             statistics = [
                 stats["goals"].get(userid),
+                stats["owngoals"].get(userid),
                 stats["assists"].get(userid),
                 stats["yellows"].get(userid),
                 stats["reds"].get(userid),
@@ -129,6 +132,7 @@ class CupStatsMixin(MixinMeta):
             ]
             headers = [
                 "goals",
+                "owngoals",
                 "assists",
                 "yellows",
                 "reds",
@@ -150,6 +154,7 @@ class CupStatsMixin(MixinMeta):
             await ctx.send_help()
             stats = await self.config.guild(ctx.guild).cupstats()
             goalscorer = sorted(stats["goals"], key=stats["goals"].get, reverse=True)
+            owngoalscorer = sorted(stats["owngoals"], key=stats["owngoals"].get, reverse=True)
             assists = sorted(stats["assists"], key=stats["assists"].get, reverse=True)
             yellows = sorted(stats["yellows"], key=stats["yellows"].get, reverse=True)
             reds = sorted(stats["reds"], key=stats["reds"].get, reverse=True)
@@ -165,6 +170,10 @@ class CupStatsMixin(MixinMeta):
             msg += "**Top Goalscorer**: {} - {}\n".format(
                 await self.statsmention(ctx, goalscorer),
                 stats["goals"][goalscorer[0]] if len(goalscorer) else "",
+            )
+            msg += "**Most Own Goals**: {} - {}\n".format(
+                await self.statsmention(ctx, owngoalscorer),
+                stats["owngoals"][owngoalscorer[0]] if len(owngoalscorer) else "",
             )
             msg += "**Most Assists**: {} - {}\n".format(
                 await self.statsmention(ctx, assists),
@@ -255,6 +264,23 @@ class CupStatsMixin(MixinMeta):
                 a.append(
                     f"{i+1}. {user.name if user else 'Invalid User {}'.format(k)} ({team.upper()[:3]}) - {stats[k]}"
                 )
+            embed = discord.Embed(
+                title="Top Scorers", description="\n".join(a[:10]), colour=0xFF0000
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("No stats available.")
+
+    @cupstats.command(name="owngoals")
+    async def _cupowngoals(self, ctx):
+        """Players with the most own goals."""
+        stats = await self.config.guild(ctx.guild).cupstats()
+        stats = stats["owngoals"]
+        if stats:
+            a = []
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
+                user_team = await self.get_user_with_team(ctx, k)
+                a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
             embed = discord.Embed(
                 title="Top Scorers", description="\n".join(a[:10]), colour=0xFF0000
             )

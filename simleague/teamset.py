@@ -235,7 +235,7 @@ class TeamsetMixin(MixinMeta):
                 if player != teams[team]["captain"]:
                     transferred.append(int(player))
         await ctx.tick()
-        
+
     @admintransfer.command(name="reset")
     async def _adminresetplayerstatus(self, ctx, player: discord.Member):
         """Remove player from transferred list."""

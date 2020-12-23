@@ -18,6 +18,7 @@ class StatsMixin(MixinMeta):
         userid = str(user.id)
         async with self.config.guild(ctx.guild).stats() as stats:
             stats["goals"].pop(userid, None)
+            stats["owngoals"].pop(userid, None)
             stats["assists"].pop(userid, None)
             stats["yellows"].pop(userid, None)
             stats["reds"].pop(userid, None)

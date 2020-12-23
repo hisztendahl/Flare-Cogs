@@ -65,7 +65,7 @@ class SimsetMixin(MixinMeta):
         if ctx.invoked_subcommand is None:
             proba = await self.config.guild(ctx.guild).probability()
             goals = proba["goalchance"]
-            goals = proba["owngoalchance"]
+            owngoals = proba["owngoalchance"]
             yellow = proba["yellowchance"]
             red = proba["redchance"]
             penalty = proba["penaltychance"]

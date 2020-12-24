@@ -485,7 +485,10 @@ class SimsetMixin(MixinMeta):
             role = ctx.guild.get_role(teams[team]["role"])
             for user in teams[team]["members"]:
                 member = ctx.guild.get_member(int(user))
-                await member.add_roles(role)
+                if member is None:
+                    await ctx.send("Could not find user {}.".format(user))
+                else:
+                    await member.add_roles(role)
         await ctx.tick()
 
     @simset.command()

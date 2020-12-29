@@ -309,14 +309,14 @@ class SimthemeMixin(MixinMeta):
         image = await self.simpic(
             ctx,
             str(min),
-            "goal",
+            "owngoal",
             user,
             team1,
             team2,
             random.choice([team1, team2]),
             score1,
             score2,
-            user,
+            None,
         )
         await ctx.send(file=image)
 

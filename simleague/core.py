@@ -66,7 +66,7 @@ class SimHelper(MixinMeta):
             "freekickscore": "GOALLLLL! (FREEKICK)",
             "freekickmiss": "CHANCE MISSED!",
             "goal": "GOALLLLL!",
-            "owngoal": "OWN GOALLLLL!",
+            "owngoal": "OWN GOAL...",
             "yellow": "YELLOW CARD!",
             "red": "RED CARD! ({} Men!)".format(men),
             "2yellow": "2nd YELLOW! RED!",
@@ -96,7 +96,11 @@ class SimHelper(MixinMeta):
         if event == "2yellow":
             server_icon = await self.getimg("https://i.imgur.com/SMZXrVz.jpg")
 
-        profile_image = Image.open(rank_avatar).convert("RGBA")
+        if event == "owngoal":
+            profile_image = Image.open(rank_avatar).convert("LA")
+        else:
+            profile_image = Image.open(rank_avatar).convert("RGBA")
+
         try:
             server_icon_image = Image.open(server_icon).convert("RGBA")
         except:
@@ -214,11 +218,31 @@ class SimHelper(MixinMeta):
         level_left = 290
         level_right = right_pos
         fill = theme["chances"]["header_time_bg"]
+        if event == "owngoal":
+            fill2 = theme["fouls"]["header_time_bg"]
         if event in ["penscore", "cornerscore", "goal", "freekickscore", "owngoal"]:
             fill = theme["goals"]["header_time_bg"]
         if event in ["yellow", "red", "2yellow"]:
             fill = theme["fouls"]["header_time_bg"]
         fill = list_to_tuple(fill)
+
+        if event == "owngoal":
+            draw.line(
+                [
+                    (circle_left, content_top - 15),
+                    (circle_left + profile_size + 5, height - content_top + 15),
+                ],
+                fill=fill2,
+                width=2,
+            )
+            draw.line(
+                [
+                    (circle_left + profile_size + 5, content_top - 15),
+                    (circle_left, height - content_top + 15),
+                ],
+                fill=fill2,
+                width=2,
+            )
 
         draw.rectangle(
             [(level_left, vert_pos), (level_right, vert_pos + title_height)], fill=fill

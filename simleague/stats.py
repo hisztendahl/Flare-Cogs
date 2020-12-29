@@ -472,7 +472,7 @@ class StatsMixin(MixinMeta):
                 user_team = await self.get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
             embed = discord.Embed(
-                title="Top Scorers", description="\n".join(a[:10]), colour=0xFF0000
+                title="Most Own Goals", description="\n".join(a[:10]), colour=0xFF0000
             )
             await ctx.send(embed=embed)
         else:

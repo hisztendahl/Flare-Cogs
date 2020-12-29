@@ -192,7 +192,7 @@ class SimLeague(
         self.bot = bot
         self.bets = {}
         self.cache = time.time()
-        self.session = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession(loop=self.bot.loop)
 
     async def red_delete_data_for_user(
         self,
@@ -1356,17 +1356,16 @@ class SimLeague(
             vC = await self.varChance(ctx.guild, probability)
             if vC is True:
                 image = await self.varcheckimg(ctx, "penalty")
-                await asyncio.sleep(3)
                 await ctx.send(file=image)
+                await asyncio.sleep(3)
                 vCs = await self.varSuccess(ctx.guild, probability)
                 if vCs is True:
-                    await asyncio.sleep(2)
                     image = await self.varcheckimg(ctx, "penalty", True)
                     await ctx.send(file=image)
                 else:
                     image = await self.varcheckimg(ctx, "penalty", False)
-                    await asyncio.sleep(2)
                     await ctx.send(file=image)
+                    await asyncio.sleep(2)
                     await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)
             else:
                 await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)
@@ -2502,17 +2501,16 @@ class SimLeague(
             vC = await self.varChance(ctx.guild, probability)
             if vC is True:
                 image = await self.varcheckimg(ctx, "penalty")
-                await asyncio.sleep(3)
                 await ctx.send(file=image)
+                await asyncio.sleep(3)
                 vCs = await self.varSuccess(ctx.guild, probability)
                 if vCs is True:
                     image = await self.varcheckimg(ctx, "penalty", True)
-                    await asyncio.sleep(2)
                     await ctx.send(file=image)
                 else:
                     image = await self.varcheckimg(ctx, "penalty", False)
-                    await asyncio.sleep(2)
                     await ctx.send(file=image)
+                    await asyncio.sleep(2)
                     await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)
             else:
                 await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)
@@ -3963,17 +3961,16 @@ class SimLeague(
             vC = await self.varChance(ctx.guild, probability)
             if vC is True:
                 image = await self.varcheckimg(ctx, "penalty")
-                await asyncio.sleep(3)
                 await ctx.send(file=image)
+                await asyncio.sleep(3)
                 vCs = await self.varSuccess(ctx.guild, probability)
                 if vCs is True:
                     image = await self.varcheckimg(ctx, "penalty", True)
-                    await asyncio.sleep(2)
                     await ctx.send(file=image)
                 else:
                     image = await self.varcheckimg(ctx, "penalty", False)
-                    await asyncio.sleep(2)
                     await ctx.send(file=image)
+                    await asyncio.sleep(2)
                     await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)
             else:
                 await handlePenaltySuccess(self, ctx, playerPenalty, teamStats)

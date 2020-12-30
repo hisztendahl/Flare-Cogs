@@ -58,7 +58,7 @@ class SimsetMixin(MixinMeta):
     async def bet(self, ctx):
         """Simulation Betting Settings."""
 
-    @checks.guildowner()
+    @checks.admin_or_permissions(manage_guild=True)
     @simset.group(autohelp=True, hidden=True)
     async def probability(self, ctx):
         """Simulation Probability Settings. May break the cog if changed."""
@@ -120,7 +120,6 @@ class SimsetMixin(MixinMeta):
             probability["yellowchance"] = amount
         await ctx.tick()
 
-    @checks.guildowner()
     @simset.command()
     async def maxplayers(self, ctx, amount: int):
         """Set the max team players."""
@@ -792,7 +791,7 @@ class SimsetMixin(MixinMeta):
     #     await self.config.guild(ctx.guild).fixtures.set(newFixtures)
     #     await ctx.tick()
 
-    @checks.guildowner()
+    @checks.admin_or_permissions(manage_guild=True)
     @simset.group()
     async def clear(self, ctx):
         """SimLeague Clear Settings"""

@@ -1051,8 +1051,16 @@ class SimLeague(
         lvl2 = teams[team2]["cachedlevel"]
         bonuslvl1 = teams[team1]["bonus"]
         bonuslvl2 = teams[team2]["bonus"]
-        homewin = lvl2 / lvl1
-        awaywin = lvl1 / lvl2
+        formlvl1 = getformbonus(teams[team1]["form"])
+        formlvl2 = getformbonus(teams[team2]["form"])
+        lvl1total = lvl1 * formlvl1
+        lvl2total = lvl2 * formlvl2
+        if bonuslvl1 != 0:
+            lvl1total = lvl1total * (bonuslvl1 / 100)
+        if bonuslvl2 != 0:
+            lvl2total = lvl2total * (bonuslvl2 / 100)
+        homewin = lvl2total / lvl1total
+        awaywin = lvl1total / lvl2total
         try:
             draw = homewin / awaywin
         except ZeroDivisionError:
@@ -1170,8 +1178,12 @@ class SimLeague(
                 t2totalxp = 1
             t1form = getformbonus(teams[team1]["form"])
             t2form = getformbonus(teams[team2]["form"])
-            t1totalxp = t1totalxp * (100 + team1bonus) * t1form / 100
-            t2totalxp = t2totalxp * (100 + team2bonus) * t2form / 100
+            if team1bonus == 0:
+                team1bonus = 100
+            if team2bonus == 0:
+                team2bonus = 100
+            t1totalxp = t1totalxp * (team1bonus / 100) * t1form
+            t2totalxp = t2totalxp * (team2bonus / 100) * t2form
             redst1 = float(f"0.{reds1 * redcardmodifier}")
             redst2 = float(f"0.{reds2 * redcardmodifier}")
             total = ["A"] * int(((1 - redst1) * 100) * t1totalxp) + ["B"] * int(
@@ -1749,7 +1761,7 @@ class SimLeague(
         # Start of Simulation!
         im = await self.walkout(ctx, team1, "home")
         im2 = await self.walkout(ctx, team2, "away")
-        await ctx.send("Teams:", file=im)
+        team1msg = await ctx.send("Teams:", file=im)
         await ctx.send(file=im2)
         timemsg = await ctx.send("Kickoff!")
         gametime = await self.config.guild(ctx.guild).gametime()
@@ -2079,7 +2091,7 @@ class SimLeague(
                     if team1Stats[8] != 0:
                         standings[team1]["gf"] += team1Stats[8]
                         standings[team2]["ga"] += team1Stats[8]
-        await self.postresults(ctx, team1, team2, team1Stats[8], team2Stats[8])
+        await self.postresults(ctx, team1, team2, team1Stats[8], team2Stats[8], None, None, team1msg)
         await self.config.guild(ctx.guild).active.set(False)
         await self.config.guild(ctx.guild).started.set(False)
         await self.config.guild(ctx.guild).betteams.set([])
@@ -2894,6 +2906,7 @@ class SimLeague(
         # Start of Simulation!
         im = await self.walkout(ctx, team1, "home")
         im2 = await self.walkout(ctx, team2, "away")
+        team1msg = await ctx.send("Teams:", file=im)
         await ctx.send("Teams:", file=im)
         await ctx.send(file=im2)
         timemsg = await ctx.send("Kickoff!")
@@ -3585,7 +3598,7 @@ class SimLeague(
                     lastround[idx] = fixture
 
         await self.postresults(
-            ctx, team1, team2, team1Stats[8], team2Stats[8], team1Stats[10], team2Stats[10]
+            ctx, team1, team2, team1Stats[8], team2Stats[8], team1Stats[10], team2Stats[10], team1msg,
         )
         await self.config.guild(ctx.guild).active.set(False)
         await self.config.guild(ctx.guild).started.set(False)
@@ -4302,6 +4315,7 @@ class SimLeague(
         # Start of Simulation!
         im = await self.walkout(ctx, team1, "home")
         im2 = await self.walkout(ctx, team2, "away")
+        team1msg = await ctx.send("Teams:", file=im)
         await ctx.send("Teams:", file=im)
         await ctx.send(file=im2)
         timemsg = await ctx.send("Kickoff!")
@@ -4653,7 +4667,7 @@ class SimLeague(
                         t = await self.payout(ctx.guild, team2, awaywin)
 
         await self.postresults(
-            ctx, team1, team2, team1Stats[8], team2Stats[8], team1Stats[10], team2Stats[10]
+            ctx, team1, team2, team1Stats[8], team2Stats[8], team1Stats[10], team2Stats[10], team1msg
         )
         await self.config.guild(ctx.guild).active.set(False)
         await self.config.guild(ctx.guild).started.set(False)

@@ -1053,12 +1053,8 @@ class SimLeague(
         bonuslvl2 = teams[team2]["bonus"]
         formlvl1 = getformbonus(teams[team1]["form"])
         formlvl2 = getformbonus(teams[team2]["form"])
-        lvl1total = lvl1 * formlvl1
-        lvl2total = lvl2 * formlvl2
-        if bonuslvl1 != 0:
-            lvl1total = lvl1total * (bonuslvl1 / 100)
-        if bonuslvl2 != 0:
-            lvl2total = lvl2total * (bonuslvl2 / 100)
+        lvl1total = lvl1 * (1 + (bonuslvl1 / 100)) * formlvl1
+        lvl2total = lvl2 * (1 + (bonuslvl2 / 100)) * formlvl2
         homewin = lvl2total / lvl1total
         awaywin = lvl1total / lvl2total
         try:
@@ -1178,7 +1174,6 @@ class SimLeague(
                 t2totalxp = 1
             t1form = getformbonus(teams[team1]["form"])
             t2form = getformbonus(teams[team2]["form"])
-            t1totalxp =  t1totalxp + t1totalxp * (team1bonus / 100) * t1form
             t1totalxp = t1totalxp * (1 + (team1bonus / 100)) * t1form
             t2totalxp = t2totalxp * (1 + (team2bonus / 100)) * t2form
             redst1 = float(f"0.{reds1 * redcardmodifier}")

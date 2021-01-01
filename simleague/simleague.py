@@ -1178,12 +1178,9 @@ class SimLeague(
                 t2totalxp = 1
             t1form = getformbonus(teams[team1]["form"])
             t2form = getformbonus(teams[team2]["form"])
-            if team1bonus == 0:
-                team1bonus = 100
-            if team2bonus == 0:
-                team2bonus = 100
-            t1totalxp = t1totalxp * (team1bonus / 100) * t1form
-            t2totalxp = t2totalxp * (team2bonus / 100) * t2form
+            t1totalxp =  t1totalxp + t1totalxp * (team1bonus / 100) * t1form
+            t1totalxp = t1totalxp * (1 + (team1bonus / 100)) * t1form
+            t2totalxp = t2totalxp * (1 + (team2bonus / 100)) * t2form
             redst1 = float(f"0.{reds1 * redcardmodifier}")
             redst2 = float(f"0.{reds2 * redcardmodifier}")
             total = ["A"] * int(((1 - redst1) * 100) * t1totalxp) + ["B"] * int(
@@ -3798,12 +3795,8 @@ class SimLeague(
         async def TeamWeightChance(
             ctx, t1totalxp, t2totalxp, reds1: int, reds2: int, team1bonus: int, team2bonus: int
         ):
-            if t1totalxp < 2:
-                t1totalxp = 1
-            if t2totalxp < 2:
-                t2totalxp = 1
-            t1totalxp = t1totalxp * (100 + team1bonus) / 100
-            t2totalxp = t2totalxp * (100 + team2bonus) / 100
+            t1totalxp = 1
+            t2totalxp = 1
             self.log.debug(f"Team 1: {t1totalxp} - Team 2: {t2totalxp}")
             redst1 = float(f"0.{reds1 * redcardmodifier}")
             redst2 = float(f"0.{reds2 * redcardmodifier}")

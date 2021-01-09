@@ -423,7 +423,7 @@ class StatsMixin(MixinMeta):
             await ctx.send("No stats available.")
 
     @leaguestats.command(name="ga", alias=["ga", "contributions"])
-    async def _goals_assists(self, ctx):
+    async def _goals_assists(self, ctx, page: int = 1):
         """Players with the most combined goals and assists."""
         stats = await self.config.guild(ctx.guild).stats()
         goals = stats["goals"]
@@ -435,9 +435,14 @@ class StatsMixin(MixinMeta):
             for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user_team = await self.get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
             embed = discord.Embed(
                 title="Top goal involvements (goals + assists)",
-                description="\n".join(a[:10]),
+                description="\n".join(a[p1:p2]),
                 colour=0xFF0000,
             )
             await ctx.send(embed=embed)
@@ -445,7 +450,7 @@ class StatsMixin(MixinMeta):
             await ctx.send("No stats available.")
 
     @leaguestats.command(name="goals", alias=["topscorer", "topscorers"])
-    async def _goals(self, ctx):
+    async def _goals(self, ctx, page: int = 1):
         """Players with the most goals."""
         stats = await self.config.guild(ctx.guild).stats()
         stats = stats["goals"]
@@ -454,15 +459,20 @@ class StatsMixin(MixinMeta):
             for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user_team = await self.get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
             embed = discord.Embed(
-                title="Top Scorers", description="\n".join(a[:10]), colour=0xFF0000
+                title="Top Scorers", description="\n".join(a[p1:p2]), colour=0xFF0000
             )
             await ctx.send(embed=embed)
         else:
             await ctx.send("No stats available.")
 
     @leaguestats.command(name="owngoals")
-    async def _owngoals(self, ctx):
+    async def _owngoals(self, ctx, page: int = 1):
         """Players with the most own goals."""
         stats = await self.config.guild(ctx.guild).stats()
         stats = stats["owngoals"]
@@ -471,15 +481,20 @@ class StatsMixin(MixinMeta):
             for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user_team = await self.get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
             embed = discord.Embed(
-                title="Most Own Goals", description="\n".join(a[:10]), colour=0xFF0000
+                title="Most Own Goals", description="\n".join(a[p1:p2]), colour=0xFF0000
             )
             await ctx.send(embed=embed)
         else:
             await ctx.send("No stats available.")
 
     @leaguestats.command(aliases=["yellowcards"])
-    async def yellows(self, ctx):
+    async def yellows(self, ctx, page: int = 1):
         """Players with the most yellow cards."""
         stats = await self.config.guild(ctx.guild).stats()
         stats = stats["yellows"]
@@ -488,15 +503,20 @@ class StatsMixin(MixinMeta):
             for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user_team = await self.get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
             embed = discord.Embed(
-                title="Most Yellow Cards", description="\n".join(a[:10]), colour=0xFF0000
+                title="Most Yellow Cards", description="\n".join(a[p1:p2]), colour=0xFF0000
             )
             await ctx.send(embed=embed)
         else:
             await ctx.send("No stats available.")
 
     @leaguestats.command(alies=["redcards"])
-    async def reds(self, ctx):
+    async def reds(self, ctx, page: int = 1):
         """Players with the most red cards."""
         stats = await self.config.guild(ctx.guild).stats()
         stats = stats["reds"]
@@ -505,15 +525,20 @@ class StatsMixin(MixinMeta):
             for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user_team = await self.get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
             embed = discord.Embed(
-                title="Most Red Cards", description="\n".join(a[:10]), colour=0xFF0000
+                title="Most Red Cards", description="\n".join(a[p1:p2]), colour=0xFF0000
             )
             await ctx.send(embed=embed)
         else:
             await ctx.send("No stats available.")
 
     @leaguestats.command(alies=["motms"])
-    async def motm(self, ctx):
+    async def motm(self, ctx, page: int = 1):
         """Players with the most MOTMs."""
         stats = await self.config.guild(ctx.guild).stats()
         stats = stats["motm"]
@@ -522,15 +547,20 @@ class StatsMixin(MixinMeta):
             for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user_team = await self.get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
             embed = discord.Embed(
-                title="Most MOTMs", description="\n".join(a[:10]), colour=0xFF0000
+                title="Most MOTMs", description="\n".join(a[p1:p2]), colour=0xFF0000
             )
             await ctx.send(embed=embed)
         else:
             await ctx.send("No stats available.")
 
     @leaguestats.command(name="cleansheets")
-    async def _cleansheets(self, ctx):
+    async def _cleansheets(self, ctx, page: int = 1):
         """Teams with the most cleansheets."""
         stats = await self.config.guild(ctx.guild).stats()
         stats = stats["cleansheets"]
@@ -575,17 +605,22 @@ class StatsMixin(MixinMeta):
             await ctx.send("No stats available.")
 
     @leaguestats.command()
-    async def assists(self, ctx):
+    async def assists(self, ctx, page: int = 1):
         """Players with the most assists."""
         stats = await self.config.guild(ctx.guild).stats()
         stats = stats["assists"]
         if stats:
             a = []
-            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[:10]):
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
                 user_team = await self.get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
             embed = discord.Embed(
-                title="Assist Statistics", description="\n".join(a), colour=0xFF0000
+                title="Assist Statistics", description="\n".join(a[p1:p2]), colour=0xFF0000
             )
             await ctx.send(embed=embed)
         else:

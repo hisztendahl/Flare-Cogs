@@ -192,7 +192,7 @@ class SimLeague(
         self.bot = bot
         self.bets = {}
         self.cache = time.time()
-        self.session = aiohttp.ClientSession(loop=self.bot.loop)
+        self.session = aiohttp.ClientSession()
 
     async def red_delete_data_for_user(
         self,
@@ -1760,7 +1760,7 @@ class SimLeague(
         for min in range(1, 91):
             await asyncio.sleep(gametime)
             if min % 5 == 0:
-                await timemsg.edit(content="Minute: {}".format(min))
+                await ctx.send(content="Minute: {}".format(min))
             # Goal chance
             if events is False:
                 gC = await self.goalChance(ctx.guild, probability)
@@ -2083,7 +2083,9 @@ class SimLeague(
                     if team1Stats[8] != 0:
                         standings[team1]["gf"] += team1Stats[8]
                         standings[team2]["ga"] += team1Stats[8]
-        await self.postresults(ctx, team1, team2, team1Stats[8], team2Stats[8], None, None, team1msg)
+        await self.postresults(
+            ctx, team1, team2, team1Stats[8], team2Stats[8], None, None, team1msg
+        )
         await self.config.guild(ctx.guild).active.set(False)
         await self.config.guild(ctx.guild).started.set(False)
         await self.config.guild(ctx.guild).betteams.set([])
@@ -2848,7 +2850,7 @@ class SimLeague(
                 await ctx.send(file=image)
             else:
                 teamStats[8] += 1
-                async with self.config.guild(ctx.guild).stats() as cupstats:
+                async with self.config.guild(ctx.guild).cupstats() as cupstats:
                     if playerFreekick[1] not in cupstats["goals"]:
                         cupstats["goals"][playerFreekick[1]] = 1
                     else:
@@ -2899,14 +2901,13 @@ class SimLeague(
         im = await self.walkout(ctx, team1, "home")
         im2 = await self.walkout(ctx, team2, "away")
         team1msg = await ctx.send("Teams:", file=im)
-        await ctx.send("Teams:", file=im)
         await ctx.send(file=im2)
         timemsg = await ctx.send("Kickoff!")
         gametime = await self.config.guild(ctx.guild).gametime()
         for min in range(1, 91):
             await asyncio.sleep(gametime)
             if min % 5 == 0:
-                await timemsg.edit(content="Minute: {}".format(min))
+                await ctx.send(content="Minute: {}".format(min))
 
             # Goal chance
             if events is False:
@@ -3590,7 +3591,14 @@ class SimLeague(
                     lastround[idx] = fixture
 
         await self.postresults(
-            ctx, team1, team2, team1Stats[8], team2Stats[8], team1Stats[10], team2Stats[10], team1msg,
+            ctx,
+            team1,
+            team2,
+            team1Stats[8],
+            team2Stats[8],
+            team1Stats[10],
+            team2Stats[10],
+            team1msg,
         )
         await self.config.guild(ctx.guild).active.set(False)
         await self.config.guild(ctx.guild).started.set(False)
@@ -4304,14 +4312,13 @@ class SimLeague(
         im = await self.walkout(ctx, team1, "home")
         im2 = await self.walkout(ctx, team2, "away")
         team1msg = await ctx.send("Teams:", file=im)
-        await ctx.send("Teams:", file=im)
         await ctx.send(file=im2)
         timemsg = await ctx.send("Kickoff!")
         gametime = await self.config.guild(ctx.guild).gametime()
         for min in range(1, 91):
             await asyncio.sleep(gametime)
             if min % 5 == 0:
-                await timemsg.edit(content="Minute: {}".format(min))
+                await ctx.send(content="Minute: {}".format(min))
 
             # Goal chance
             if events is False:
@@ -4655,7 +4662,14 @@ class SimLeague(
                         t = await self.payout(ctx.guild, team2, awaywin)
 
         await self.postresults(
-            ctx, team1, team2, team1Stats[8], team2Stats[8], team1Stats[10], team2Stats[10], team1msg
+            ctx,
+            team1,
+            team2,
+            team1Stats[8],
+            team2Stats[8],
+            team1Stats[10],
+            team2Stats[10],
+            team1msg,
         )
         await self.config.guild(ctx.guild).active.set(False)
         await self.config.guild(ctx.guild).started.set(False)

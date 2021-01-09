@@ -636,7 +636,7 @@ class SimHelper(MixinMeta):
 
         draw.text(
             (label_align, 58),
-            comment.format(player.name),
+            textwrap.fill(comment.format(player.name), 43),
             font=general_u_font,
             fill=label_text_color,
         )
@@ -2591,7 +2591,9 @@ class SimHelper(MixinMeta):
                         except discord.Forbidden:
                             self.log.info("Failed to remove role from {}".format(member.name))
 
-    async def postresults(self, ctx, team1, team2, score1, score2, penscore1=None, penscore2=None, startmsg=None):
+    async def postresults(
+        self, ctx, team1, team2, score1, score2, penscore1=None, penscore2=None, startmsg=None
+    ):
         cog = self.bot.get_cog("SimLeague")
         results = await cog.config.guild(ctx.guild).resultchannel()
         role1 = False
@@ -2660,7 +2662,7 @@ class SimHelper(MixinMeta):
             else:
                 result += team2
             if startmsg is not None:
-                result += f"\n {startmsg.jump_url}"                
+                result += f"\n {startmsg.jump_url}"
             for channel in results:
                 channel = self.bot.get_channel(channel)
                 if channel is not None:

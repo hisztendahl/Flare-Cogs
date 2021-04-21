@@ -808,39 +808,49 @@ class SimLeague(
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def fixtures(self, ctx, week: Optional[int] = None):
+    async def fixtures(self, ctx, page: int = 1):
         """Show all fixtures."""
         fixtures = await self.config.guild(ctx.guild).fixtures()
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
-        if week is None:
-            embed = discord.Embed(
-                colour=ctx.author.colour,
-                description="------------------------- Fixtures -------------------------",
-            )
-            for i, fixture in enumerate(fixtures):
-                a = []
-                for game in fixture:
-                    a.append(f"{game[0]} vs {game[1]}")
-                embed.add_field(name="Week {}".format(i + 1), value="\n".join(a))
 
-            await ctx.send(embed=embed)
-
-        else:
-            if week == 0:
-                return await ctx.send("Try starting with week 1.")
-            try:
-                games = fixtures
-                games.reverse()
-                games.append("None")
-                games.reverse()
-                games = games[week]
-            except IndexError:
-                return await ctx.send("Invalid gameweek.")
+        embed = discord.Embed(
+            colour=ctx.author.colour,
+            description="------------------------- Fixtures -------------------------",
+        )
+        p1 = (page - 1) * 25 if page > 1 else page - 1
+        p2 = page * 25
+        if p1 > len(a):
+            maxpage = ceil(len(a) / 10)
+            return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
+        for i, fixture in enumerate(fixtures[p1:p2]):
             a = []
-            for fixture in games:
-                a.append(f"{fixture[0]} vs {fixture[1]}")
-            await ctx.maybe_send_embed("\n".join(a))
+            for game in fixture:
+                a.append(f"{game[0]} vs {game[1]}")
+            embed.add_field(name="Week {}".format(i + 1), value="\n".join(a))
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def fixture(self, ctx, week: Optional[int] = None):
+        """Show individual fixture."""
+        fixtures = await self.config.guild(ctx.guild).fixtures()
+        if not fixtures:
+            return await ctx.send("No fixtures have been made.")
+        if week == 0:
+            return await ctx.send("Try starting with week 1.")
+        try:
+            games = fixtures
+            games.reverse()
+            games.append("None")
+            games.reverse()
+            games = games[week]
+        except IndexError:
+            return await ctx.send("Invalid gameweek.")
+        a = []
+        for fixture in games:
+            a.append(f"{fixture[0]} vs {fixture[1]}")
+        await ctx.maybe_send_embed("\n".join(a))
 
     @commands.group(invoke_without_command=True)
     async def standings(self, ctx, verbose: bool = False):

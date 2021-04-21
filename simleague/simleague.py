@@ -827,7 +827,7 @@ class SimLeague(
             a = []
             for game in fixture:
                 a.append(f"{game[0]} vs {game[1]}")
-            embed.add_field(name="Week {}".format(i + 1), value="\n".join(a))
+            embed.add_field(name="Week {}".format(i + 1 + p1), value="\n".join(a))
 
         await ctx.send(embed=embed)
 

@@ -820,8 +820,8 @@ class SimLeague(
         )
         p1 = (page - 1) * 25 if page > 1 else page - 1
         p2 = page * 25
-        if p1 > len(a):
-            maxpage = ceil(len(a) / 10)
+        if p1 > len(fixtures):
+            maxpage = ceil(len(fixtures) / 10)
             return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
         for i, fixture in enumerate(fixtures[p1:p2]):
             a = []

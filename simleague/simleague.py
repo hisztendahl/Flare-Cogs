@@ -818,24 +818,13 @@ class SimLeague(
                 colour=ctx.author.colour,
                 description="------------------------- Fixtures -------------------------",
             )
-            for i, fixture in enumerate(fixtures[:25]):
+            for i, fixture in enumerate(fixtures):
                 a = []
                 for game in fixture:
                     a.append(f"{game[0]} vs {game[1]}")
                 embed.add_field(name="Week {}".format(i + 1), value="\n".join(a))
 
             await ctx.send(embed=embed)
-            if len(fixtures) > 25:
-                embed = discord.Embed(
-                    colour=ctx.author.colour,
-                    description="------------------------- Fixtures -------------------------",
-                )
-                for i, fixture in enumerate(fixtures[25:], 25):
-                    a = []
-                    for game in fixture:
-                        a.append(f"{game[0]} vs {game[1]}")
-                    embed.add_field(name="Week {}".format(i + 1), value="\n".join(a))
-                await ctx.send("\n".join(a))
 
         else:
             if week == 0:

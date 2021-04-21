@@ -831,6 +831,12 @@ class SimsetMixin(MixinMeta):
         await self.config.guild(ctx.guild).stats.set({})
         await ctx.tick()
 
+    @clear.command(name="notes")
+    async def clear_notes(self, ctx):
+        """Clear player notes."""
+        await self.config.guild(ctx.guild).notes.set({})
+        await ctx.tick()
+
     @clear.command(name="cupstats")
     async def clear_cupstats(self, ctx):
         """Clear cup stats."""

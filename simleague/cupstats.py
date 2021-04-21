@@ -12,16 +12,17 @@ class CupStatsMixin(MixinMeta):
     @commands.command()
     async def clearcupstats(self, ctx, user: discord.Member = None):
         """Clear statistics for a user."""
-        if user is not None:
-            userid = str(user.id)
-            async with self.config.guild(ctx.guild).cupstats() as stats:
-                stats["goals"].pop(userid, None)
-                stats["owngoals"].pop(userid, None)
-                stats["assists"].pop(userid, None)
-                stats["yellows"].pop(userid, None)
-                stats["reds"].pop(userid, None)
-                stats["motm"].pop(userid, None)
-                stats["penalties"].pop(userid, None)
+        if user is None:
+            return await ctx.send("No user was specified.")
+        userid = str(user.id)
+        async with self.config.guild(ctx.guild).cupstats() as stats:
+            stats["goals"].pop(userid, None)
+            stats["owngoals"].pop(userid, None)
+            stats["assists"].pop(userid, None)
+            stats["yellows"].pop(userid, None)
+            stats["reds"].pop(userid, None)
+            stats["motm"].pop(userid, None)
+            stats["penalties"].pop(userid, None)
         await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)

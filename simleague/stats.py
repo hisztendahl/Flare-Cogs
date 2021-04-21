@@ -251,6 +251,7 @@ class StatsMixin(MixinMeta):
             pens = stats["penalties"].get(userid)
             statistics = [
                 stats["goals"].get(userid),
+                stats["owngoals"].get(userid),
                 stats["assists"].get(userid),
                 stats["yellows"].get(userid),
                 stats["reds"].get(userid),
@@ -260,6 +261,7 @@ class StatsMixin(MixinMeta):
             ]
             headers = [
                 "goals",
+                "owngoals",
                 "assists",
                 "yellows",
                 "reds",

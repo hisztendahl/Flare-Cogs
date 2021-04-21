@@ -3008,7 +3008,8 @@ class SimHelper(MixinMeta):
                     user = ctx.guild.get_member(int(uid))
                     if user is not None:
                         cptrole = [r for r in user.roles if r.name == "Sim Captain"][0]
-                        users.remove(uid)
+                        if uid in users:
+                            users.remove(uid)
                         if cptrole:
                             await user.remove_roles(cptrole)
             del teams[team]

@@ -2,6 +2,7 @@ import random
 import string
 from io import BytesIO
 
+import asyncio
 import aiohttp
 import discord
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -83,7 +84,10 @@ class SimHelper(MixinMeta):
         general_info_fnt = ImageFont.truetype(font_bold_file, 15, encoding="utf-8")
         level_label_fnt = ImageFont.truetype(font_bold_file, 22, encoding="utf-8")
         rank_avatar = BytesIO()
-        await player.avatar_url.save(rank_avatar, seek_begin=True)
+        try:
+            await asyncio.wait_for(player.avatar_url.save(rank_avatar, seek_begin=True), 10)
+        except:
+            rank_avatar = await self.getimg(DEFAULT_PIC_URL)
         cog = self.bot.get_cog("SimLeague")
         teams = await cog.config.guild(ctx.guild).teams()
         if event != "yellow" or event != "goal":
@@ -138,7 +142,8 @@ class SimHelper(MixinMeta):
         fill = list_to_tuple(fill)
 
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
+            fill=fill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -529,7 +534,8 @@ class SimHelper(MixinMeta):
 
         fill = list_to_tuple(theme["chances"]["header_text_bg"])
         draw.rectangle(
-            [(left_pos - 10, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
+            [(left_pos - 10, vert_pos), (right_pos, vert_pos + title_height)],
+            fill=fill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -853,7 +859,8 @@ class SimHelper(MixinMeta):
 
         fill = list_to_tuple(theme["chances"]["header_text_bg"])
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
+            fill=fill,
         )  # title box
 
         # draw level circle
@@ -1022,8 +1029,12 @@ class SimHelper(MixinMeta):
         for player in team:
             player = await self.bot.fetch_user(player)
             rank_avatar = BytesIO()
-            await player.avatar_url.save(rank_avatar, seek_begin=True)
-            profile_image = Image.open(rank_avatar).convert("RGBA")
+            try:
+                await asyncio.wait_for(player.avatar_url.save(rank_avatar, seek_begin=True), 10)
+                profile_image = Image.open(rank_avatar).convert("RGBA")
+            except:
+                profile_image = await self.getimg(DEFAULT_PIC_URL)
+                profile_image = Image.open(profile_image).convert("RGBA")
             # put in profile picture
             output = ImageOps.fit(profile_image, (raw_length, raw_length), centering=(0.5, 0.5))
             output.resize((profile_size, profile_size), Image.ANTIALIAS)
@@ -1100,8 +1111,12 @@ class SimHelper(MixinMeta):
         for player in team:
             player = await self.bot.fetch_user(player)
             rank_avatar = BytesIO()
-            await player.avatar_url.save(rank_avatar, seek_begin=True)
-            profile_image = Image.open(rank_avatar).convert("RGBA")
+            try:
+                await asyncio.wait_for(player.avatar_url.save(rank_avatar, seek_begin=True), 10)
+                profile_image = Image.open(rank_avatar).convert("RGBA")
+            except:
+                profile_image = await self.getimg(DEFAULT_PIC_URL)
+                profile_image = Image.open(profile_image).convert("RGBA")
             # put in profile picture
             output = ImageOps.fit(profile_image, (raw_length, raw_length), centering=(0.5, 0.5))
             output.resize((profile_size, profile_size), Image.ANTIALIAS)
@@ -1128,7 +1143,9 @@ class SimHelper(MixinMeta):
         radius = 20
 
         draw_server_border = Image.new(
-            "RGBA", (server_border_size * multiplier, server_border_size * multiplier), "#d4a11e",
+            "RGBA",
+            (server_border_size * multiplier, server_border_size * multiplier),
+            "#d4a11e",
         )
         draw_server_border = self._add_corners(draw_server_border, int(radius * multiplier / 2))
         draw_server_border = draw_server_border.resize((184, 184), Image.ANTIALIAS)
@@ -1192,8 +1209,12 @@ class SimHelper(MixinMeta):
         x = 240
         player = await self.bot.fetch_user(player)
         rank_avatar = BytesIO()
-        await player.avatar_url.save(rank_avatar, seek_begin=True)
-        profile_image = Image.open(rank_avatar).convert("RGBA")
+        try:
+            await asyncio.wait_for(player.avatar_url.save(rank_avatar, seek_begin=True), 10)
+            profile_image = Image.open(rank_avatar).convert("RGBA")
+        except:
+            profile_image = await self.getimg(DEFAULT_PIC_URL)
+            profile_image = Image.open(profile_image).convert("RGBA")
         # put in profile picture
         output = ImageOps.fit(profile_image, (raw_length, raw_length), centering=(0.5, 0.5))
         output.resize((profile_size, profile_size), Image.ANTIALIAS)
@@ -1328,7 +1349,10 @@ class SimHelper(MixinMeta):
         general_info_fnt = ImageFont.truetype(font_bold_file, 15, encoding="utf-8")
         header_u_fnt = ImageFont.truetype(font_bold_file, 18)
         rank_avatar = BytesIO()
-        await user.avatar_url.save(rank_avatar, seek_begin=True)
+        try:
+            await asyncio.wait_for(user.avatar_url.save(rank_avatar, seek_begin=True), 10)
+        except:
+            rank_avatar = await self.getimg(DEFAULT_PIC_URL)
         cog = self.bot.get_cog("SimLeague")
         teams = await cog.config.guild(ctx.guild).teams()
         server_icon = await self.getimg(
@@ -1361,7 +1385,8 @@ class SimHelper(MixinMeta):
 
         fill = list_to_tuple(theme["chances"]["header_text_bg"])
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
+            fill=fill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -1533,7 +1558,7 @@ class SimHelper(MixinMeta):
             player = await self.bot.fetch_user(player)
             rank_avatar = BytesIO()
             try:
-                await player.avatar_url.save(rank_avatar, seek_begin=True)
+                await asyncio.wait_for(player.avatar_url.save(rank_avatar, seek_begin=True), 10)
                 profile_image = Image.open(rank_avatar).convert("RGBA")
             except:
                 profile_image = await self.getimg(DEFAULT_PIC_URL)
@@ -1874,8 +1899,14 @@ class SimHelper(MixinMeta):
                 if player is None:
                     player = await self.bot.fetch_user(uid[0])
                 rank_avatar = BytesIO()
-                await player.avatar_url.save(rank_avatar, seek_begin=True)
-                profile_image = Image.open(rank_avatar).convert("RGBA")
+                try:
+                    await asyncio.wait_for(
+                        player.avatar_url.save(rank_avatar, seek_begin=True), 10
+                    )
+                    profile_image = Image.open(rank_avatar).convert("RGBA")
+                except:
+                    profile_image = await self.getimg(DEFAULT_PIC_URL)
+                    profile_image = Image.open(profile_image).convert("RGBA")
                 output = ImageOps.fit(
                     profile_image, (raw_length, raw_length), centering=(0.5, 0.5)
                 )
@@ -2008,10 +2039,16 @@ class SimHelper(MixinMeta):
         fill = list_to_tuple(theme["matchinfo"]["odds"])
         # odds
         draw.text(
-            (10, 120), f"HOME ODDS:\n{str(homeodds)[:7]}", font=general_info_fnt, fill=fill,
+            (10, 120),
+            f"HOME ODDS:\n{str(homeodds)[:7]}",
+            font=general_info_fnt,
+            fill=fill,
         )
         draw.text(
-            (400, 120), f"AWAY ODDS:\n{str(awayodds)[:7]}", font=general_info_fnt, fill=fill,
+            (400, 120),
+            f"AWAY ODDS:\n{str(awayodds)[:7]}",
+            font=general_info_fnt,
+            fill=fill,
         )
         draw.text(
             (self._center(0, width, f"Draw:", general_info_fnt), 120),
@@ -2291,7 +2328,12 @@ class SimHelper(MixinMeta):
         # goal text
 
         _write_unicode(
-            "{}".format(team1.upper()), 7, vert_pos + 3, name_fnt, header_u_fnt, text_color,
+            "{}".format(team1.upper()),
+            7,
+            vert_pos + 3,
+            name_fnt,
+            header_u_fnt,
+            text_color,
         )
         offset = len(team2) * 8
         _write_unicode(

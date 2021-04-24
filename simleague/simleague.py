@@ -4735,7 +4735,7 @@ class SimLeague(
         if not bettoggle:
             return await ctx.send("Betting is currently disabled.")
         if not active:
-            await ctx.send("There isn't a game onright now.")
+            await ctx.send("There isn't a game on right now.")
             return False
         elif started:
             try:

@@ -1,5 +1,5 @@
 import discord
-from redbot.core import checks, commands
+from redbot.core import checks, commands, bank
 from redbot.core.utils.chat_formatting import box
 
 from .abc import MixinMeta
@@ -307,6 +307,31 @@ class SimsetMixin(MixinMeta):
         Toggle must be a valid bool."""
         await self.config.guild(ctx.guild).bettoggle.set(toggle)
         await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @bet.command(name="reset")
+    async def bet_reset(self, ctx):
+        bettoggle = await self.config.guild(ctx.guild).bettoggle()
+        if bettoggle == False:
+            return await ctx.send("Betting is disabled")
+        await self.config.guild(ctx.guild).active.set(False)
+        await self.config.guild(ctx.guild).started.set(False)
+        await self.config.guild(ctx.guild).betteams.set([])
+        await self.bets_payout(ctx)
+        if ctx.guild.id in self.bets:
+            self.bets[ctx.guild.id] = {}
+        return await ctx.tick()
+
+    async def bets_payout(self, ctx):
+        bet_refundees = []
+        if ctx.guild.id not in self.bets:
+            return None
+        for better in self.bets[ctx.guild.id]:
+            for team, bet in self.bets[ctx.guild.id][better]["Bets"]:
+                bet_refundees.append(f"{better.mention} - Refunded: {int(bet)}")
+                await bank.deposit_credits(better, int(bet))
+        print(bet_refundees)                
+        return await ctx.send("\n".join(bet_refundees)) if bet_refundees else None
 
     @simset.command()
     async def gametime(self, ctx, time: float = 1):

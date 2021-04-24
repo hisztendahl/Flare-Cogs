@@ -330,7 +330,6 @@ class SimsetMixin(MixinMeta):
             for team, bet in self.bets[ctx.guild.id][better]["Bets"]:
                 bet_refundees.append(f"{better.mention} - Refunded: {int(bet)}")
                 await bank.deposit_credits(better, int(bet))
-        print(bet_refundees)                
         return await ctx.send("\n".join(bet_refundees)) if bet_refundees else None
 
     @simset.command()

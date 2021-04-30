@@ -4,7 +4,7 @@
 
     !genseasonpalmares <season>
 
-><span style="color:white">url</span>: <span style="color:lightblue">int</span>
+><span style="color:white">url</span>: <span style="color:lightgreen">string</span>
 
 _Warning: Be careful of what season you are adding new palmares to._
 

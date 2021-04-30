@@ -16,9 +16,9 @@
 
 
 ><span style="color:white">teamname</span>: <span style="color:lightgreen">string</span><br>
-><span style="color:white">members</span>: <span style="color:grey">@discord.Member</span><br> 
+><span style="color:white">members</span>: <span style="color:lightgrey">@discord.Member</span><br> 
 ><span style="color:white">logo</span>: <span style="color:lightgreen">string</span><br>
-><span style="color:white">role</span>: <span style="color:grey">@discord.Role</span>
+><span style="color:white">role</span>: <span style="color:lightgrey">@discord.Role</span>
 
         teams[teamname] = {
             "members": names,
@@ -58,7 +58,7 @@
 
     !fixtures <page>
 
-><span style="color:white">page</span>: <span style="color:blue">int</span> (1)
+><span style="color:white">page</span>: <span style="color:lightblue">int</span> (1)
 
  Shows all fixtures, or first 25. Use page to see following fixtures.
 
@@ -66,7 +66,7 @@
 
     !fixture <week>
 
-><span style="color:white">week</span>: <span style="color:blue">int</span>
+><span style="color:white">week</span>: <span style="color:lightblue">int</span>
 
 
 
@@ -141,5 +141,5 @@ No level, 50/50 game
 
     !bet <amount, team>
 
-><span style="color:white">amount</span>: <span style="color:blue">int</span><br>
+><span style="color:white">amount</span>: <span style="color:lightblue">int</span><br>
 <span style="color:white">team</span>: <span style="color:lightgreen">string</span>

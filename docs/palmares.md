@@ -15,7 +15,7 @@ This is used to add individual entries for a player.
 
     !addpalmares <user, season, stat, value, rank>
 
-><span style="color:white">user</span>: <span style="color:grey">discord.Member</span><br>
+><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>
 ><span style="color:white">season</span>: <span style="color:lightblue">int</span><br>
 ><span style="color:white">stat</span>: <span style="color:pink">enum</span> (goals, assists, ga, reds, yellows, motms, finish, cupfinish, communityshield)<br>
 ><span style="color:white">value</span>: <span style="color:lightblue">int</span><br>
@@ -37,4 +37,4 @@ _Note: For finish and cupfinish, the value needs to be the team name._
 
     !palmares <user>
 
-><span style="color:white">user</span>: <span style="color:grey">discord.Member</span><br>
+><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>

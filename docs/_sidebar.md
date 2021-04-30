@@ -1,7 +1,7 @@
 <!-- docs/_sidebar.md -->
 
 * [Core](/)
-<!-- * [Stats](stats.md) -->
+* [Stats](stats.md)
 * [Cup](cupstats.md)
 <!-- * [Teamstats](teamstats.md) -->
 <!-- * [Settings](simset.md) -->

@@ -78,7 +78,7 @@ _Set the time each minute takes, in seconds. Value needs to be between 0 and 20.
 
 #### Probability settings.
 !> Careful when changing probabilities, this has the potential to break the simulation.
-* [Visit the probability helper for more detail.](probability_calculator.md)
+<!-- * [Visit the probability helper for more detail.](probability_calculator.md) -->
 
 
 ##### View probabilities. _(Admin command)_

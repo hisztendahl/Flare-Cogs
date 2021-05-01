@@ -146,6 +146,7 @@ _Set the time each minute takes, in seconds. Value needs to be between 0 and 20.
 
     !simset probability
 
+<br>
 ##### Goal probability. _(Admin command)_
 _Value needs to be between 1 and 100. Default = 96._
 

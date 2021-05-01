@@ -1,6 +1,7 @@
 # Core
 
-### Notify
+### General
+#### Notify
 ##### Set wheter to receive notifications of matches and results.
 
     !notify <toggle>
@@ -9,7 +10,7 @@
 
 <br>
 
-### Register
+#### Register
 ##### Register a team. _(Try to keep team names to one word if possible)_
 
     !register <teamname, members, logo, *, role>
@@ -58,7 +59,7 @@ _Shows all fixtures, or first 25. Use page to see following fixtures._
 
 
 
-## Standings _(Invoke without command)_
+#### Standings
 ##### Current sim standings.
 
     !standings <verbose>
@@ -85,7 +86,7 @@ Possible values:
 - <span style="color:pink">conversioon</span>: Teams with the best conversion rate.
 
 
-### Simulation
+## Simulation
 
 ##### Simulate a game between two teams.
 
@@ -124,7 +125,7 @@ No level, 50/50 game
 
 <br>
 
-### Bet
+## Bet
 #### Bet on a team or a draw.
 
     !bet <amount, team>

@@ -1,4 +1,4 @@
-# Sim Settings
+### Simulation
 
 ##### Show current simulation settings. _(Admin command)_
 _Displays game time, number of players per team, length of half time break, red card bonus modifier, results channel, transfer window status, bet settings, and teams mentions on game start._
@@ -7,7 +7,7 @@ _Displays game time, number of players per team, length of half time break, red 
 
 <br>
 
-#### Bet settings.
+### Bets
 ##### Enable / Disable betting. _(Admin command)_
 
     !simset bet toggle <value>
@@ -38,7 +38,7 @@ _Reset current betting status, and refund members that have a pending bet._
 
 <br><br>
 
-#### Game settings.
+### Game
 ##### Set the max team players. _(Admin command)_
 _Value needs to be between 3 and 7._
 
@@ -76,7 +76,7 @@ _Set the time each minute takes, in seconds. Value needs to be between 0 and 20.
 
 <br><br>
 
-#### Probability settings.
+### Probabilities
 !> Careful when changing probabilities, this has the potential to break the simulation.
 <!-- * [Visit the probability helper for more detail.](probability_calculator.md) -->
 

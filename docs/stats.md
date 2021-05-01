@@ -2,13 +2,13 @@
 
 ## Player Stats
 ##### Add statistics for a user. _(Admin command)_
-Add goals, own goals, assists, goal contributions, yellow/red cards, motms, penalties for a user. This is only for league stats.
+_Add goals, own goals, assists, goal contributions, yellow/red cards, motms, penalties for a user. This is only for league stats._
 
     !addstats <user, stat, value>
 
-><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>
-><span style="color:white">stat</span>: <span style="color:pink">enum</span> (goals | owngoals | assists | ga | yellows | reds | motm | penscored | penmissed)<br>
-><span style="color:white">value</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>
+<span style="color:white">stat</span>: <span style="color:pink">enum</span> _(goals | owngoals | assists | ga | yellows | reds | motm | penscored | penmissed)_<br>
+<span style="color:white">value</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -17,7 +17,7 @@ Removes goals, own goals, assists, yellow/red cards, motms, penalties for a user
 
     !clearstats <user>
 
-><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span>
+?><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span>
 
 <br>
 
@@ -25,16 +25,17 @@ Removes goals, own goals, assists, yellow/red cards, motms, penalties for a user
 
     !leaguestats <user>
 
-><span style="color:white">user _(opt.)_</span>: <span style="color:lightgrey">discord.Member</span>
+?><span style="color:white">user _(opt.)_</span>: <span style="color:lightgrey">discord.Member</span>
 
-_If invoked without a user, it will display a summary with toop performers for each category. Otherwise, it will display a summary for the invoked user._
+!> If invoked without a user, it will display a summary with top performers for each category. Otherwise, it will display a summary for the invoked user.
+
 <br>
 
 ##### Players with the best average note.
 
     !leaguestats notes <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -42,7 +43,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !leaguestats ga <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -50,7 +51,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !leaguestats goals <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -58,7 +59,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !leaguestats assists <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -66,7 +67,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !leaguestats owngoals <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -74,7 +75,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !leaguestats yellows <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -82,7 +83,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !leaguestats reds <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -90,7 +91,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !leaguestats motm <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -98,7 +99,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !leaguestats cleansheets <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -106,7 +107,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !leaguestats penalties <page>
 
-><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page _(opt.)_</span>: <span style="color:lightblue">int</span>
 
 <br>
 <br>
@@ -116,9 +117,9 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !addteamstats <team, stat, value>
 
-><span style="color:white">team</span>: <span style="color:lightgreen">string</span><br>
-><span style="color:white">stat</span>: <span style="color:pink">enum</span> (played, wins, losses, points, gd, gf, ga, draws, reds, yellows, fouls, chances)<br>
-><span style="color:white">value</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">team</span>: <span style="color:lightgreen">string</span><br>
+<span style="color:white">stat</span>: <span style="color:pink">enum</span> (played, wins, losses, points, gd, gf, ga, draws, reds, yellows, fouls, chances)<br>
+<span style="color:white">value</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -126,8 +127,8 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !teamstats <team, comptype = league>
 
-><span style="color:white">team</span>: <span style="color:lightgreen">string</span><br>
-><span style="color:white">comptype _(opt.)_</span>: <span style="color:pink">enum</span> (league | cup | all)<br>
+?><span style="color:white">team</span>: <span style="color:lightgreen">string</span><br>
+<span style="color:white">comptype _(opt.)_</span>: <span style="color:pink">enum</span> (league | cup | all)<br>
 
 <br>
 
@@ -136,7 +137,7 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !viewnotes <user>
 
-><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span>
+?><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span>
 
 <br>
 
@@ -144,12 +145,11 @@ _If invoked without a user, it will display a summary with toop performers for e
 
     !addnotes <user, *notes>
 
-><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>
-><span style="color:white">notes</span>: <span style="color:lightgreen">string | string[]</span>
+?><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>
+<span style="color:white">notes</span>: <span style="color:lightgreen">string | string[]</span>
 
-_Note: You can add multiple values at once._
-
-_Example: `!addnotes @Bot Suricate 10 8.5 7 4.25`_
+!> Note: You can add multiple values at once.<br>
+Example: _!addnotes @Bot Suricate 10 8.5 7 4.25_
 
 <br>
 
@@ -158,10 +158,10 @@ Remove a note at a given index for a user.
 
     !removenote <user, index>
 
-><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>
-><span style="color:white">index</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>
+<span style="color:white">index</span>: <span style="color:lightblue">int</span>
 
-_Example: `!removenote @Bot Suricate 4` will remove Suricate's 5th note (index starts at 0)_
+!>Example: _!removenote @Bot Suricate 4_ will remove Suricate's 5th note (index starts at 0)
 
 <br>
 
@@ -169,6 +169,6 @@ _Example: `!removenote @Bot Suricate 4` will remove Suricate's 5th note (index s
 
     !clearnotes <user>
 
-><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>
+?><span style="color:white">user</span>: <span style="color:lightgrey">discord.Member</span><br>
 
 <br>

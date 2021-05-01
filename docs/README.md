@@ -5,7 +5,7 @@
 
     !notify <toggle>
     
-><span style="color:white">toggle</span>: <span style="color:red">boolean</span>
+?><span style="color:white">toggle</span>: <span style="color:red">boolean</span>
 
 <br>
 
@@ -15,23 +15,10 @@
     !register <teamname, members, logo, *, role>
 
 
-><span style="color:white">teamname</span>: <span style="color:lightgreen">string</span><br>
-><span style="color:white">members</span>: <span style="color:lightgrey">@discord.Member</span><br> 
-><span style="color:white">logo</span>: <span style="color:lightgreen">string</span><br>
-><span style="color:white">role</span>: <span style="color:lightgrey">@discord.Role</span>
-
-        teams[teamname] = {
-            "members": names,
-            "captain": {str(members[0].id): members[0].name},
-            "logo": logo,
-            "role": role.name if role is not None else None,
-            "cachedlevel": 0,
-            "fullname": None,
-            "kits": {"home": None, "away": None, "third": None},
-            "stadium": None,
-            "bonus": 0,
-            "form": {"result": None, "streak": 0},
-        }
+?><span style="color:white">teamname</span>: <span style="color:lightgreen">string</span><br>
+<span style="color:white">members</span>: <span style="color:lightgrey">@discord.Member</span><br> 
+<span style="color:white">logo</span>: <span style="color:lightgreen">string</span><br>
+<span style="color:white">role</span>: <span style="color:lightgrey">@discord.Role</span>
 
 <br>
 
@@ -40,8 +27,8 @@
 
     !teams <updatecache, mobilefriendly>
 
-><span style="color:white">updatecache</span>?: <span style="color:red">boolean</span> (false)<br> 
-><span style="color:white">mobilefriendly</span>?: <span style="color:red">boolean</span> (true)
+?><span style="color:white">updatecache</span>?: <span style="color:red">boolean</span> (false)<br> 
+<span style="color:white">mobilefriendly</span>?: <span style="color:red">boolean</span> (true)
 
 <br>
 
@@ -49,24 +36,25 @@
 
     !team <team>
 
-><span style="color:white">team</span>: <span style="color:lightgreen">string</span>
+?><span style="color:white">team</span>: <span style="color:lightgreen">string</span>
 
 <br>
 
 ## Fixtures
 ##### Show all fixtures.
+_Shows all fixtures, or first 25. Use page to see following fixtures._
 
     !fixtures <page>
 
-><span style="color:white">page</span>: <span style="color:lightblue">int</span> (1)
+?><span style="color:white">page</span>: <span style="color:lightblue">int</span> (1)
 
- Shows all fixtures, or first 25. Use page to see following fixtures.
+<br>
 
 ##### Show individual fixture.
 
     !fixture <week>
 
-><span style="color:white">week</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">week</span>: <span style="color:lightblue">int</span>
 
 
 
@@ -75,7 +63,7 @@
 
     !standings <verbose>
 
-><span style="color:white">verbose</span>: <span style="color:red">boolean</span> (false) -  Display goals for / against
+?><span style="color:white">verbose</span>: <span style="color:red">boolean</span> (false) -  Display goals for / against
 
 #### Standings subcommands
 
@@ -84,7 +72,7 @@
     !standings <stat>
     
     
-><span style="color:white">stat</span>: <span style="color:pink">enum</span> 
+?><span style="color:white">stat</span>: <span style="color:pink">enum</span> 
 
 Possible values:
 
@@ -103,7 +91,7 @@ Possible values:
 
     !sim <team1, team2>
 
-> <span style="color:white">team1</span>: <span style="color:lightgreen">string</span><br>
+?> <span style="color:white">team1</span>: <span style="color:lightgreen">string</span><br>
 <span style="color:white">team2</span>: <span style="color:lightgreen">string</span>
 
 Admin command, 1 max concurrency, 30 sec cooldown
@@ -113,7 +101,7 @@ Admin command, 1 max concurrency, 30 sec cooldown
 
     !simcup <team1, team2>
 
-> <span style="color:white">team1</span>: <span style="color:lightgreen">string</span><br>
+?> <span style="color:white">team1</span>: <span style="color:lightgreen">string</span><br>
 <span style="color:white">team2</span>: <span style="color:lightgreen">string</span>
 
 
@@ -126,7 +114,7 @@ No level, 50/50 game
 
     !simfriendly <team1, team2>
 
-><span style="color:white">team1</span>: <span style="color:lightgreen">string</span><br>
+?><span style="color:white">team1</span>: <span style="color:lightgreen">string</span><br>
 <span style="color:white">team2</span>: <span style="color:lightgreen">string</span>
 
 
@@ -141,5 +129,5 @@ No level, 50/50 game
 
     !bet <amount, team>
 
-><span style="color:white">amount</span>: <span style="color:lightblue">int</span><br>
+?><span style="color:white">amount</span>: <span style="color:lightblue">int</span><br>
 <span style="color:white">team</span>: <span style="color:lightgreen">string</span>

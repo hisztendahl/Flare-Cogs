@@ -5,9 +5,9 @@
 
     !tots kit <url>
 
-><span style="color:white">url</span>: <span style="color:lightgreen">string</span>
+?><span style="color:white">url</span>: <span style="color:lightgreen">string</span>
 
-_Url needs to be a .png file._
+!>Url needs to be a .png file.
 
 <br>
 
@@ -15,9 +15,9 @@ _Url needs to be a .png file._
 
     !tots logo <url>
 
-><span style="color:white">url</span>: <span style="color:lightgreen">string</span>
+?><span style="color:white">url</span>: <span style="color:lightgreen">string</span>
 
-_Url needs to be a .png file._
+!>Url needs to be a .png file.
 
 <br>
 
@@ -50,11 +50,11 @@ Ranks alls players according to their season performance. This ranking is what d
     !tots view
 
 
-##### View POTS
+##### View POTS Ranking
 
     !tots ranking <page>
 
-><span style="color:white">page</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">page</span>: <span style="color:lightblue">int</span>
 
 <br>
 <br>
@@ -66,8 +66,8 @@ Generate Trophy winner image
 
     !tots champion <trophy, season>
 
-><span style="color:white">trophy</span>: <span style="color:pink">enum</span> (league | cup)<br>
-><span style="color:white">season</span>: <span style="color:lightblue">int</span>
+?><span style="color:white">trophy</span>: <span style="color:pink">enum</span> (league | cup)<br>
+<span style="color:white">season</span>: <span style="color:lightblue">int</span>
 
 <br>
 
@@ -76,7 +76,7 @@ Team of the season walkout.
 
     !tots walkout
 
-_Warning: This is tailored for 4 teams members, so you could have visual issues if team size is different._
+!>Warning: This is tailored for 4 teams members, so you could have visual issues if team size is different.
 
 <br>
 

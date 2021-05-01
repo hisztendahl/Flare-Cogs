@@ -13,7 +13,7 @@ _This can be used to override a cup result._
     !addcupresult <team1, team2, score1, score2>
 
 
-><span style="color:white">team1</span>: <span style="color:lightgreen">string</span><br>
-><span style="color:white">team2</span>: <span style="color:lightgreen">string</span><br> 
-><span style="color:white">score1</span>: <span style="color:lightgreen">string</span><br>
-><span style="color:white">score2</span>: <span style="color:lightgreen">string</span>
+?><span style="color:white">team1</span>: <span style="color:lightgreen">string</span><br>
+<span style="color:white">team2</span>: <span style="color:lightgreen">string</span><br> 
+<span style="color:white">score1</span>: <span style="color:lightgreen">string</span><br>
+<span style="color:white">score2</span>: <span style="color:lightgreen">string</span>

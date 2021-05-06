@@ -836,9 +836,7 @@ class SimHelper(MixinMeta):
         name_fnt = ImageFont.truetype(font_bold_file, 22)
         header_u_fnt = ImageFont.truetype(font_bold_file, 18)
         general_info_fnt2 = ImageFont.truetype(font_bold_file, 20, encoding="utf-8")
-        rank_avatar = await self.getimg(
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/VAR_System_Logo.svg/1280px-VAR_System_Logo.svg.png"
-        )
+        rank_avatar = await self.getimg("https://i.imgur.com/cQZPJ6X.png")
         profile_image = Image.open(rank_avatar).convert("RGBA")
 
         # set canvas

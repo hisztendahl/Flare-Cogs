@@ -530,6 +530,21 @@ class SimsetMixin(MixinMeta):
             await ctx.tick()
 
     @simset.command()
+    @commands.bot_has_permissions(manage_roles=True)
+    async def setform(self, ctx, team, result: str, streak: int):
+        """Clear streak form for a team or all teams."""
+        cog = self.bot.get_cog("SimLeague")
+        async with cog.config.guild(ctx.guild).teams() as teams:
+            if team not in teams:
+                return await ctx.send("This team does not exist.")
+            if result not in ["W", "D", "L"]:
+                return await ctx.send("Result must be one of: W, D, L.")
+            if streak < 0:
+                return await ctx.send("Streak must be > 0.")
+            teams[team]["form"] = {"result": result, "streak": streak}
+        await ctx.tick()
+
+    @simset.command()
     async def createfixtures(self, ctx):
         """Create the fixtures for the current teams."""
         teams = await self.config.guild(ctx.guild).teams()

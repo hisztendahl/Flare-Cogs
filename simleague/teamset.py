@@ -394,9 +394,9 @@ class TeamsetMixin(MixinMeta):
                 role = ctx.guild.get_role(teams[team]["role"])
                 await role.edit(name=newname)
             del teams[team]
-        async with self.config.guild(ctx.guild).standings() as teams:
-            teams[newname] = teams[team]
-            del teams[team]
+        async with self.config.guild(ctx.guild).standings() as standings:
+            standings[newname] = standings[team]
+            del standings[team]
         async with self.config.guild(ctx.guild).cupstandings() as cupteams:
             if len(dict.keys(cupteams)):
                 cupteams[newname] = cupteams[team]

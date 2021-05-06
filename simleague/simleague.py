@@ -52,6 +52,32 @@ def getformbonus(form):
     multiplier = (100 + multiplier) / 100
     return multiplier
 
+def getformbonuspercent(form):
+    streak = form["streak"]
+    result = form["result"]
+    if result == "D" or result is None:
+        return 0
+    multiplier = 1
+    if streak == 1:
+        multiplier = 2.5
+    elif streak == 2:
+        multiplier = 5
+    elif streak == 3:
+        multiplier = 7.5
+    elif streak == 4:
+        multiplier = 12.5
+    elif streak == 5:
+        multiplier = 20
+    elif streak == 6:
+        multiplier = 32.5
+    else:
+        multiplier = 50
+    if result == "W":
+        multiplier = -multiplier
+    if result == "L":
+        multiplier = "+{}".format(multiplier)
+    return multiplier
+
 
 class CompositeMetaClass(type(commands.Cog), type(ABC)):
     """This allows the metaclass used for proper type detection to coexist with discord.py's
@@ -658,7 +684,7 @@ class SimLeague(
                     role = ctx.guild.get_role(teams[team]["role"])
                     embed.add_field(
                         name="Team {}".format(team),
-                        value="{}**Members**:\n{}\n**Captain**: {}\n**Team Level**: ~{}{}{}".format(
+                        value="{}**Members**:\n{}\n**Captain**: {}\n**Team Level**: ~{}{}{}\n**Form**: {}{} - ({})".format(
                             "**Full Name**:\n{}\n".format(teams[team]["fullname"])
                             if teams[team]["fullname"] is not None
                             else "",
@@ -671,6 +697,7 @@ class SimLeague(
                             "\n**Stadium**: {}".format(teams[team]["stadium"])
                             if teams[team]["stadium"] is not None
                             else "",
+                            teams[team]["form"]["result"], teams[team]["form"]["streak"], "{}%".format(getformbonuspercent(teams[team]["form"]))
                         ),
                         inline=True,
                     )
@@ -685,13 +712,13 @@ class SimLeague(
             for team in teams:
                 lvl = teams[team]["cachedlevel"]
                 captain = list(teams[team]["captain"].values())[0]
-                role = teams[team]["role"]
+                role = ctx.guild.get_role(teams[team]["role"])
                 non = "None"
                 msg += (
                     f"{f'{team}': <{teamlen}} "
                     f"{f'{lvl}': <{lvllen}} "
                     f"{f'{captain}': <{caplen}} "
-                    f"{f'{role.name if role is not None else non}': <{rolelen}}"
+                    f"{f'@{role if role is not None else non}': <{rolelen}}"
                     f"{', '.join(list(teams[team]['members'].values()))} \n"
                 )
 
@@ -725,6 +752,7 @@ class SimLeague(
             embed.add_field(name="Captain:", value=list(teams[team]["captain"].values())[0])
             embed.add_field(name="Level:", value=teams[team]["cachedlevel"], inline=True)
             embed.add_field(name="Bonus %:", value=f"{teams[team]['bonus']}%", inline=True)
+            embed.add_field(name="Form Bonus %:", value=f"{getformbonuspercent(teams[team]['form'])}%", inline=True)
             if teams[team]["role"] is not None:
                 role = ctx.guild.get_role(teams[team]["role"])
                 embed.add_field(
@@ -821,7 +849,7 @@ class SimLeague(
         p1 = (page - 1) * 25 if page > 1 else page - 1
         p2 = page * 25
         if p1 > len(fixtures):
-            maxpage = ceil(len(fixtures) / 10)
+            maxpage = ceil(len(fixtures) / 25)
             return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
         for i, fixture in enumerate(fixtures[p1:p2]):
             a = []

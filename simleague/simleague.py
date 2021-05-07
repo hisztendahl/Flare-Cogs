@@ -52,6 +52,7 @@ def getformbonus(form):
     multiplier = (100 + multiplier) / 100
     return multiplier
 
+
 def getformbonuspercent(form):
     streak = form["streak"]
     result = form["result"]
@@ -699,7 +700,9 @@ class SimLeague(
                             "\n**Stadium**: {}".format(teams[team]["stadium"])
                             if teams[team]["stadium"] is not None
                             else "",
-                            teams[team]["form"]["result"], teams[team]["form"]["streak"], "{}%".format(getformbonuspercent(teams[team]["form"]))
+                            teams[team]["form"]["result"],
+                            teams[team]["form"]["streak"],
+                            "{}%".format(getformbonuspercent(teams[team]["form"])),
                         ),
                         inline=True,
                     )
@@ -754,7 +757,11 @@ class SimLeague(
             embed.add_field(name="Captain:", value=list(teams[team]["captain"].values())[0])
             embed.add_field(name="Level:", value=teams[team]["cachedlevel"], inline=True)
             embed.add_field(name="Bonus %:", value=f"{teams[team]['bonus']}%", inline=True)
-            embed.add_field(name="Form Bonus %:", value=f"{getformbonuspercent(teams[team]['form'])}%", inline=True)
+            embed.add_field(
+                name="Form Bonus %:",
+                value=f"{getformbonuspercent(teams[team]['form'])}%",
+                inline=True,
+            )
             if teams[team]["role"] is not None:
                 role = ctx.guild.get_role(teams[team]["role"])
                 embed.add_field(
@@ -1407,7 +1414,7 @@ class SimLeague(
             if player[2] not in fouls:
                 fouls[player[2]] = 1
             else:
-                fouls[player[2]] += 1                
+                fouls[player[2]] += 1
             teamStats[10] += 1
             if teamStats[0] == team1:
                 team1Stats[11] += 1
@@ -1453,7 +1460,7 @@ class SimLeague(
             if player[1] not in goals:
                 goals[player[1]] = 1
             else:
-                goals[player[1]] += 1            
+                goals[player[1]] += 1
             async with self.config.guild(ctx.guild).stats() as stats:
                 if player[1] not in stats["penalties"]:
                     stats["penalties"][player[1]] = {
@@ -1506,7 +1513,7 @@ class SimLeague(
                     teamStats[7] += 1
                     teamStats[2].append(playerYellow[1])
                     redcards[playerYellow[1]] = 1
-                                        if user not in motm:
+                    if user not in motm:
                         motm[user] = -2
                     else:
                         motm[user] += -2
@@ -1595,7 +1602,7 @@ class SimLeague(
             if player[1] not in fouls:
                 fouls[player[1]] = 1
             else:
-                fouls[player[1]] += 1            
+                fouls[player[1]] += 1
             redcards[player[1]] = 1
             reds[str(player[0])] += 1
             teamStats[2].append(player[1])
@@ -2152,7 +2159,7 @@ class SimLeague(
                 if a not in stats["assists"]:
                     stats["assists"][a] = assists[a]
                 else:
-                    stats["assists"][a] += assists[a]         
+                    stats["assists"][a] += assists[a]
             for y in yellowcards:
                 if y not in stats["yellows"]:
                     stats["yellows"][y] = yellowcards[y]
@@ -2162,12 +2169,12 @@ class SimLeague(
                 if r not in stats["reds"]:
                     stats["reds"][r] = redcards[r]
                 else:
-                    stats["reds"][r] += redcards[r]              
+                    stats["reds"][r] += redcards[r]
             for s in shots:
                 if s not in stats["shots"]:
                     stats["shots"][s] = shots[s]
                 else:
-                    stats["shots"][s] += shots[s]  
+                    stats["shots"][s] += shots[s]
             for f in fouls:
                 if f not in stats["fouls"]:
                     stats["fouls"][f] = fouls[f]

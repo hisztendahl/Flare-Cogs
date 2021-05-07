@@ -350,7 +350,7 @@ class StatsMixin(MixinMeta):
             msg += "**Most Shots**: {} - {}\n".format(
                 await self.statsmention(ctx, shots),
                 stats["shots"][shots[0]] if len(shots) else "",
-            )            
+            )
             msg += "**Most Own Goals**: {} - {}\n".format(
                 await self.statsmention(ctx, owngoalscorer),
                 stats["owngoals"][owngoalscorer[0]] if len(owngoalscorer) else "",
@@ -362,7 +362,7 @@ class StatsMixin(MixinMeta):
             msg += "**Most Fouls**: {} - {}\n".format(
                 await self.statsmention(ctx, fouls),
                 stats["fouls"][fouls[0]] if len(fouls) else "",
-            )            
+            )
             msg += "**Most Yellow Cards**: {} - {}\n".format(
                 await self.statsmention(ctx, yellows),
                 stats["yellows"][yellows[0]] if len(yellows) else "",

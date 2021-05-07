@@ -193,7 +193,7 @@ class SimsetMixin(MixinMeta):
         async with self.config.guild(ctx.guild).stats() as stats:
             stats[param] = {}
         async with self.config.guild(ctx.guild).cupstats() as cupstats:
-            cupstats[param] = {}            
+            cupstats[param] = {}
         await ctx.tick()
 
     @probability.command()

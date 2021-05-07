@@ -213,11 +213,14 @@ class PalmaresMixin(MixinMeta):
     async def transfer_palmares(self, ctx, user1: discord.Member, user2: discord.Member):
         """Transfer palmares from a member to another."""
         async with self.config.guild(ctx.guild).palmares() as palmares:
-            await ctx.send(palmares)
             u1id = str(user1.id)
             u2id = str(user2.id)
             if u1id in palmares:
-                if str(u2id) in palmares:
+                if u2id in palmares:
+                    for season in palmares[u1id]:
+                        palmares[u2id][season] = palmares[u1id][season]
+                else:
+                    palmares[u2id] = {}
                     for season in palmares[u1id]:
                         palmares[u2id][season] = palmares[u1id][season]
             await ctx.tick()

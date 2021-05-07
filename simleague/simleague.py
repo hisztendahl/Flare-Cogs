@@ -1417,9 +1417,9 @@ class SimLeague(
                 fouls[player[2]] += 1
             teamStats[10] += 1
             if teamStats[0] == team1:
-                team1Stats[11] += 1
-            else:
                 team2Stats[11] += 1
+            else:
+                team1Stats[11] += 1
             pB = await self.penaltyBlock(ctx.guild, probability)
             if pB is True:
                 await handlePenaltyBlock(self, ctx, player)

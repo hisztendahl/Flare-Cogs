@@ -210,11 +210,9 @@ class PalmaresMixin(MixinMeta):
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command(name="transferpalmares")
-    async def transfer_palmares(self, ctx, user1: discord.Member, user2: discord.Member):
+    async def transfer_palmares(self, ctx, u1id: str, u2id: str):
         """Transfer palmares from a member to another."""
         async with self.config.guild(ctx.guild).palmares() as palmares:
-            u1id = str(user1.id)
-            u2id = str(user2.id)
             if u1id in palmares:
                 if u2id in palmares:
                     for season in palmares[u1id]:

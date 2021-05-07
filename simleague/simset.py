@@ -187,6 +187,15 @@ class SimsetMixin(MixinMeta):
                         await ctx.send(f"Stat '{param}' already exists (cup).")
         await ctx.tick()
 
+    @simset.command()
+    async def addplayerstat(self, ctx, param=None):
+        """Add player stat keys."""
+        async with self.config.guild(ctx.guild).stats() as stats:
+            stats[param] = {}
+        async with self.config.guild(ctx.guild).cupstats() as cupstats:
+            cupstats[param] = {}            
+        await ctx.tick()
+
     @probability.command()
     async def red(self, ctx, amount: int = 398):
         """Red Card probability. Default = 398"""

@@ -296,6 +296,8 @@ class StatsMixin(MixinMeta):
                 stats["yellows"].get(userid),
                 stats["reds"].get(userid),
                 stats["motm"].get(userid),
+                stats["shots"].get(userid),
+                stats["fouls"].get(userid),
                 pens.get("missed") if pens else None,
                 pens.get("scored") if pens else None,
             ]
@@ -307,6 +309,8 @@ class StatsMixin(MixinMeta):
                 "yellows",
                 "reds",
                 "motms",
+                "shots",
+                "fouls",
                 "penalties missed",
                 "penalties scored",
             ]
@@ -329,6 +333,8 @@ class StatsMixin(MixinMeta):
             yellows = sorted(stats["yellows"], key=stats["yellows"].get, reverse=True)
             reds = sorted(stats["reds"], key=stats["reds"].get, reverse=True)
             motms = sorted(stats["motm"], key=stats["motm"].get, reverse=True)
+            shots = sorted(stats["shots"], key=stats["shots"].get, reverse=True)
+            fouls = sorted(stats["fouls"], key=stats["fouls"].get, reverse=True)
             cleansheets = sorted(stats["cleansheets"], key=stats["cleansheets"].get, reverse=True)
             penscored = sorted(
                 stats["penalties"], key=lambda x: stats["penalties"][x]["scored"], reverse=True
@@ -341,6 +347,10 @@ class StatsMixin(MixinMeta):
                 await self.statsmention(ctx, goalscorer),
                 stats["goals"][goalscorer[0]] if len(goalscorer) else "",
             )
+            msg += "**Most Shots**: {} - {}\n".format(
+                await self.statsmention(ctx, shots),
+                stats["shots"][shots[0]] if len(shots) else "",
+            )            
             msg += "**Most Own Goals**: {} - {}\n".format(
                 await self.statsmention(ctx, owngoalscorer),
                 stats["owngoals"][owngoalscorer[0]] if len(owngoalscorer) else "",
@@ -349,6 +359,10 @@ class StatsMixin(MixinMeta):
                 await self.statsmention(ctx, assists),
                 stats["assists"][assists[0]] if len(assists) else "",
             )
+            msg += "**Most Fouls**: {} - {}\n".format(
+                await self.statsmention(ctx, fouls),
+                stats["fouls"][fouls[0]] if len(fouls) else "",
+            )            
             msg += "**Most Yellow Cards**: {} - {}\n".format(
                 await self.statsmention(ctx, yellows),
                 stats["yellows"][yellows[0]] if len(yellows) else "",
@@ -539,7 +553,7 @@ class StatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @leaguestats.command(alies=["motms"])
+    @leaguestats.command(alias=["motms"])
     async def motm(self, ctx, page: int = 1):
         """Players with the most MOTMs."""
         stats = await self.config.guild(ctx.guild).stats()
@@ -556,6 +570,50 @@ class StatsMixin(MixinMeta):
                 return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
             embed = discord.Embed(
                 title="Most MOTMs", description="\n".join(a[p1:p2]), colour=0xFF0000
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("No stats available.")
+
+    @leaguestats.command(name="fouls", alias=["fouls"])
+    async def ls_fouls(self, ctx, page: int = 1):
+        """Players with the most fouls."""
+        stats = await self.config.guild(ctx.guild).stats()
+        stats = stats["fouls"]
+        if stats:
+            a = []
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
+                user_team = await self.get_user_with_team(ctx, k)
+                a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
+            embed = discord.Embed(
+                title="Most Fouls", description="\n".join(a[p1:p2]), colour=0xFF0000
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send("No stats available.")
+
+    @leaguestats.command(name="shots", alias=["shots"])
+    async def ls_shots(self, ctx, page: int = 1):
+        """Players with the most shots."""
+        stats = await self.config.guild(ctx.guild).stats()
+        stats = stats["shots"]
+        if stats:
+            a = []
+            for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)):
+                user_team = await self.get_user_with_team(ctx, k)
+                a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
+            if p1 > len(a):
+                maxpage = ceil(len(a) / 10)
+                return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
+            embed = discord.Embed(
+                title="Most Shots", description="\n".join(a[p1:p2]), colour=0xFF0000
             )
             await ctx.send(embed=embed)
         else:

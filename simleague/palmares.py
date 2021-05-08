@@ -280,6 +280,56 @@ class PalmaresMixin(MixinMeta):
                         await ctx.send("Season {} not found for {}".format(season1, user.name))
             await ctx.tick()
 
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def updateteampalmaresseason(self, ctx, team, season1: str, season2: str, stat: str):
+        """Update palmares season for a team's members."""
+        teams = await self.config.guild(ctx.guild).teams()
+        if team not in teams:
+            return await ctx.send("Team does not exist.")
+        validstats = [
+            "goals",
+            "assists",
+            "ga",
+            "reds",
+            "yellows",
+            "motms",
+            "finish",
+            "cupfinish",
+            "communityshield",
+        ]
+        if stat not in validstats:
+            return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
+        async with self.config.guild(ctx.guild).palmares() as palmares:
+            for uid in teams[team]["members"]:
+                player = await self.bot.fetch_user(uid)
+                if uid in palmares:
+                    if season1 in palmares[uid]:
+                        if stat not in palmares[uid][season1]:
+                            await ctx.send(
+                                "{} not found in season {} for {}.".format(
+                                    stat, season1, player.name
+                                )
+                            )
+                            pass
+                        else:
+                            confirm = await self.checkreacts(
+                                ctx,
+                                "Palmares stat {} will be moved from season {} to season {} for {}. Are you sure ?".format(
+                                    stat, season1, season2, player.name
+                                ),
+                            )
+                            if confirm:
+                                if season2 not in palmares[uid]:
+                                    palmares[uid][season2] = {}
+                                    palmares[uid][season2][stat] = palmares[uid][season1][stat]
+                                    del palmares[uid][season1][stat]
+                                else:
+                                    palmares[uid][season2][stat] = palmares[uid][season1][stat]
+                    else:
+                        await ctx.send("Season {} not found for {}".format(season1, player.name))
+        await ctx.tick()
+
     async def checkreacts(self, ctx, message):
         msg = await ctx.send(message)
         confirm_emoji = "✅"

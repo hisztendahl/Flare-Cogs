@@ -2,6 +2,7 @@ import discord
 from redbot.core import checks, commands
 from .abc import MixinMeta
 from .utils import mergeDict
+import asyncio
 
 
 class PalmaresMixin(MixinMeta):
@@ -223,6 +224,80 @@ class PalmaresMixin(MixinMeta):
                         palmares[u2id][season] = palmares[u1id][season]
             await ctx.tick()
 
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def updatepalmaresseason(
+        self, ctx, season1: str, season2: str, user: discord.Member = None
+    ):
+        """Update palmares season for all members."""
+        async with self.config.guild(ctx.guild).palmares() as palmares:
+            if user is None:
+                for uid in palmares:
+                    player = await self.bot.fetch_user(uid)
+                    if season1 in palmares[uid]:
+                        await self.checkreacts(
+                            ctx,
+                            "This will replace palmares for season {} for {}".format(
+                                season1, player.name
+                            ),
+                        )
+                        if season2 in palmares[uid]:
+                            confirm = await self.checkreacts(
+                                ctx,
+                                "{} already has a palmares for {}. Are you sure you want to override it ?".format(
+                                    player.name, season2
+                                ),
+                            )
+                            if confirm:
+                                palmares[uid][season2] = palmares[uid][season1]
+                                del palmares[uid][season1]
+                            else:
+                                pass
+                        else:
+                            palmares[uid][season2] = {}
+                            palmares[uid][season2] = palmares[uid][season1]
+                            del palmares[uid][season1]
+                    else:
+                        await ctx.send("Season {} not found for {}".format(season1, player.name))
+            else:
+                uid = str(user.id)
+                if uid in palmares:
+                    if season1 in palmares[uid]:
+                        confirm = await self.checkreacts(
+                            ctx,
+                            "Palmares season {} will be changed to season {} for {}. Are you sure ?".format(
+                                season1, season2, user.name
+                            ),
+                        )
+                        if confirm:
+                            palmares[uid][season2] = {}
+                            palmares[uid][season2] = palmares[uid][season1]
+                            del palmares[uid][season1]
+                            return await ctx.send("Done.")
+                        else:
+                            return await ctx.send("Season override cancelled.")
+                    else:
+                        await ctx.send("Season {} not found for {}".format(season1, user.name))
+            await ctx.tick()
+
+    async def checkreacts(self, ctx, message):
+        msg = await ctx.send(message)
+        confirm_emoji = "✅"
+        cancel_emoji = "❎"
+        await msg.add_reaction(confirm_emoji)
+        await msg.add_reaction(cancel_emoji)
+        try:
+            reaction, user = await asyncio.wait_for(
+                ctx.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id), 30
+            )
+        except:
+            await msg.clear_reactions()
+            return False
+        if reaction.emoji == confirm_emoji:
+            return True
+        elif reaction.emoji == cancel_emoji:
+            return False
+
     @commands.command(name="palmares")
     async def viewpalmares(self, ctx, user: discord.Member):
         """View palmares for a member."""
@@ -236,7 +311,7 @@ class PalmaresMixin(MixinMeta):
             description="------------- List of individual player honours -------------",
         )
         a = []
-        for season in palmares:
+        for season in sorted(palmares):
             seasontitle = "Season {}".format(season) if int(season) != 0 else "Preseason"
             a.append(f"\n**{seasontitle}**")
             finish = palmares[season]["finish"] if "finish" in palmares[season].keys() else None

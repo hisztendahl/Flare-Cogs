@@ -2,7 +2,7 @@ import discord
 from redbot.core import checks, commands
 
 from .abc import MixinMeta
-from .utils import mergeDict
+from .utils import mergeDict, getformbonus, getformbonuspercent
 from math import ceil
 
 
@@ -65,6 +65,45 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No note for {}.".format(user.display_name))
         else:
             return await ctx.send("Notes: {}".format(" / ".join(str(x) for x in notes[userid])))
+
+    @commands.command(name="odds")
+    async def vs_odds(self, ctx, team1: str, team2: str):
+        teams = await self.config.guild(ctx.guild).teams()
+        if team1 not in teams:
+            return await ctx.send("{} is not a valid team.".format(team1))
+        if team2 not in teams:
+            return await ctx.send("{} is not a valid team.".format(team2))
+        lvl1 = teams[team1]["cachedlevel"]
+        lvl2 = teams[team2]["cachedlevel"]
+        bonuslvl1 = teams[team1]["bonus"]
+        bonuslvl2 = teams[team2]["bonus"]
+        formlvl1 = getformbonus(teams[team1]["form"])
+        formt1 = getformbonuspercent(teams[team1]["form"])
+        formlvl2 = getformbonus(teams[team2]["form"])
+        formt2 = getformbonuspercent(teams[team2]["form"])
+        lvl1total = lvl1 * (1 + (bonuslvl1 / 100)) * formlvl1
+        lvl2total = lvl2 * (1 + (bonuslvl2 / 100)) * formlvl2
+        t1odds = round(lvl1total / (lvl1total + lvl2total) * 100, 2)
+        t2odds = round(lvl2total / (lvl1total + lvl2total) * 100, 2)
+        async with ctx.typing():
+            embed = discord.Embed(
+                title="Odds comparison",
+                description="---------- {} vs {} ----------".format(team1, team2),
+                colour=ctx.author.colour,
+            )
+            embed.add_field(
+                name="{}".format(team1),
+                value="Level: {}\nBonus: {}\nForm Bonus: {}\nOdds: {}\n".format(
+                    lvl1, "+{}%".format(bonuslvl1), "{}%".format(formt1), "{}%".format(t1odds)
+                ),
+            )
+            embed.add_field(
+                name="{}".format(team2),
+                value="Level: {}\nBonus: {}\nForm Bonus: {}\nOdds: {}\n".format(
+                    lvl2, "+{}%".format(bonuslvl2), "{}%".format(formt2), "{}%".format(t2odds)
+                ),
+            )
+        await ctx.send(embed=embed)
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()

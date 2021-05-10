@@ -8,3 +8,56 @@ def mergeDict(self, dict1, dict2):
             except TypeError:
                 self.log.info(f"Error merging dicts. {value} + {dict1[key]}")
     return dict3
+
+
+def getformbonus(form):
+    streak = form["streak"]
+    result = form["result"]
+    if result == "D" or result is None:
+        return 1
+    multiplier = 1
+    if streak == 1:
+        multiplier = 2.5
+    elif streak == 2:
+        multiplier = 5
+    elif streak == 3:
+        multiplier = 7.5
+    elif streak == 4:
+        multiplier = 12.5
+    elif streak == 5:
+        multiplier = 20
+    elif streak == 6:
+        multiplier = 32.5
+    else:
+        multiplier = 50
+    if result == "W":
+        multiplier = -multiplier
+    multiplier = (100 + multiplier) / 100
+    return multiplier
+
+
+def getformbonuspercent(form):
+    streak = form["streak"]
+    result = form["result"]
+    if result == "D" or result is None:
+        return 0
+    multiplier = 1
+    if streak == 1:
+        multiplier = 2.5
+    elif streak == 2:
+        multiplier = 5
+    elif streak == 3:
+        multiplier = 7.5
+    elif streak == 4:
+        multiplier = 12.5
+    elif streak == 5:
+        multiplier = 20
+    elif streak == 6:
+        multiplier = 32.5
+    else:
+        multiplier = 50
+    if result == "W":
+        multiplier = -multiplier
+    if result == "L":
+        multiplier = "+{}".format(multiplier)
+    return multiplier

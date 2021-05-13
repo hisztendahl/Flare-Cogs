@@ -119,15 +119,9 @@ class SimLeague(
             "transferred": [],
             "transferwindow": False,
             "extensionwindow": False,
-            "tots": {
-                "players": {},
-                "kit": None,
-                "logo": None,
-            },
+            "tots": {"players": {}, "kit": None, "logo": None,},
             "theme": {
-                "general": {
-                    "bg_color": (255, 255, 255, 0),
-                },
+                "general": {"bg_color": (255, 255, 255, 0),},
                 "matchinfo": {
                     "vs_title": (255, 255, 255, 255),
                     "stadium": (255, 255, 255, 255),
@@ -135,9 +129,7 @@ class SimLeague(
                     "home_away_text": (255, 255, 255, 255),
                     "odds": (255, 255, 255, 255),
                 },
-                "walkout": {
-                    "name_text": (255, 255, 255, 255),
-                },
+                "walkout": {"name_text": (255, 255, 255, 255),},
                 "chances": {
                     "header_text_bg": (230, 230, 230, 230),
                     "header_text_col": (110, 110, 110, 255),
@@ -280,9 +272,7 @@ class SimLeague(
         async with ctx.typing():
             embeds = []
             embed = discord.Embed(
-                title="{}".format(
-                    "TOTS",
-                ),
+                title="{}".format("TOTS",),
                 description="------------ Team of the Season ------------",
                 colour=ctx.author.colour,
             )
@@ -293,9 +283,7 @@ class SimLeague(
                     user = await self.bot.fetch_user(player)
                 players[player] = user.display_name
             embed.add_field(
-                name="Members:",
-                value="\n".join(list(players.values())),
-                inline=True,
+                name="Members:", value="\n".join(list(players.values())), inline=True,
             )
             if tots["logo"] is not None:
                 embed.set_thumbnail(url=tots["logo"])
@@ -389,11 +377,7 @@ class SimLeague(
         stats["conceded"] = t
         t = []
         fairplay = sorted(
-            standings,
-            key=lambda x: (
-                standings[x]["reds"],
-                standings[x]["yellows"],
-            ),
+            standings, key=lambda x: (standings[x]["reds"], standings[x]["yellows"],),
         )
         for x in fairplay[:3]:
             t.append([x, standings[x]["yellows"], standings[x]["reds"]])
@@ -615,8 +599,7 @@ class SimLeague(
             return await ctx.send("No teams have been registered.")
         if mobilefriendly:
             embed = discord.Embed(
-                colour=ctx.author.colour,
-                description="------------ Team List ------------",
+                colour=ctx.author.colour, description="------------ Team List ------------",
             )
             msg = await ctx.send(
                 "This may take some time depending on the amount of teams currently registered."
@@ -712,9 +695,7 @@ class SimLeague(
             if teams[team]["role"] is not None:
                 role = ctx.guild.get_role(teams[team]["role"])
                 embed.add_field(
-                    name="Role:",
-                    value=role.mention if role is not None else None,
-                    inline=True,
+                    name="Role:", value=role.mention if role is not None else None, inline=True,
                 )
             if teams[team]["stadium"] is not None:
                 embed.add_field(name="Stadium:", value=teams[team]["stadium"], inline=True)
@@ -751,8 +732,7 @@ class SimLeague(
         if not cupgames:
             return await ctx.send("No cup fixtures have been made.")
         embed = discord.Embed(
-            colour=ctx.author.colour,
-            description="------------ Cup Fixtures ------------",
+            colour=ctx.author.colour, description="------------ Cup Fixtures ------------",
         )
         for rd in cupgames:
             fixtures = cupgames[rd]
@@ -886,10 +866,7 @@ class SimLeague(
                         gd,
                     ]
                 )
-            tab = tabulate(
-                t,
-                headers=["Team", "Pl.", "W", "D", "L", "GF", "GA", "Pts", "Diff"],
-            )
+            tab = tabulate(t, headers=["Team", "Pl.", "W", "D", "L", "GF", "GA", "Pts", "Diff"],)
             await ctx.send(box(tab))
 
     @standings.command(name="goals")
@@ -899,11 +876,7 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["gf"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["gf"]), reverse=True,):
             t.append(f"{x} - {standings[x]['gf']}")
         embed = discord.Embed(title="Goals", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
@@ -915,11 +888,7 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["chances"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["chances"]), reverse=True,):
             t.append(f"{x} - {standings[x]['chances']}")
         embed = discord.Embed(title="Shots", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
@@ -931,11 +900,7 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["fouls"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["fouls"]), reverse=True,):
             t.append(f"{x} - {standings[x]['fouls']}")
         embed = discord.Embed(title="Fouls", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
@@ -947,11 +912,7 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["yellows"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["yellows"]), reverse=True,):
             t.append(f"{x} - {standings[x]['yellows']}")
         embed = discord.Embed(title="Yellow Cards", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
@@ -963,11 +924,7 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["reds"]),
-            reverse=True,
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["reds"]), reverse=True,):
             t.append(f"{x} - {standings[x]['reds']}")
         embed = discord.Embed(title="Red Cards", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)
@@ -979,10 +936,7 @@ class SimLeague(
         if standings is None:
             return await ctx.send("No stat available.")
         t = []
-        for x in sorted(
-            standings,
-            key=lambda x: (standings[x]["ga"]),
-        ):
+        for x in sorted(standings, key=lambda x: (standings[x]["ga"]),):
             t.append(f"{x} - {standings[x]['ga']}")
         embed = discord.Embed(title="Goals Conceded", description="\n".join(t), colour=0xFF0000)
         await ctx.send(embed=embed)

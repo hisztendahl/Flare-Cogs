@@ -25,6 +25,10 @@ from .functions import (
     RC_OFFENSES,
     CHANCE_TYPE,
     GOAL,
+    GOAL2,
+    FK_GOAL,
+    CORNER_GOAL,
+    PEN_GOAL,
     SAVED_CHANCE,
     MISSED_CHANCE,
     MISSED_DIST,
@@ -118,7 +122,7 @@ class SimHelper(MixinMeta):
             height = 120
         else:
             height = 100
-        if event == "goal":
+        if event in ["goal", "penscore", "cornerscore", "freekickscore"]:
             height = height + 30
         bg_color = list_to_tuple(theme["general"]["bg_color"])
         result = Image.new("RGBA", (width, height), bg_color)
@@ -142,8 +146,7 @@ class SimHelper(MixinMeta):
         fill = list_to_tuple(fill)
 
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
-            fill=fill,
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -311,7 +314,17 @@ class SimHelper(MixinMeta):
             gheight = random.choice(HEIGHT)
             gside = random.choice(SIDE)
             gdistance = random.choice(DISTANCE)
-            goal_comment = GOAL.format(gdistance, gheight, gside)
+            goal_comment_alt = GOAL.format(gdistance, gheight, gside)
+            goal_comment = random.choice(goal_comment_alt, GOAL2)
+
+        if event == "freekickscore":
+            goal_comment = random.choice(FK_GOAL)
+
+        if event == "cornerscore":
+            goal_comment = random.choice(CORNER_GOAL)
+
+        if event == "penscore":
+            goal_comment = random.choice(PEN_GOAL)
 
         if assister is None:
             draw.text(
@@ -534,8 +547,7 @@ class SimHelper(MixinMeta):
 
         fill = list_to_tuple(theme["chances"]["header_text_bg"])
         draw.rectangle(
-            [(left_pos - 10, vert_pos), (right_pos, vert_pos + title_height)],
-            fill=fill,
+            [(left_pos - 10, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -857,8 +869,7 @@ class SimHelper(MixinMeta):
 
         fill = list_to_tuple(theme["chances"]["header_text_bg"])
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
-            fill=fill,
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
         )  # title box
 
         # draw level circle
@@ -928,7 +939,7 @@ class SimHelper(MixinMeta):
                 goal_text_color,
             )
             comment = (
-                "Checking {} for possible {}".format(
+                "Checking {} for possible {} in the build-up.".format(
                     vartype, random.choice(["offside", "foul", "handball"])
                 )
                 if vartype == "penalty"
@@ -1141,9 +1152,7 @@ class SimHelper(MixinMeta):
         radius = 20
 
         draw_server_border = Image.new(
-            "RGBA",
-            (server_border_size * multiplier, server_border_size * multiplier),
-            "#d4a11e",
+            "RGBA", (server_border_size * multiplier, server_border_size * multiplier), "#d4a11e",
         )
         draw_server_border = self._add_corners(draw_server_border, int(radius * multiplier / 2))
         draw_server_border = draw_server_border.resize((184, 184), Image.ANTIALIAS)
@@ -1383,8 +1392,7 @@ class SimHelper(MixinMeta):
 
         fill = list_to_tuple(theme["chances"]["header_text_bg"])
         draw.rectangle(
-            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)],
-            fill=fill,
+            [(left_pos - 20, vert_pos), (right_pos, vert_pos + title_height)], fill=fill,
         )  # title box
 
         content_top = vert_pos + title_height + gap
@@ -2037,16 +2045,10 @@ class SimHelper(MixinMeta):
         fill = list_to_tuple(theme["matchinfo"]["odds"])
         # odds
         draw.text(
-            (10, 120),
-            f"HOME ODDS:\n{str(homeodds)[:7]}",
-            font=general_info_fnt,
-            fill=fill,
+            (10, 120), f"HOME ODDS:\n{str(homeodds)[:7]}", font=general_info_fnt, fill=fill,
         )
         draw.text(
-            (400, 120),
-            f"AWAY ODDS:\n{str(awayodds)[:7]}",
-            font=general_info_fnt,
-            fill=fill,
+            (400, 120), f"AWAY ODDS:\n{str(awayodds)[:7]}", font=general_info_fnt, fill=fill,
         )
         draw.text(
             (self._center(0, width, f"Draw:", general_info_fnt), 120),
@@ -2326,12 +2328,7 @@ class SimHelper(MixinMeta):
         # goal text
 
         _write_unicode(
-            "{}".format(team1.upper()),
-            7,
-            vert_pos + 3,
-            name_fnt,
-            header_u_fnt,
-            text_color,
+            "{}".format(team1.upper()), 7, vert_pos + 3, name_fnt, header_u_fnt, text_color,
         )
         offset = len(team2) * 8
         _write_unicode(

@@ -28,7 +28,7 @@ FOULS = [
 
 
 YELLOW_CARDS = "{} ({}) with a {} on {}, {} was issued a {}."
-YC_FOULS = ["bad tackle", "missed side tackle", "flying elbow"]
+YC_FOULS = ["bad tackle", "missed sliding tackle", "flying elbow"]
 YELLOW_CARDS2 = "{} ({}) was shown a {} for {}"
 YC_OFFENSES = [
     "timewasting.",
@@ -36,6 +36,10 @@ YC_OFFENSES = [
     "diving.",
     "handball.",
     "dissent.",
+    "bad sportsmanship.",
+    "unsporting behavior.",
+    "delaying the restart of play",
+    "removing their shirt",
     random.choice(["Pushing", "Pulling"]) + " an opponent.",
 ]
 
@@ -46,6 +50,8 @@ RC_FOULS = [
     "stamping on",
     "punching",
     "spitting at",
+    "headbutting",
+    "slaping",
     "with a violent tackle on",
     "with a studs up challenge on",
 ]
@@ -59,6 +65,56 @@ RC_OFFENSES = [
 ]
 CHANCE_TYPE = ["saved", "missed", "blocked"]
 GOAL = "from {} in the {} {} of the goal."
+GOAL2 = random.choice(
+    [
+        "Top bins!",
+        "A great effort beats the keeper at the near post.",
+        "Fluffed his shot, but it somehow rolled in...",
+        "A quick shot had the keeper flat-footed",
+        "Easy tap-in in the 6-yard box",
+        "Hits the post on its way in!",
+        "Deflected by the keeper, but it wasn't enough...",
+    ]
+)
+FK_GOAL = random.choice(
+    [
+        "Top bins!",
+        "A great effort beats the keeper at the near post.",
+        "Hits the post on its way in!",
+        "Deflected by the keeper, but it wasn't enough...",
+        "Hit the wall and the deflection took it past the keeper...",
+        "Great effort in the bottom left corner",
+        "Great effort in the bottom right corner",
+        "Great effort in the top left corner",
+        "Great effort in the top right corner",
+    ]
+)
+CORNER_GOAL = random.choice(
+    [
+        "Powerful header in the top right corner!",
+        "Powerful header in the top left corner!",
+        "Powerful header in the bottom left corner!",
+        "Powerful header in the bottom right!",
+        "Easy tap-in after the keeper missed his high claim...",
+        "Strong header at the near post!",
+        "Strong header at the far post!",
+    ]
+)
+PEN_GOAL = random.choice(
+    [
+        "Cheeky panenka!",
+        "Keeper dove the other way",
+        "Straight down the middle!",
+        "Keeper picked the correct side but could'nt get a glove to it",
+        "Nice shot caught the keeper flat-footed",
+        "Hits the post on its way in!",
+        "The keeper got a hand to it, but it wasn't enough...",
+        "Great effort in the bottom left corner",
+        "Great effort in the bottom right corner",
+        "Great effort in the top left corner",
+        "Great effort in the top right corner",
+    ]
+)
 SAVED_CHANCE = "Attempt saved. {} ({}) from {} is saved in the {} {} of the goal."
 MISSED_CHANCE = "Attempt missed. {} ({}) from {} {}."
 MISSED_DIST = [

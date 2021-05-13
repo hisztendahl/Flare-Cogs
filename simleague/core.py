@@ -123,7 +123,7 @@ class SimHelper(MixinMeta):
         else:
             height = 100
         if event in ["goal", "penscore", "cornerscore", "freekickscore"]:
-            height = height + 30
+            height = height + 40
         bg_color = list_to_tuple(theme["general"]["bg_color"])
         result = Image.new("RGBA", (width, height), bg_color)
         process = Image.new("RGBA", (width, height), bg_color)
@@ -315,7 +315,7 @@ class SimHelper(MixinMeta):
             gside = random.choice(SIDE)
             gdistance = random.choice(DISTANCE)
             goal_comment_alt = GOAL.format(gdistance, gheight, gside)
-            goal_comment = random.choice(goal_comment_alt, GOAL2)
+            goal_comment = random.choice([goal_comment_alt, random.choice(GOAL2)])
 
         if event == "freekickscore":
             goal_comment = random.choice(FK_GOAL)
@@ -357,8 +357,8 @@ class SimHelper(MixinMeta):
                 )
             if goal_comment is not None:
                 draw.text(
-                    (20, 108),
-                    textwrap.fill(goal_comment, 65),
+                    (label_align - server_border_size - 8, 105),
+                    textwrap.fill(goal_comment, 43),
                     font=desc_fnt,
                     fill=label_text_color,
                 )
@@ -404,8 +404,8 @@ class SimHelper(MixinMeta):
                 )
             if goal_comment is not None:
                 draw.text(
-                    (20, 123),
-                    textwrap.fill(goal_comment, 65),
+                    (label_align - server_border_size - 8, 123),
+                    textwrap.fill(goal_comment, 43),
                     font=desc_fnt,
                     fill=label_text_color,
                 )

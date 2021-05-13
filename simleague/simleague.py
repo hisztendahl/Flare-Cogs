@@ -1393,8 +1393,8 @@ class SimLeague(
         async def handleYellowCard(self, ctx, min):
             teamStats = await TeamChance()
             playerYellow = await PlayerGenerator(1, teamStats[0], teamStats[1], teamStats[2])
-            teamStats[11] += 1
             if playerYellow is not None:
+                teamStats[11] += 1
                 teamStats[1].append(playerYellow[1])
                 user = self.bot.get_user(int(playerYellow[1]))
                 if user is None:
@@ -2555,8 +2555,8 @@ class SimLeague(
         async def handleYellowCard(self, ctx, min):
             teamStats = await TeamChance()
             playerYellow = await PlayerGenerator(1, teamStats[0], teamStats[1], teamStats[2])
-            teamStats[12] += 1
             if playerYellow is not None:
+                teamStats[12] += 1
                 teamStats[1].append(playerYellow[1])
                 user = self.bot.get_user(int(playerYellow[1]))
                 if user is None:
@@ -3998,8 +3998,8 @@ class SimLeague(
         async def handleYellowCard(self, ctx, min):
             teamStats = await TeamChance()
             playerYellow = await PlayerGenerator(1, teamStats[0], teamStats[1], teamStats[2])
-            teamStats[12] += 1
             if playerYellow is not None:
+                teamStats[12] += 1
                 teamStats[1].append(playerYellow[1])
                 user = self.bot.get_user(int(playerYellow[1]))
                 if user is None:

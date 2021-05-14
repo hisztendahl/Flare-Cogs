@@ -258,7 +258,7 @@ class SimLeague(
                 cupowngoals = cupstats["owngoals"].get(userid)
                 cupowngoals = int(cupowngoals) * 5 if cupowngoals else 0
                 cupshots = cupstats["shots"].get(userid)
-                cupshots = int(cupshots) * 1 if cupshots else 0                
+                cupshots = int(cupshots) * 1 if cupshots else 0
                 cupassists = cupstats["assists"].get(userid)
                 cupassists = int(cupassists) * 1.5 if cupassists else 0
                 cupfouls = cupstats["fouls"].get(userid)
@@ -269,7 +269,17 @@ class SimLeague(
                 cupreds = int(cupreds) * 1.5 if cupreds else 0
                 cupmotms = cupstats["motm"].get(userid)
                 cupmotms = int(cupmotms) * 2.5 if cupmotms else 0
-                rank = rank + cupgoals + cupshots + cupassists + cupmotms - cupyellows - cupreds - cupowngoals - cupfouls
+                rank = (
+                    rank
+                    + cupgoals
+                    + cupshots
+                    + cupassists
+                    + cupmotms
+                    - cupyellows
+                    - cupreds
+                    - cupowngoals
+                    - cupfouls
+                )
 
             ranking[userid] = rank
             ranking = {

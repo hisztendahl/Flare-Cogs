@@ -108,11 +108,12 @@ class StatsMixin(MixinMeta):
                 t2win += p
             elif x == success:
                 draw += p
+                t1win += p
             else:
                 t1win += p
         draw = draw / 2
-        t1win += draw / 2
-        t2win += draw / 2
+        t1win -= draw * t1odds
+        t2win -= draw * t2odds
         t1odds = round(t1win * 100, 2)
         t2odds = round(t2win * 100, 2)
         drawodds = round(draw * 100, 2)

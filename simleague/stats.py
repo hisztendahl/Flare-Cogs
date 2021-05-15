@@ -1,5 +1,6 @@
 import discord
 from redbot.core import checks, commands
+from scipy.stats import binom
 
 from .abc import MixinMeta
 from .utils import mergeDict, getformbonus, getformbonuspercent
@@ -69,6 +70,17 @@ class StatsMixin(MixinMeta):
     @commands.command(name="odds")
     async def vs_odds(self, ctx, team1: str, team2: str):
         teams = await self.config.guild(ctx.guild).teams()
+        standings = await self.config.guild(ctx.guild).standings()
+        goals = 0
+        games = 0
+        for t in standings:
+            goals += standings[t]["gf"]
+            games += standings[t]["played"]
+        games = round(games / 2)
+        try:
+            gpg = goals / games
+        except ZeroDivisionError:
+            gpg = 0
         if team1 not in teams:
             return await ctx.send("{} is not a valid team.".format(team1))
         if team2 not in teams:
@@ -83,23 +95,48 @@ class StatsMixin(MixinMeta):
         formt2 = getformbonuspercent(teams[team2]["form"])
         lvl1total = lvl1 * (1 + (bonuslvl1 / 100)) * formlvl1
         lvl2total = lvl2 * (1 + (bonuslvl2 / 100)) * formlvl2
-        t1odds = round(lvl1total / (lvl1total + lvl2total) * 100, 2)
-        t2odds = round(lvl2total / (lvl1total + lvl2total) * 100, 2)
+        t1odds = lvl1total / (lvl1total + lvl2total)
+        t2odds = lvl2total / (lvl1total + lvl2total)
+        n = round(gpg)
+        success = ceil(n / 2)
+        t1win = 0
+        t2win = 0
+        draw = 0
+        for x in range(n + 1):
+            p = binom.pmf(x, n, t1odds)
+            if x < success:
+                t2win += p
+            elif x == success:
+                draw += p
+            else:
+                t1win += p
+        draw = draw / 2
+        t1win += draw / 2
+        t2win += draw / 2
+        t1odds = round(t1win * 100, 2)
+        t2odds = round(t2win * 100, 2)
+        drawodds = round(draw * 100, 2)
         async with ctx.typing():
             embed = discord.Embed(
                 title="Odds comparison",
-                description="---------- {} vs {} ----------".format(team1, team2),
+                description="---------- {} vs {} ----------\nOdds calculated with current season goal distribution,\naveraging {} goals per game over {} games.\n\n".format(
+                    team1, team2, round(gpg, 2), games
+                ),
                 colour=ctx.author.colour,
             )
             embed.add_field(
                 name="{}".format(team1),
-                value="Level: {}\nBonus: {}\nForm Bonus: {}\nOdds: {}\n".format(
-                    lvl1, "+{}%".format(bonuslvl1), "{}%".format(formt1), "{}%".format(t1odds)
+                value="Level: {}\nBonus: {}\nForm Bonus: {}\n\nOdds: {}\nDraw: {}".format(
+                    lvl1,
+                    "+{}%".format(bonuslvl1),
+                    "{}%".format(formt1),
+                    "{}%".format(t1odds),
+                    "{}%".format(drawodds),
                 ),
             )
             embed.add_field(
                 name="{}".format(team2),
-                value="Level: {}\nBonus: {}\nForm Bonus: {}\nOdds: {}\n".format(
+                value="Level: {}\nBonus: {}\nForm Bonus: {}\n\nOdds: {}\n".format(
                     lvl2, "+{}%".format(bonuslvl2), "{}%".format(formt2), "{}%".format(t2odds)
                 ),
             )

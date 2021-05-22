@@ -20,11 +20,31 @@ class StatsMixin(MixinMeta):
         async with self.config.guild(ctx.guild).stats() as stats:
             stats["goals"].pop(userid, None)
             stats["owngoals"].pop(userid, None)
+            stats["shots"].pop(userid, None)
+            stats["fouls"].pop(userid, None)
             stats["assists"].pop(userid, None)
             stats["yellows"].pop(userid, None)
             stats["reds"].pop(userid, None)
             stats["motm"].pop(userid, None)
             stats["penalties"].pop(userid, None)
+        await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def transferstats(self, ctx, user1: discord.Member, user2: discord.Member):
+        """Transfer statistics from a player to another."""
+        user1id = str(user1.id)
+        user2id = str(user2.id)
+        async with self.config.guild(ctx.guild).stats() as stats:
+            for stat in stats:
+                if user1id in stats[stat]:
+                    stats[stat][user2id] = stats[stat][user1id]
+                    stats[stat].pop(user1id, None)
+        async with self.config.guild(ctx.guild).cupstats() as cupstats:
+            for stat in cupstats:
+                if user1id in cupstats[stat]:
+                    cupstats[stat][user2id] = cupstats[stat][user1id]
+                    cupstats[stat].pop(user1id, None)                    
         await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)
@@ -177,6 +197,8 @@ class StatsMixin(MixinMeta):
         validstats = [
             "goals",
             "owngoals",
+            "shots",
+            "fouls",
             "assists",
             "ga",
             "yellows",

@@ -1,5 +1,6 @@
 import asyncio
 
+
 def mergeDict(self, dict1, dict2):
     """Merge dictionaries and keep values of common keys in list"""
     dict3 = {**dict1, **dict2}
@@ -63,6 +64,7 @@ def getformbonuspercent(form):
     if result == "L":
         multiplier = "+{}".format(multiplier)
     return multiplier
+
 
 async def checkReacts(self, ctx, message):
     msg = await ctx.send(message)

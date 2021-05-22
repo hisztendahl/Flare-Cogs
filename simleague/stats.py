@@ -44,7 +44,7 @@ class StatsMixin(MixinMeta):
             for stat in cupstats:
                 if user1id in cupstats[stat]:
                     cupstats[stat][user2id] = cupstats[stat][user1id]
-                    cupstats[stat].pop(user1id, None)                    
+                    cupstats[stat].pop(user1id, None)
         await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)

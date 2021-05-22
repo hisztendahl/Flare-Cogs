@@ -9,6 +9,7 @@ import validators
 from .abc import MixinMeta
 from .utils import mergeDict
 
+
 class TotsMixin(MixinMeta):
     """TOTS Settings"""
 
@@ -378,4 +379,3 @@ class TotsMixin(MixinMeta):
         statistics = [note, motms, goals, assists, yellows, reds]
         im = await self.potswalkout(ctx, tots["pots"], statistics)
         await ctx.send(file=im)
-

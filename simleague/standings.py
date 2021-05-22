@@ -4,6 +4,7 @@ from .abc import MixinMeta
 from redbot.core.utils.chat_formatting import box
 from tabulate import tabulate
 
+
 class StandingsMixin(MixinMeta):
     """Standings Settings"""
 
@@ -85,27 +86,27 @@ class StandingsMixin(MixinMeta):
     @standings.command(name="shots")
     async def _shots(self, ctx):
         """Teams with the most shots."""
-        return await  self._stat_standings(ctx, "chances", "Shots")
+        return await self._stat_standings(ctx, "chances", "Shots")
 
     @standings.command(name="fouls")
     async def _fouls(self, ctx):
         """Teams with the most fouls."""
-        return await  self._stat_standings(ctx, "fouls", "Fouls")
+        return await self._stat_standings(ctx, "fouls", "Fouls")
 
     @standings.command(name="yellows")
     async def _yellows(self, ctx):
         """Teams with the most yellows."""
-        return await  self._stat_standings(ctx, "yellows", "Yellow Cards")
+        return await self._stat_standings(ctx, "yellows", "Yellow Cards")
 
     @standings.command(name="reds")
     async def _reds(self, ctx):
         """Teams with the most reds."""
-        return await  self._stat_standings(ctx, "reds", "Red Cards")
+        return await self._stat_standings(ctx, "reds", "Red Cards")
 
     @standings.command(name="defence")
     async def _defence(self, ctx):
         """Teams with the least goals conceded."""
-        return await  self._stat_standings(ctx, "ga", "Goals Conceded", False)
+        return await self._stat_standings(ctx, "ga", "Goals Conceded", False)
 
     @standings.command(name="conversion")
     async def _conversion(self, ctx):

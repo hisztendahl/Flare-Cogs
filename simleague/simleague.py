@@ -456,7 +456,7 @@ class SimLeague(
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
         embeds = []
-        pages = ceil(len(fixtures) / 25)
+        pages = ceil(len(fixtures) / 15)
         for page in range(pages):
             embed = discord.Embed(
                 colour=ctx.author.colour,
@@ -465,8 +465,8 @@ class SimLeague(
                 ),
             )
             page = page + 1
-            p1 = (page - 1) * 25 if page > 1 else page - 1
-            p2 = page * 25
+            p1 = (page - 1) * 15 if page > 1 else page - 1
+            p2 = page * 15
             for i, fixture in enumerate(fixtures[p1:p2]):
                 a = []
                 for game in fixture:

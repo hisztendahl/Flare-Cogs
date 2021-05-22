@@ -45,6 +45,10 @@ class StatsMixin(MixinMeta):
                 if user1id in cupstats[stat]:
                     cupstats[stat][user2id] = cupstats[stat][user1id]
                     cupstats[stat].pop(user1id, None)
+        async with self.config.guild(ctx.guild).notes() as notes:
+            if user1id in notes:
+                notes[user2id] = notes[user1id]
+                notes.pop(user1id, None)
         await ctx.tick()
 
     @checks.admin_or_permissions(manage_guild=True)
@@ -374,6 +378,51 @@ class StatsMixin(MixinMeta):
                 stat += f"{h.title()}: {statistic}\n"
             member = await self.statsmention(ctx, [m])
             embed.add_field(name=member, value=stat)
+        await ctx.send(embed=embed)
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.group(invoke_without_command=True)
+    async def leaguestatsid(self, ctx, userid):
+        """Sim League Statistics."""
+        stats = await self.config.guild(ctx.guild).stats()
+        notes = await self.config.guild(ctx.guild).notes()
+        userid = str(userid)
+        note = notes[userid] if userid in notes else None
+        if note is not None:
+            note = round(sum(float(n) for n in note) / len(note), 2)
+        pens = stats["penalties"].get(userid)
+        statistics = [
+            note,
+            stats["goals"].get(userid),
+            stats["owngoals"].get(userid),
+            stats["assists"].get(userid),
+            stats["yellows"].get(userid),
+            stats["reds"].get(userid),
+            stats["motm"].get(userid),
+            stats["shots"].get(userid),
+            stats["fouls"].get(userid),
+            pens.get("missed") if pens else None,
+            pens.get("scored") if pens else None,
+        ]
+        headers = [
+            "note",
+            "goals",
+            "owngoals",
+            "assists",
+            "yellows",
+            "reds",
+            "motms",
+            "shots",
+            "fouls",
+            "penalties missed",
+            "penalties scored",
+        ]
+        embed = discord.Embed(color=ctx.author.color, title="Statistics for {}".format(userid))
+        for i, stat in enumerate(statistics):
+            if stat is not None:
+                embed.add_field(name=headers[i].title(), value=stat)
+            else:
+                embed.add_field(name=headers[i].title(), value="0")
         await ctx.send(embed=embed)
 
     @commands.group(invoke_without_command=True)

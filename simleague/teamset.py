@@ -384,11 +384,11 @@ class TeamsetMixin(MixinMeta):
         await ctx.tick()
 
     @teamset.command(usage="<current name> <new name>")
-    async def name(self, ctx, team: str, *, newname: str):
+    async def name(self, ctx, team: str, newname: str):
         """Set a team's name. Try keep names to one word if possible."""
         async with self.config.guild(ctx.guild).teams() as teams:
             if team not in teams:
-                return await ctx.send("Not a valid team.")
+                return await ctx.send("{} is not a valid team.".format(team))
             teams[newname] = teams[team]
             if teams[team]["role"] is not None:
                 role = ctx.guild.get_role(teams[team]["role"])
@@ -404,14 +404,16 @@ class TeamsetMixin(MixinMeta):
         async with self.config.guild(ctx.guild).transfers() as transfers:
             if team in transfers:
                 transfers[newname] = transfers[team]
-            del transfers[team]
+                del transfers[team]
         async with self.config.guild(ctx.guild).fixtures() as fixtures:
             if len(fixtures):
                 for weekday in fixtures:
                     for fixture in weekday:
                         for i in range(len(fixture)):
-                            if fixture[i] == team:
-                                fixture[i] = newname
+                            if fixture["team1"] == team:
+                                fixture["team1"] = newname
+                            if fixture["team2"] == team:
+                                fixture["team2"] = newname
         await ctx.tick()
 
     @teamset.command()

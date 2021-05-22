@@ -779,9 +779,15 @@ class SimsetMixin(MixinMeta):
     @clear.command(name="all")
     async def clear_all(self, ctx):
         """Clear all teams, stats etc."""
+        confirm = await self.checkReacts(ctx, "This will clear everything. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")
         await self.config.guild(ctx.guild).clear()
+        await self.config.guild(ctx.guild).fixtures.set([])
         await self.config.guild(ctx.guild).standings.set({})
+        await self.config.guild(ctx.guild).cupstandings.set({})
         await self.config.guild(ctx.guild).stats.set({})
+        await self.config.guild(ctx.guild).cupstats.set({})
         await self.config.guild(ctx.guild).transfers.set({})
         await self.config.guild(ctx.guild).transferred.set([])
         await self.config.guild(ctx.guild).tots.set({"players": {}, "kit": None, "logo": None})
@@ -790,6 +796,9 @@ class SimsetMixin(MixinMeta):
     @clear.command(name="stats")
     async def clear_stats(self, ctx):
         """Clear standings and player stats."""
+        confirm = await self.checkReacts(ctx, "This will clear standings, teams stats, and player stats. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")
         await self.config.guild(ctx.guild).standings.set({})
         teams = await self.config.guild(ctx.guild).teams()
         async with self.config.guild(ctx.guild).standings() as standings:
@@ -814,12 +823,18 @@ class SimsetMixin(MixinMeta):
     @clear.command(name="notes")
     async def clear_notes(self, ctx):
         """Clear player notes."""
+        confirm = await self.checkReacts(ctx, "This will clear all player notes. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")        
         await self.config.guild(ctx.guild).notes.set({})
         await ctx.tick()
 
     @clear.command(name="cupstats")
     async def clear_cupstats(self, ctx):
         """Clear cup stats."""
+        confirm = await self.checkReacts(ctx, "This will clear cup standings, teams cup stats, and player cup stats. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")        
         await self.config.guild(ctx.guild).cupstandings.set({})
         teams = await self.config.guild(ctx.guild).teams()
         async with self.config.guild(ctx.guild).cupstandings() as cupstandings:
@@ -843,11 +858,17 @@ class SimsetMixin(MixinMeta):
 
     @clear.command(name="transfers")
     async def clear_transfers(self, ctx):
+        confirm = await self.checkReacts(ctx, "This will clear transfers for the current window. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")
         await self.config.guild(ctx.guild).transferred.set([])
         await ctx.tick()
 
     @clear.command(name="lock")
     async def clear_lock(self, ctx, team=None):
+        confirm = await self.checkReacts(ctx, "This will clear contract extensions for the current window. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")        
         teams = await self.config.guild(ctx.guild).teams()
         if team is not None and team not in teams:
             return await ctx.send("This team does not exist.")
@@ -861,21 +882,33 @@ class SimsetMixin(MixinMeta):
 
     @clear.command(name="fixtures")
     async def clear_fixtures(self, ctx):
+        confirm = await self.checkReacts(ctx, "This will clear all fixtures. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")
         await self.config.guild(ctx.guild).fixtures.set([])
         await ctx.tick()
 
     @clear.command(name="cup")
     async def clear_cup(self, ctx):
+        confirm = await self.checkReacts(ctx, "This will clear cup fixtures, and cup stats. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")
         await self.config.guild(ctx.guild).cupgames.set({})
         await self.config.guild(ctx.guild).cupstats.set({})
         await ctx.tick()
 
     @clear.command(name="palmares")
     async def clear_palmares(self, ctx):
+        confirm = await self.checkReacts(ctx, "This will clear all palmares. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")        
         await self.config.guild(ctx.guild).palmares.set({})
         await ctx.tick()
 
     @clear.command(name="tots")
     async def clear_tots(self, ctx):
+        confirm = await self.checkReacts(ctx, "This will clear TOTS data. Proceed ?")
+        if confirm == False:
+            return await ctx.send("Cancelled.")
         await self.config.guild(ctx.guild).tots.set({"players": {}, "kit": None, "logo": None})
         await ctx.tick()

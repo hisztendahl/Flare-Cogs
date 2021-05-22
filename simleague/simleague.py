@@ -497,7 +497,8 @@ class SimLeague(
             for i, fixture in enumerate(fixtures[p1:p2]):
                 a = []
                 for game in fixture:
-                    a.append(f"{game[0]} vs {game[1]}")
+                    if game[0] == team or game[1] == team:
+                        a.append(f"{game[0]} vs {game[1]}")
                 embed.add_field(name="Week {}".format(i + 1 + p1), value="\n".join(a))
             embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)

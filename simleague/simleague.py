@@ -450,26 +450,30 @@ class SimLeague(
         await ctx.send(embed=embed)
 
     @commands.command()
-    async def fixtures(self, ctx, page: int = 1):
+    async def fixtures(self, ctx):
         """Show all fixtures."""
         fixtures = await self.config.guild(ctx.guild).fixtures()
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
-        embed = discord.Embed(
-            colour=ctx.author.colour,
-            description="------------------------- Fixtures -------------------------",
-        )
-        p1 = (page - 1) * 25 if page > 1 else page - 1
-        p2 = page * 25
-        if p1 > len(fixtures):
-            maxpage = ceil(len(fixtures) / 25)
-            return await ctx.send("Page does not exist. Max page is {}.".format(maxpage))
-        for i, fixture in enumerate(fixtures[p1:p2]):
-            a = []
-            for game in fixture:
-                a.append(f"{game[0]} vs {game[1]}")
-            embed.add_field(name="Week {}".format(i + 1 + p1), value="\n".join(a))
-        await ctx.send(embed=embed)
+        embeds = []
+        pages = ceil(len(fixtures) / 25)
+        for page in range(pages):
+            embed = discord.Embed(
+                colour=ctx.author.colour,
+                description="------------------------- Fixtures _(page {}/{})_ -------------------------".format(
+                    page + 1, pages
+                ),
+            )
+            page = page + 1
+            p1 = (page - 1) * 25 if page > 1 else page - 1
+            p2 = page * 25
+            for i, fixture in enumerate(fixtures[p1:p2]):
+                a = []
+                for game in fixture:
+                    a.append(f"{game[0]} vs {game[1]}")
+                embed.add_field(name="Week {}".format(i + 1 + p1), value="\n".join(a))
+            embeds.append(embed)
+        await menu(ctx, embeds, DEFAULT_CONTROLS)
 
     @commands.command()
     async def teamfixtures(self, ctx, team: str):
@@ -478,7 +482,6 @@ class SimLeague(
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
 
-        fixtures = fixtures + fixtures + fixtures + fixtures + fixtures
         embeds = []
         pages = ceil(len(fixtures) / 15)
         for page in range(pages):

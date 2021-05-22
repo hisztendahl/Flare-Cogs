@@ -479,6 +479,9 @@ class SimLeague(
     async def teamfixtures(self, ctx, team: str):
         """Show all fixtures."""
         fixtures = await self.config.guild(ctx.guild).fixtures()
+        teams = await self.config.guild(ctx.guild).teams()
+        if team not in teams:
+            return await ctx.send("Team does not exist, ensure that it is correctly capitalized.")
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
 

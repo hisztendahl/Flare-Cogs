@@ -1,3 +1,5 @@
+import asyncio
+
 def mergeDict(self, dict1, dict2):
     """Merge dictionaries and keep values of common keys in list"""
     dict3 = {**dict1, **dict2}
@@ -61,3 +63,21 @@ def getformbonuspercent(form):
     if result == "L":
         multiplier = "+{}".format(multiplier)
     return multiplier
+
+async def checkReacts(self, ctx, message):
+    msg = await ctx.send(message)
+    confirm_emoji = "✅"
+    cancel_emoji = "❎"
+    await msg.add_reaction(confirm_emoji)
+    await msg.add_reaction(cancel_emoji)
+    try:
+        reaction, user = await asyncio.wait_for(
+            ctx.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id), 30
+        )
+    except:
+        await msg.clear_reactions()
+        return False
+    if reaction.emoji == confirm_emoji:
+        return True
+    elif reaction.emoji == cancel_emoji:
+        return False

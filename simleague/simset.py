@@ -3,17 +3,9 @@ from redbot.core import checks, commands, bank
 from redbot.core.utils.chat_formatting import box
 
 from .abc import MixinMeta
-from .scheduler import Schedule
 import math
 import random
 import asyncio
-
-from datetime import datetime, timedelta
-
-
-class Name:
-    title: str
-    parsed: str
 
 
 class SimsetMixin(MixinMeta):
@@ -52,73 +44,6 @@ class SimsetMixin(MixinMeta):
                 msg += "Max Bet: {}.\n".format(betmax)
                 msg += "Min Bet: {}.\n".format(betmin)
             await ctx.send(box(msg))
-
-    @checks.admin_or_permissions(manage_guild=True)
-    @simset.group(autohelp=True)
-    async def bet(self, ctx):
-        """Simulation Betting Settings."""
-
-    @checks.admin_or_permissions(manage_guild=True)
-    @simset.group(autohelp=True, hidden=True)
-    async def probability(self, ctx):
-        """Simulation Probability Settings. May break the cog if changed."""
-        if ctx.invoked_subcommand is None:
-            proba = await self.config.guild(ctx.guild).probability()
-            goals = proba["goalchance"]
-            owngoals = proba["owngoalchance"]
-            yellow = proba["yellowchance"]
-            red = proba["redchance"]
-            penalty = proba["penaltychance"]
-            penaltyblock = proba["penaltyblock"]
-            freekick = proba["freekickchance"]
-            freekickblock = proba["freekickblock"]
-            corner = proba["cornerchance"]
-            cornerblock = proba["cornerblock"]
-            var = proba["varchance"]
-            varsuccess = proba["varsuccess"]
-            comment = proba["commentchance"]
-            msg = "/!\\ This has the chance to break the game completely, no support is offered. \n\n"
-            msg += "Goal Chance: {}.\n".format(goals)
-            msg += "Own Goal Chance: {}.\n".format(owngoals)
-            msg += "Yellow Card Chance: {}.\n".format(yellow)
-            msg += "Red Card Chance: {}.\n".format(red)
-            msg += "Penalty Chance: {}.\n".format(penalty)
-            msg += "Penalty Block Chance: {}.\n".format(penaltyblock)
-            msg += "Free Kick Chance: {}.\n".format(freekick)
-            msg += "Free Kick Block Chance: {}.\n".format(freekickblock)
-            msg += "Corner Chance: {}.\n".format(corner)
-            msg += "Corner Block Chance: {}.\n".format(cornerblock)
-            msg += "VAR Chance: {}.\n".format(var)
-            msg += "VAR Success Chance: {}.\n".format(varsuccess)
-            msg += "Commentary Chance: {}.\n".format(comment)
-            await ctx.send(box(msg))
-
-    @probability.command()
-    async def goals(self, ctx, amount: int = 96):
-        """Goal probability. Default = 96"""
-        if amount > 100 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["goalchance"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def owngoals(self, ctx, amount: int = 399):
-        """Own Goal probability. Default = 399"""
-        if amount > 400 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 400.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["owngoalchance"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def yellow(self, ctx, amount: int = 98):
-        """Yellow Card probability. Default = 98"""
-        if amount > 100 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["yellowchance"] = amount
-        await ctx.tick()
 
     @simset.command()
     async def maxplayers(self, ctx, amount: int):
@@ -195,151 +120,6 @@ class SimsetMixin(MixinMeta):
         async with self.config.guild(ctx.guild).cupstats() as cupstats:
             cupstats[param] = {}
         await ctx.tick()
-
-    @probability.command()
-    async def red(self, ctx, amount: int = 398):
-        """Red Card probability. Default = 398"""
-        if amount > 400 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 400.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["redchance"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def penalty(self, ctx, amount: int = 249):
-        """Penalty Chance probability. Default = 249"""
-        if amount > 250 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 250.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["penaltychance"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def penaltyblock(self, ctx, amount: int = 75):
-        """Penalty Block probability. Default = 75"""
-        if amount > 100 or amount < 0:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["penaltyblock"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def corner(self, ctx, amount: int = 98):
-        """Corner Chance probability. Default = 98"""
-        if amount > 100 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["cornerchance"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def cornerblock(self, ctx, amount: int = 20):
-        """Corner Block probability. Default = 20"""
-        if amount > 100 or amount < 0:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["cornerblock"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def freekick(self, ctx, amount: int = 98):
-        """Free Kick Chance probability. Default = 98"""
-        if amount > 100 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["freekickchance"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def freekickblock(self, ctx, amount: int = 15):
-        """Free Kick Block probability. Default = 15"""
-        if amount > 100 or amount < 0:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["freekickblock"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def var(self, ctx, amount: int = 50):
-        """VAR Chance probability. Default = 50"""
-        if amount > 100 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["varchance"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def varsuccess(self, ctx, amount: int = 50):
-        """VAR Success Chance probability. Default = 50"""
-        if amount > 100 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["varsuccess"] = amount
-        await ctx.tick()
-
-    @probability.command()
-    async def commentchance(self, ctx, amount: int = 85):
-        """Commentary Chance probability. Default = 85"""
-        if amount > 100 or amount < 1:
-            return await ctx.send("Amount must be greater than 0 and less than 100.")
-        async with self.config.guild(ctx.guild).probability() as probability:
-            probability["commentchance"] = amount
-        await ctx.tick()
-
-    @bet.command()
-    async def time(self, ctx, time: int = 180):
-        """Set the time allowed for betting - 600 seconds is the max, 180 is default."""
-        if time < 0 or time > 600:
-            time = 180
-        await self.config.guild(ctx.guild).bettime.set(time)
-        await ctx.tick()
-
-    @bet.command()
-    async def max(self, ctx, amount: int):
-        """Set the max amount for betting."""
-        if amount < 1:
-            return await ctx.send("Amount must be greater than 0.")
-        await self.config.guild(ctx.guild).betmax.set(amount)
-        await ctx.tick()
-
-    @bet.command()
-    async def min(self, ctx, amount: int):
-        """Set the min amount for betting."""
-        if amount < 1:
-            return await ctx.send("Amount must be greater than 0.")
-        await self.config.guild(ctx.guild).betmin.set(amount)
-        await ctx.tick()
-
-    @bet.command()
-    async def toggle(self, ctx, toggle: bool):
-        """Set if betting is enabled or not.
-        Toggle must be a valid bool."""
-        await self.config.guild(ctx.guild).bettoggle.set(toggle)
-        await ctx.tick()
-
-    @checks.admin_or_permissions(manage_guild=True)
-    @bet.command(name="reset")
-    async def bet_reset(self, ctx):
-        bettoggle = await self.config.guild(ctx.guild).bettoggle()
-        if bettoggle == False:
-            return await ctx.send("Betting is disabled")
-        await self.config.guild(ctx.guild).active.set(False)
-        await self.config.guild(ctx.guild).started.set(False)
-        await self.config.guild(ctx.guild).betteams.set([])
-        await self.bets_payout(ctx)
-        if ctx.guild.id in self.bets:
-            self.bets[ctx.guild.id] = {}
-        return await ctx.tick()
-
-    async def bets_payout(self, ctx):
-        bet_refundees = []
-        if ctx.guild.id not in self.bets:
-            return None
-        for better in self.bets[ctx.guild.id]:
-            for team, bet in self.bets[ctx.guild.id][better]["Bets"]:
-                bet_refundees.append(f"{better.mention} - Refunded: {int(bet)}")
-                await bank.deposit_credits(better, int(bet))
-        return await ctx.send("\n".join(bet_refundees)) if bet_refundees else None
 
     @simset.command()
     async def gametime(self, ctx, time: float = 1):
@@ -779,65 +559,217 @@ class SimsetMixin(MixinMeta):
         await ctx.send(embed=embed)
         await ctx.tick()
 
-    async def scheduleGame(self, ctx, week, homeTeam, awayTeam, time):
-        query = f"sim {homeTeam} {awayTeam} --start-at {time}"
-        event_name = Name()
-        event_name.parsed = f"{homeTeam}_{awayTeam}_W{week}"
-        scheduleCmd = self.bot.get_command("schedule")
-        await ctx.invoke(scheduleCmd, event_name=event_name, schedule=Schedule(time, query))
+    @checks.admin_or_permissions(manage_guild=True)
+    @simset.group(autohelp=True, hidden=True)
+    async def probability(self, ctx):
+        """Simulation Probability Settings. May break the cog if changed."""
+        if ctx.invoked_subcommand is None:
+            proba = await self.config.guild(ctx.guild).probability()
+            goals = proba["goalchance"]
+            owngoals = proba["owngoalchance"]
+            yellow = proba["yellowchance"]
+            red = proba["redchance"]
+            penalty = proba["penaltychance"]
+            penaltyblock = proba["penaltyblock"]
+            freekick = proba["freekickchance"]
+            freekickblock = proba["freekickblock"]
+            corner = proba["cornerchance"]
+            cornerblock = proba["cornerblock"]
+            var = proba["varchance"]
+            varsuccess = proba["varsuccess"]
+            comment = proba["commentchance"]
+            msg = "/!\\ This has the chance to break the game completely, no support is offered. \n\n"
+            msg += "Goal Chance: {}.\n".format(goals)
+            msg += "Own Goal Chance: {}.\n".format(owngoals)
+            msg += "Yellow Card Chance: {}.\n".format(yellow)
+            msg += "Red Card Chance: {}.\n".format(red)
+            msg += "Penalty Chance: {}.\n".format(penalty)
+            msg += "Penalty Block Chance: {}.\n".format(penaltyblock)
+            msg += "Free Kick Chance: {}.\n".format(freekick)
+            msg += "Free Kick Block Chance: {}.\n".format(freekickblock)
+            msg += "Corner Chance: {}.\n".format(corner)
+            msg += "Corner Block Chance: {}.\n".format(cornerblock)
+            msg += "VAR Chance: {}.\n".format(var)
+            msg += "VAR Success Chance: {}.\n".format(varsuccess)
+            msg += "Commentary Chance: {}.\n".format(comment)
+            await ctx.send(box(msg))
 
-    # @simset.command()
-    # async def createscheduledfixtures(self, ctx, day: int = 0, interval: int = 1):
-    #     """Create the fixtures for the current teams with scheduler."""
-    #     """Day is when to start schedule in days from today. ie 0 start gameweek today, 1 start it tomorrow, etc"""
-    #     """Interval is interval between two gameweeks"""
-    #     # TODO: Add breaks (ie no game wednesday)
-    #     gameInterval = 10
-    #     today = datetime.today() + timedelta(days=day)
-    #     # TODO: add starting time param 8pm will be default for every gameweek here
-    #     startDate = today.replace(hour=20, minute=0, second=0, microsecond=0)
+    @probability.command()
+    async def goals(self, ctx, amount: int = 96):
+        """Goal probability. Default = 96"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["goalchance"] = amount
+        await ctx.tick()
 
-    #     teams = await self.config.guild(ctx.guild).teams()
-    #     teams = list(teams.keys())
-    #     if len(teams) % 2:
-    #         teams.append("DAY OFF")
-    #     n = len(teams)
-    #     matchs = []
-    #     fixtures = []
-    #     return_matchs = []
-    #     for fixture in range(1, n):
-    #         for i in range(n // 2):
-    #             matchs.append((teams[i], teams[n - 1 - i]))
-    #             return_matchs.append((teams[n - 1 - i], teams[i]))
-    #         teams.insert(1, teams.pop())
-    #         fixtures.insert(len(fixtures) // 2, matchs)
-    #         fixtures.append(return_matchs)
-    #         matchs = []
-    #         return_matchs = []
+    @probability.command()
+    async def owngoals(self, ctx, amount: int = 399):
+        """Own Goal probability. Default = 399"""
+        if amount > 400 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 400.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["owngoalchance"] = amount
+        await ctx.tick()
 
-    #     newFixtures = []
-    #     for k, fixture in enumerate(fixtures, 1):
-    #         weekFixtures = []
-    #         startDate = startDate + timedelta(days=(interval))
-    #         for i, game in enumerate(fixture, 1):
-    #             gameTime = startDate + timedelta(minutes=(i-1) * gameInterval)
-    #             parsedGameDate = datetime.strftime(gameTime, '%x')
-    #             parsedGameTime = datetime.strftime(gameTime, "%H:%M")
-    #             """Create new tuple to add game time so we can display it in !fixtures."""
-    #             newFixtureTuple = (
-    #                 game[0], game[1], parsedGameDate, parsedGameTime)
+    @probability.command()
+    async def yellow(self, ctx, amount: int = 98):
+        """Yellow Card probability. Default = 98"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["yellowchance"] = amount
+        await ctx.tick()
 
-    #             """Append new fixtures to current week."""
-    #             weekFixtures.append(newFixtureTuple)
+    @probability.command()
+    async def red(self, ctx, amount: int = 398):
+        """Red Card probability. Default = 398"""
+        if amount > 400 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 400.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["redchance"] = amount
+        await ctx.tick()
 
-    #             """Running scheduler. This requires !scheduler cog"""
-    #             if game[0] != "DAY OFF" and game[1] != "DAY OFF":
-    #                 await self.scheduleGame(ctx, k, game[0], game[1], gameTime)
+    @probability.command()
+    async def penalty(self, ctx, amount: int = 249):
+        """Penalty Chance probability. Default = 249"""
+        if amount > 250 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 250.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["penaltychance"] = amount
+        await ctx.tick()
 
-    #         newFixtures.append(weekFixtures)
+    @probability.command()
+    async def penaltyblock(self, ctx, amount: int = 75):
+        """Penalty Block probability. Default = 75"""
+        if amount > 100 or amount < 0:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["penaltyblock"] = amount
+        await ctx.tick()
 
-    #     await self.config.guild(ctx.guild).fixtures.set(newFixtures)
-    #     await ctx.tick()
+    @probability.command()
+    async def corner(self, ctx, amount: int = 98):
+        """Corner Chance probability. Default = 98"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["cornerchance"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def cornerblock(self, ctx, amount: int = 20):
+        """Corner Block probability. Default = 20"""
+        if amount > 100 or amount < 0:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["cornerblock"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def freekick(self, ctx, amount: int = 98):
+        """Free Kick Chance probability. Default = 98"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["freekickchance"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def freekickblock(self, ctx, amount: int = 15):
+        """Free Kick Block probability. Default = 15"""
+        if amount > 100 or amount < 0:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["freekickblock"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def var(self, ctx, amount: int = 50):
+        """VAR Chance probability. Default = 50"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["varchance"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def varsuccess(self, ctx, amount: int = 50):
+        """VAR Success Chance probability. Default = 50"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["varsuccess"] = amount
+        await ctx.tick()
+
+    @probability.command()
+    async def commentchance(self, ctx, amount: int = 85):
+        """Commentary Chance probability. Default = 85"""
+        if amount > 100 or amount < 1:
+            return await ctx.send("Amount must be greater than 0 and less than 100.")
+        async with self.config.guild(ctx.guild).probability() as probability:
+            probability["commentchance"] = amount
+        await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @simset.group(autohelp=True)
+    async def bet(self, ctx):
+        """Simulation Betting Settings."""
+
+    @bet.command()
+    async def time(self, ctx, time: int = 180):
+        """Set the time allowed for betting - 600 seconds is the max, 180 is default."""
+        if time < 0 or time > 600:
+            time = 180
+        await self.config.guild(ctx.guild).bettime.set(time)
+        await ctx.tick()
+
+    @bet.command()
+    async def max(self, ctx, amount: int):
+        """Set the max amount for betting."""
+        if amount < 1:
+            return await ctx.send("Amount must be greater than 0.")
+        await self.config.guild(ctx.guild).betmax.set(amount)
+        await ctx.tick()
+
+    @bet.command()
+    async def min(self, ctx, amount: int):
+        """Set the min amount for betting."""
+        if amount < 1:
+            return await ctx.send("Amount must be greater than 0.")
+        await self.config.guild(ctx.guild).betmin.set(amount)
+        await ctx.tick()
+
+    @bet.command()
+    async def toggle(self, ctx, toggle: bool):
+        """Set if betting is enabled or not.
+        Toggle must be a valid bool."""
+        await self.config.guild(ctx.guild).bettoggle.set(toggle)
+        await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @bet.command(name="reset")
+    async def bet_reset(self, ctx):
+        bettoggle = await self.config.guild(ctx.guild).bettoggle()
+        if bettoggle == False:
+            return await ctx.send("Betting is disabled")
+        await self.config.guild(ctx.guild).active.set(False)
+        await self.config.guild(ctx.guild).started.set(False)
+        await self.config.guild(ctx.guild).betteams.set([])
+        await self.bets_payout(ctx)
+        if ctx.guild.id in self.bets:
+            self.bets[ctx.guild.id] = {}
+        return await ctx.tick()
+
+    async def bets_payout(self, ctx):
+        bet_refundees = []
+        if ctx.guild.id not in self.bets:
+            return None
+        for better in self.bets[ctx.guild.id]:
+            for team, bet in self.bets[ctx.guild.id][better]["Bets"]:
+                bet_refundees.append(f"{better.mention} - Refunded: {int(bet)}")
+                await bank.deposit_credits(better, int(bet))
+        return await ctx.send("\n".join(bet_refundees)) if bet_refundees else None
 
     @checks.admin_or_permissions(manage_guild=True)
     @simset.group()
@@ -925,6 +857,11 @@ class SimsetMixin(MixinMeta):
             else:
                 for t in transfers:
                     transfers[t]["locked"] = None
+        await ctx.tick()
+
+    @clear.command(name="fixtures")
+    async def clear_fixtures(self, ctx):
+        await self.config.guild(ctx.guild).fixtures.set([])
         await ctx.tick()
 
     @clear.command(name="cup")

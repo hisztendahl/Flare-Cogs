@@ -478,17 +478,26 @@ class SimLeague(
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
 
-        embed = discord.Embed(
-            colour=ctx.author.colour,
-            description="-------------------- Fixtures for {} --------------------".format(team),
-        )
-        for i, fixture in enumerate(fixtures):
-            a = []
-            for game in fixture:
-                if game[0] == team or game[1] == team:
+        fixtures = fixtures + fixtures + fixtures + fixtures + fixtures
+        embeds = []
+        pages = ceil(len(fixtures) / 15)
+        for page in range(pages):
+            embed = discord.Embed(
+                colour=ctx.author.colour,
+                description="--------------- Fixtures for {} _(page {}/{})_ ---------------".format(
+                    team, page + 1, pages
+                ),
+            )
+            page = page + 1
+            p1 = (page - 1) * 15 if page > 1 else page - 1
+            p2 = page * 15
+            for i, fixture in enumerate(fixtures[p1:p2]):
+                a = []
+                for game in fixture:
                     a.append(f"{game[0]} vs {game[1]}")
-            embed.add_field(name="Week {}".format(i + 1), value="\n".join(a))
-        await ctx.send(embed=embed)
+                embed.add_field(name="Week {}".format(i + 1 + p1), value="\n".join(a))
+            embeds.append(embed)
+        await menu(ctx, embeds, DEFAULT_CONTROLS)
 
     @commands.command()
     async def fixture(self, ctx, week: Optional[int] = None):

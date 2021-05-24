@@ -123,7 +123,9 @@ class TotsMixin(MixinMeta):
         async with ctx.typing():
             embeds = []
             embed = discord.Embed(
-                title="{}".format("TOTS",),
+                title="{}".format(
+                    "TOTS",
+                ),
                 description="------------ Team of the Season ------------",
                 colour=ctx.author.colour,
             )
@@ -134,7 +136,9 @@ class TotsMixin(MixinMeta):
                     user = await self.bot.fetch_user(player)
                 players[player] = user.display_name
             embed.add_field(
-                name="Members:", value="\n".join(list(players.values())), inline=True,
+                name="Members:",
+                value="\n".join(list(players.values())),
+                inline=True,
             )
             if tots["logo"] is not None:
                 embed.set_thumbnail(url=tots["logo"])
@@ -228,7 +232,11 @@ class TotsMixin(MixinMeta):
         stats["conceded"] = t
         t = []
         fairplay = sorted(
-            standings, key=lambda x: (standings[x]["reds"], standings[x]["yellows"],),
+            standings,
+            key=lambda x: (
+                standings[x]["reds"],
+                standings[x]["yellows"],
+            ),
         )
         for x in fairplay[:3]:
             t.append([x, standings[x]["yellows"], standings[x]["reds"]])

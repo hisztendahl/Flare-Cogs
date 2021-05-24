@@ -168,6 +168,56 @@ class StatsMixin(MixinMeta):
             )
         await ctx.send(embed=embed)
 
+    @commands.command(name="pstats")
+    async def vs_stats(self, ctx, user1: discord.Member, user2: discord.Member):
+        stats = await self.config.guild(ctx.guild).stats()
+        notes = await self.config.guild(ctx.guild).notes()
+        user1id = str(user1.id)
+        user2id = str(user2.id)
+        user1_team = await self.get_user_with_team(ctx, user1id)
+        user2_team = await self.get_user_with_team(ctx, user2id)
+        embed = discord.Embed(
+            title="Players Comparison",
+            description="------------- {} vs {} -------------\n\n".format(user1.name, user2.name),
+            colour=ctx.author.colour,
+        )
+        for userid in [user1id, user2id]:
+            note = notes[userid] if userid in notes else None
+            if note is not None:
+                note = round(sum(float(n) for n in note) / len(note), 2)
+            note = note or "N/A"
+            pens = stats["penalties"].get(userid)
+            goals = stats["goals"].get(userid) or 0
+            owngoals = stats["owngoals"].get(userid) or 0
+            assists = stats["assists"].get(userid) or 0
+            yellows = stats["yellows"].get(userid) or 0
+            reds = stats["reds"].get(userid) or 0
+            motms = stats["motm"].get(userid) or 0
+            shots = stats["shots"].get(userid) or 0
+            fouls = stats["fouls"].get(userid) or 0
+            penmissed = pens.get("missed") if pens else 0
+            penscored = pens.get("scored") if pens else 0
+            title = f"{user1_team[0].name} ({user1_team[1]})"
+            if userid == user2id:
+                title = f"{user2_team[0].name} ({user2_team[1]})"
+            embed.add_field(
+                name=title,
+                value="Note: {}\nMotMs: {}\n\nGoals: {}\nAssists: {}\nShots: {}\nPen Scored: {}\nPen Missed: {}\n\nYellows: {}\nReds: {}\nFouls: {}\nOwn Goals: {}".format(
+                    note,
+                    motms,
+                    goals,
+                    assists,
+                    shots,
+                    penscored,
+                    penmissed,
+                    yellows,
+                    reds,
+                    fouls,
+                    owngoals,
+                ),
+            )
+        await ctx.send(embed=embed)
+
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()
     async def addteamstats(self, ctx, team: str, stat: str, value: int):

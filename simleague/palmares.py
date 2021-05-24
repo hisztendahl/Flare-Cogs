@@ -352,7 +352,9 @@ class PalmaresMixin(MixinMeta):
                 palmares[season]["cupfinish"] if "cupfinish" in palmares[season].keys() else None
             )
             goals = palmares[season]["goals"] if "goals" in palmares[season].keys() else None
-            owngoals = palmares[season]["owngoals"] if "owngoals" in palmares[season].keys() else None
+            owngoals = (
+                palmares[season]["owngoals"] if "owngoals" in palmares[season].keys() else None
+            )
             note = palmares[season]["note"] if "note" in palmares[season].keys() else None
             assists = palmares[season]["assists"] if "assists" in palmares[season].keys() else None
             ga = palmares[season]["ga"] if "ga" in palmares[season].keys() else None

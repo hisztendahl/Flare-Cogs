@@ -20,7 +20,7 @@ class PalmaresMixin(MixinMeta):
         cupgames = await self.config.guild(ctx.guild).cupgames()
         tots = await self.config.guild(ctx.guild).tots()
         async with self.config.guild(ctx.guild).palmares() as palmares:
-            seasonstats = ["goals", "assists", "reds", "yellows", "motm"]
+            seasonstats = ["goals", "assists", "reds", "yellows", "motm", "owngoals"]
             for s in seasonstats:
                 stat = stats[s]
                 for i, userid in list(enumerate(sorted(stat, key=stat.get, reverse=True)))[:10]:
@@ -184,6 +184,7 @@ class PalmaresMixin(MixinMeta):
         """Add palmares entry for a member."""
         validstats = [
             "goals",
+            "owngoals",
             "assists",
             "ga",
             "reds",
@@ -351,6 +352,7 @@ class PalmaresMixin(MixinMeta):
                 palmares[season]["cupfinish"] if "cupfinish" in palmares[season].keys() else None
             )
             goals = palmares[season]["goals"] if "goals" in palmares[season].keys() else None
+            owngoals = palmares[season]["owngoals"] if "owngoals" in palmares[season].keys() else None
             note = palmares[season]["note"] if "note" in palmares[season].keys() else None
             assists = palmares[season]["assists"] if "assists" in palmares[season].keys() else None
             ga = palmares[season]["ga"] if "ga" in palmares[season].keys() else None
@@ -375,6 +377,7 @@ class PalmaresMixin(MixinMeta):
                 "assists": assists,
                 "ga": ga,
                 "motms": motms,
+                "owngoals": owngoals,
                 "yellows": yellows,
                 "reds": reds,
             }

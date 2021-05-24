@@ -77,7 +77,7 @@ class TotsMixin(MixinMeta):
                 cupgoals = cupstats["goals"].get(userid)
                 cupgoals = int(cupgoals) * 2.5 if cupgoals else 0
                 cupowngoals = cupstats["owngoals"].get(userid)
-                cupowngoals = int(cupowngoals) * 5 if cupowngoals else 0
+                cupowngoals = int(cupowngoals) * 2.5 if cupowngoals else 0
                 cupshots = cupstats["shots"].get(userid)
                 cupshots = int(cupshots) * 0.25 if cupshots else 0
                 cupassists = cupstats["assists"].get(userid)
@@ -123,9 +123,7 @@ class TotsMixin(MixinMeta):
         async with ctx.typing():
             embeds = []
             embed = discord.Embed(
-                title="{}".format(
-                    "TOTS",
-                ),
+                title="{}".format("TOTS",),
                 description="------------ Team of the Season ------------",
                 colour=ctx.author.colour,
             )
@@ -136,9 +134,7 @@ class TotsMixin(MixinMeta):
                     user = await self.bot.fetch_user(player)
                 players[player] = user.display_name
             embed.add_field(
-                name="Members:",
-                value="\n".join(list(players.values())),
-                inline=True,
+                name="Members:", value="\n".join(list(players.values())), inline=True,
             )
             if tots["logo"] is not None:
                 embed.set_thumbnail(url=tots["logo"])
@@ -232,11 +228,7 @@ class TotsMixin(MixinMeta):
         stats["conceded"] = t
         t = []
         fairplay = sorted(
-            standings,
-            key=lambda x: (
-                standings[x]["reds"],
-                standings[x]["yellows"],
-            ),
+            standings, key=lambda x: (standings[x]["reds"], standings[x]["yellows"],),
         )
         for x in fairplay[:3]:
             t.append([x, standings[x]["yellows"], standings[x]["reds"]])

@@ -574,11 +574,11 @@ class StatsMixin(MixinMeta):
                 note = round(sum(float(pn) for pn in notes[n]) / len(notes[n]), 2)
                 notes[n] = note
             embeds = []
-            pages = ceil(len(notes) / 5)
+            pages = ceil(len(notes) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(notes, key=notes.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)
@@ -603,11 +603,11 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No stats available.")
         else:
             embeds = []
-            pages = ceil(len(contributions) / 5)
+            pages = ceil(len(contributions) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)
@@ -629,11 +629,11 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No stats available.")
         else:
             embeds = []
-            pages = ceil(len(stats) / 5)
+            pages = ceil(len(stats) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)
@@ -655,11 +655,11 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No stats available.")
         else:
             embeds = []
-            pages = ceil(len(stats) / 5)
+            pages = ceil(len(stats) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)
@@ -681,11 +681,11 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No stats available.")
         else:
             embeds = []
-            pages = ceil(len(stats) / 5)
+            pages = ceil(len(stats) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)
@@ -707,11 +707,11 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No stats available.")
         else:
             embeds = []
-            pages = ceil(len(stats) / 5)
+            pages = ceil(len(stats) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)
@@ -733,11 +733,11 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No stats available.")
         else:
             embeds = []
-            pages = ceil(len(stats) / 5)
+            pages = ceil(len(stats) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)
@@ -759,11 +759,11 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No stats available.")
         else:
             embeds = []
-            pages = ceil(len(stats) / 5)
+            pages = ceil(len(stats) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)
@@ -785,11 +785,11 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No stats available.")
         else:
             embeds = []
-            pages = ceil(len(stats) / 5)
+            pages = ceil(len(stats) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)
@@ -848,7 +848,7 @@ class StatsMixin(MixinMeta):
             await ctx.send("No stats available.")
 
     @leaguestats.command()
-    async def assists(self, ctx, page: int = 1):
+    async def assists(self, ctx):
         """Players with the most assists."""
         stats = await self.config.guild(ctx.guild).stats()
         stats = stats["assists"]
@@ -856,11 +856,11 @@ class StatsMixin(MixinMeta):
             return await ctx.send("No stats available.")
         else:
             embeds = []
-            pages = ceil(len(stats) / 5)
+            pages = ceil(len(stats) / 10)
             for page in range(pages):
                 page = page + 1
-                p1 = (page - 1) * 5 if page > 1 else page - 1
-                p2 = page * 5
+                p1 = (page - 1) * 10 if page > 1 else page - 1
+                p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
                     user_team = await self.get_user_with_team(ctx, k)

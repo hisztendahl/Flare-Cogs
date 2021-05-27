@@ -20,7 +20,7 @@ class PalmaresMixin(MixinMeta):
         cupgames = await self.config.guild(ctx.guild).cupgames()
         tots = await self.config.guild(ctx.guild).tots()
         async with self.config.guild(ctx.guild).palmares() as palmares:
-            seasonstats = ["goals", "assists", "reds", "yellows", "motm", "owngoals"]
+            seasonstats = ["goals", "assists", "reds", "yellows", "motm", "owngoals", "shots", "fouls"]
             for s in seasonstats:
                 stat = stats[s]
                 for i, userid in list(enumerate(sorted(stat, key=stat.get, reverse=True)))[:10]:
@@ -92,7 +92,25 @@ class PalmaresMixin(MixinMeta):
                     else:
                         palmares[userid] = {}
                         palmares[userid][season] = {}
-                        palmares[userid][season]["finish"] = (t, i + 1)
+                        palmares[userid][season]["finish"] = (t, i + 1)            
+            for i, t in enumerate(
+                sorted(stats["cleansheets"], key=stats["cleansheets"].get, reverse=True)
+            ):
+                team = teams[t]
+                for userid in team["members"]:
+                    if userid in palmares:
+                        if season in palmares[userid]:
+                            if "cleansheets" in palmares[userid][season]:
+                                pass
+                            else:
+                                palmares[userid][season]["cleansheets"] = (t, i + 1)
+                        else:
+                            palmares[userid][season] = {}
+                            palmares[userid][season]["cleansheets"] = (t, i + 1)
+                    else:
+                        palmares[userid] = {}
+                        palmares[userid][season] = {}
+                        palmares[userid][season]["cleansheets"] = (t, i + 1)
             if len(cupgames):
                 final = cupgames["2"][0]
                 semifinals = cupgames["4"]
@@ -190,9 +208,12 @@ class PalmaresMixin(MixinMeta):
             "reds",
             "yellows",
             "motms",
+            "shots",
+            "fouls",
             "finish",
             "cupfinish",
             "communityshield",
+            "cleansheets"
         ]
         if stat not in validstats:
             return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
@@ -290,6 +311,9 @@ class PalmaresMixin(MixinMeta):
             return await ctx.send("Team does not exist.")
         validstats = [
             "goals",
+            "owngoals",
+            "shots",
+            "fouls",
             "assists",
             "ga",
             "reds",
@@ -341,12 +365,11 @@ class PalmaresMixin(MixinMeta):
         embed = discord.Embed(
             color=ctx.author.color,
             title="Palmares for {}".format(user.display_name),
-            description="------------- List of individual player honours -------------",
+            description="------------------ List of individual player honours ------------------",
         )
-        a = []
         for season in sorted(palmares):
+            a = []
             seasontitle = "Season {}".format(season) if int(season) != 0 else "Preseason"
-            a.append(f"\n**{seasontitle}**")
             finish = palmares[season]["finish"] if "finish" in palmares[season].keys() else None
             cupfinish = (
                 palmares[season]["cupfinish"] if "cupfinish" in palmares[season].keys() else None
@@ -359,8 +382,11 @@ class PalmaresMixin(MixinMeta):
             assists = palmares[season]["assists"] if "assists" in palmares[season].keys() else None
             ga = palmares[season]["ga"] if "ga" in palmares[season].keys() else None
             motms = palmares[season]["motms"] if "motms" in palmares[season].keys() else None
+            shots = palmares[season]["shots"] if "shots" in palmares[season].keys() else None
             yellows = palmares[season]["yellows"] if "yellows" in palmares[season].keys() else None
             reds = palmares[season]["reds"] if "reds" in palmares[season].keys() else None
+            fouls = palmares[season]["fouls"] if "fouls" in palmares[season].keys() else None
+            cleansheets = palmares[season]["cleansheets"] if "cleansheets" in palmares[season].keys() else None
             tots = palmares[season]["tots"] if "tots" in palmares[season].keys() else None
             pots = palmares[season]["pots"] if "pots" in palmares[season].keys() else None
             communityshield = (
@@ -379,9 +405,12 @@ class PalmaresMixin(MixinMeta):
                 "assists": assists,
                 "ga": ga,
                 "motms": motms,
+                "shots": shots,
                 "owngoals": owngoals,
                 "yellows": yellows,
                 "reds": reds,
+                "fouls": fouls,
+                "cleansheets": cleansheets,
             }
             for p in newP:
                 if p in palmares[season]:
@@ -410,7 +439,8 @@ class PalmaresMixin(MixinMeta):
                     parsedp = self.parsestat(p, res[0], int(res[1]) - 1, n)
                     parsedp = "{} {}".format(parsedp, medal)
                     a.append(parsedp)
-        embed.add_field(name="List of honours", value="\n".join(a))
+            a.append("_\n")
+            embed.add_field(name=f"\n**{seasontitle}**", value="\n".join(a), inline=False)
         await ctx.send(embed=embed)
 
     def parsestat(self, stat, value, n, nth):
@@ -425,6 +455,8 @@ class PalmaresMixin(MixinMeta):
                 return "Cup finalist with {}.".format(value)
             if n == 2:
                 return "Cup semi-finalist with {}.".format(value)
+        if stat == "cleansheets":
+            return "Won golden glove with {}.".format(value)
         if stat == "pots":
             return "Won player of the season."
         if stat == "tots":
@@ -443,7 +475,13 @@ class PalmaresMixin(MixinMeta):
             else:
                 s = ["average note", ""]
             return "{} {} with {} {}.".format(prefix, s[0], value, s[1])
-        if stat in ["yellows", "reds", "motms"]:
+        if stat in ["shots", "fouls"]:
+            if n == 0:
+                prefix = "Most"
+            else:
+                prefix = "{} most".format(nth)            
+            return "{} {} with {} {}.".format(prefix, stat, value, stat)
+        if stat in ["yellows", "reds", "motms", "owngoals"]:
             if n == 0:
                 prefix = "Most"
             else:

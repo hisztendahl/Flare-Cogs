@@ -387,33 +387,52 @@ class TeamsetMixin(MixinMeta):
     async def name(self, ctx, team: str, newname: str):
         """Set a team's name. Try keep names to one word if possible."""
         async with self.config.guild(ctx.guild).teams() as teams:
-            if team not in teams:
-                return await ctx.send("{} is not a valid team.".format(team))
-            teams[newname] = teams[team]
-            if teams[team]["role"] is not None:
-                role = ctx.guild.get_role(teams[team]["role"])
-                await role.edit(name=newname)
-            del teams[team]
+            if team in teams:
+                teams[newname] = teams[team]
+                if teams[team]["role"] is not None:
+                    role = ctx.guild.get_role(teams[team]["role"])
+                    if role:
+                        await role.edit(name=newname)
+                del teams[team]
         async with self.config.guild(ctx.guild).standings() as standings:
-            standings[newname] = standings[team]
-            del standings[team]
+            if team in standings:
+                standings[newname] = standings[team]
+                del standings[team]
         async with self.config.guild(ctx.guild).cupstandings() as cupteams:
             if len(dict.keys(cupteams)):
-                cupteams[newname] = cupteams[team]
-                del cupteams[team]
+                if team in cupteams:
+                    cupteams[newname] = cupteams[team]
+                    del cupteams[team]
         async with self.config.guild(ctx.guild).transfers() as transfers:
             if team in transfers:
                 transfers[newname] = transfers[team]
                 del transfers[team]
+        async with self.config.guild(ctx.guild).stats() as stats:
+            if team in stats["cleansheets"]:
+                stats["cleansheets"][newname] = stats["cleansheets"][team]
+                del stats["cleansheets"][team]
+        async with self.config.guild(ctx.guild).cupstats() as cupstats:
+            if team in cupstats["cleansheets"]:
+                cupstats["cleansheets"][newname] = cupstats["cleansheets"][team]
+                del cupstats["cleansheets"][team]
         async with self.config.guild(ctx.guild).fixtures() as fixtures:
             if len(fixtures):
                 for weekday in fixtures:
                     for fixture in weekday:
                         for i in range(len(fixture)):
-                            if fixture["team1"] == team:
-                                fixture["team1"] = newname
-                            if fixture["team2"] == team:
-                                fixture["team2"] = newname
+                            if fixture[0] == team:
+                                fixture[0] = newname
+                            if fixture[1] == team:
+                                fixture[1] = newname
+        async with self.config.guild(ctx.guild).cupgames() as cupgames:
+            if len(cupgames):
+                for rd in cupgames:
+                    fixtures = cupgames[rd]
+                    for fixture in fixtures:
+                        if fixture["team1"] == team:
+                            fixture["team1"] = newname
+                        if fixture["team2"] == team:
+                            fixture["team2"] = newname
         await ctx.tick()
 
     @teamset.command()

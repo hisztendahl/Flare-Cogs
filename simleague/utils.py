@@ -74,7 +74,8 @@ async def checkReacts(self, ctx, message):
     await msg.add_reaction(cancel_emoji)
     try:
         reaction, user = await asyncio.wait_for(
-            ctx.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id), 30
+            ctx.bot.wait_for("reaction_add", check=lambda r,
+                             u: u.id == ctx.author.id), 30
         )
     except:
         await msg.clear_reactions()
@@ -83,3 +84,34 @@ async def checkReacts(self, ctx, message):
         return True
     elif reaction.emoji == cancel_emoji:
         return False
+
+
+def mapcountrytoflag(country):
+    flags = {
+        "austria": ":flag_at:",
+        "belgium": ":flag_be:",
+        "croatia": ":flag_hr:",
+        "czech_republic": ":flag_cz:",
+        "czech": ":flag_cz:",
+        "denmark": ":flag_dk:",
+        "england": ":england:",
+        "finland": ":flag_fi:",
+        "france": ":flag_fr:",
+        "germany": ":flag_de:",
+        "hungary": ":flag_hu:",
+        "italy": ":flag_it:",
+        "netherlands": ":flag_nl:",
+        "macedonia": ":flag_mk:",
+        "poland": ":flag_pl:",
+        "portugal": ":flag_pt:",
+        "russia": ":flag_ru:",
+        "scotland": ":scotland:",
+        "slovakia": ":flag_sk:",
+        "spain": ":flag_es:",
+        "sweden": ":flag_se:",
+        "switzerland": ":flag_ch:",
+        "turkey": ":flag_tr:",
+        "ukraine": ":flag_ua:",
+        "wales": ":wales:",
+    }
+    return flags[country.lower()] if country.lower() in flags else ":flag_white:"

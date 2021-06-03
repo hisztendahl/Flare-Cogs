@@ -53,6 +53,7 @@ class SimHelper(MixinMeta):
     async def simpic(
         self,
         ctx,
+        national,
         time,
         event,
         player,
@@ -93,7 +94,10 @@ class SimHelper(MixinMeta):
         except:
             rank_avatar = await self.getimg(DEFAULT_PIC_URL)
         cog = self.bot.get_cog("SimLeague")
-        teams = await cog.config.guild(ctx.guild).teams()
+        if national:
+            teams = await cog.config.guild(ctx.guild).nteams()
+        else:
+            teams = await cog.config.guild(ctx.guild).teams()
         if event != "yellow" or event != "goal":
             server_icon = await self.getimg(
                 teams[teamevent]["logo"] if teams[teamevent]["logo"] is not None else DEFAULT_URL
@@ -509,7 +513,7 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="score.png")
         return image
 
-    async def kickimg(self, ctx, event, teamevent, time, player):
+    async def kickimg(self, ctx, event, teamevent, time, player, national=False):
         theme = await self.config.guild(ctx.guild).theme()
         font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
         name_fnt = ImageFont.truetype(font_bold_file, 22)
@@ -518,7 +522,10 @@ class SimHelper(MixinMeta):
         general_info_fnt = ImageFont.truetype(font_bold_file, 18, encoding="utf-8")
         level_label_fnt = ImageFont.truetype(font_bold_file, 22, encoding="utf-8")
         cog = self.bot.get_cog("SimLeague")
-        teams = await cog.config.guild(ctx.guild).teams()
+        if national:
+            teams = await cog.config.guild(ctx.guild).nteams()
+        else:
+            teams = await cog.config.guild(ctx.guild).teams()
         server_icon = await self.getimg(
             teams[teamevent]["logo"] if teams[teamevent]["logo"] is not None else DEFAULT_URL
         )
@@ -667,7 +674,7 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="pikaleague.png")
         return image
 
-    async def commentimg(self, ctx, teamevent, time, player, idx=None):
+    async def commentimg(self, ctx, teamevent, time, player, idx=None, national=False):
         theme = await self.config.guild(ctx.guild).theme()
         font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
         name_fnt = ImageFont.truetype(font_bold_file, 22)
@@ -675,11 +682,13 @@ class SimHelper(MixinMeta):
         general_u_font = ImageFont.truetype(font_bold_file, 18)
         level_label_fnt = ImageFont.truetype(font_bold_file, 22, encoding="utf-8")
         cog = self.bot.get_cog("SimLeague")
-        teams = await cog.config.guild(ctx.guild).teams()
+        if national:
+            teams = await cog.config.guild(ctx.guild).nteams()
+        else:
+            teams = await cog.config.guild(ctx.guild).teams()
         server_icon = await self.getimg(
             teams[teamevent]["logo"] if teams[teamevent]["logo"] is not None else DEFAULT_URL
         )
-
         try:
             server_icon_image = Image.open(server_icon).convert("RGBA")
         except:
@@ -1354,7 +1363,7 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="pots.png")
         return image
 
-    async def motmpic(self, ctx, user, team, goals, assists):
+    async def motmpic(self, ctx, user, team, goals, assists, national=False):
         theme = await self.config.guild(ctx.guild).theme()
         font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
         name_fnt = ImageFont.truetype(font_bold_file, 22)
@@ -1366,7 +1375,10 @@ class SimHelper(MixinMeta):
         except:
             rank_avatar = await self.getimg(DEFAULT_PIC_URL)
         cog = self.bot.get_cog("SimLeague")
-        teams = await cog.config.guild(ctx.guild).teams()
+        if national:
+            teams = await cog.config.guild(ctx.guild).nteams()
+        else:
+            teams = await cog.config.guild(ctx.guild).teams()
         server_icon = await self.getimg(
             teams[team]["logo"] if teams[team]["logo"] is not None else DEFAULT_URL
         )
@@ -1516,14 +1528,17 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="pikaleague.png")
         return image
 
-    async def walkout(self, ctx, team1, home_or_away):
+    async def walkout(self, ctx, team1, home_or_away, national=False):
         theme = await self.config.guild(ctx.guild).theme()
         font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
         name_fnt = ImageFont.truetype(font_bold_file, 22)
         header_u_fnt = ImageFont.truetype(font_bold_file, 18)
         general_u_fnt = ImageFont.truetype(font_bold_file, 15)
         cog = self.bot.get_cog("SimLeague")
-        teams = await cog.config.guild(ctx.guild).teams()
+        if national:
+            teams = await cog.config.guild(ctx.guild).nteams()
+        else:
+            teams = await cog.config.guild(ctx.guild).teams()
         teamplayers = len(teams[team1]["members"])
         # set canvas
         if teams[team1]["kits"][home_or_away] is None:
@@ -1604,7 +1619,7 @@ class SimHelper(MixinMeta):
         text_color = list_to_tuple(theme["chances"]["header_text_col"])
         level = teams[team1]["cachedlevel"]
         teamname = self._truncate_text(team1, 10)
-        bonus = teams[team1]["bonus"]
+        bonus = teams[team1]["bonus"] if 'bonus' in teams[team1] else 0
         _write_unicode(
             "Team: {} | Total Level: {} | Bonus %: {}".format(teamname, level, bonus),
             10,
@@ -1947,7 +1962,7 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="playerstats.png")
         return image
 
-    async def matchinfo(self, ctx, teamlist, weather, stadium, homeodds, awayodds, drawodds):
+    async def matchinfo(self, ctx, teamlist, weather, stadium, homeodds, awayodds, drawodds, national=False):
         width = 500
         height = 160
         theme = await self.config.guild(ctx.guild).theme()
@@ -1959,7 +1974,10 @@ class SimHelper(MixinMeta):
         font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
         general_info_fnt = ImageFont.truetype(font_bold_file, 18, encoding="utf-8")
         cog = self.bot.get_cog("SimLeague")
-        teams = await cog.config.guild(ctx.guild).teams()
+        if national:
+            teams = await cog.config.guild(ctx.guild).nteams()
+        else:
+            teams = await cog.config.guild(ctx.guild).teams()
         level_label_fnt = ImageFont.truetype(font_bold_file, 22, encoding="utf-8")
         level_label_fnt2 = ImageFont.truetype(font_bold_file, 18, encoding="utf-8")
         x = 10
@@ -1987,13 +2005,14 @@ class SimHelper(MixinMeta):
             radius = 20
             light_border = (150, 150, 150, 180)
             dark_border = (90, 90, 90, 180)
-            info_color = (30, 30, 30, 160)
+            # info_color = (30, 30, 30, 160)
+            info_color = (230, 180, 0, 1)
             border_color = self._contrast(info_color, light_border, dark_border)
 
             draw_server_border = Image.new(
                 "RGBA",
                 (server_border_size * multiplier, server_border_size * multiplier),
-                border_color,
+                info_color,
             )
             draw_server_border = self._add_corners(
                 draw_server_border, int(radius * multiplier / 2)
@@ -2010,7 +2029,16 @@ class SimHelper(MixinMeta):
             server_icon_image = server_icon_image.resize(
                 (server_size, server_size), Image.ANTIALIAS
             )
+            # create mask
+            # mask = Image.new("RGBA", (50, 50), 255)
+            # draw_thumb = ImageDraw.Draw(mask)
+            # draw_thumb = ImageDraw.Draw(mask)
+            # draw_thumb.ellipse((0, 0) + (50, 50), fill=255, outline=0)
+
+            # mask = mask.resize((server_border_size, server_border_size), Image.ANTIALIAS)
+            profile_image = server_icon_image.resize((server_border_size, server_border_size), Image.ANTIALIAS)
             process.paste(draw_server_border, (x + 8, content_top + 12), draw_server_border)
+            # process.paste(profile_image, (x + 10, content_top + 14), mask)
             process.paste(server_icon_image, (x + 10, content_top + 14), server_icon_image)
             x += 390
 
@@ -2082,13 +2110,16 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="pikaleague.png")
         return image
 
-    async def matchstats(self, ctx, team1, team2, score, yc, rc, chances, fouls):
+    async def matchstats(self, ctx, team1, team2, score, yc, rc, chances, fouls, national=False):
         theme = await self.config.guild(ctx.guild).theme()
         font_bold_file = f"{bundled_data_path(self)}/font_bold.ttf"
         name_fnt = ImageFont.truetype(font_bold_file, 22)
         header_u_fnt = ImageFont.truetype(font_bold_file, 18)
         cog = self.bot.get_cog("SimLeague")
-        teams = await cog.config.guild(ctx.guild).teams()
+        if national:
+            teams = await cog.config.guild(ctx.guild).nteams()
+        else:
+            teams = await cog.config.guild(ctx.guild).teams()
         server_icon = await self.getimg(
             teams[team1]["logo"] if teams[team1]["logo"] is not None else DEFAULT_URL
         )
@@ -2559,9 +2590,12 @@ class SimHelper(MixinMeta):
                 except discord.Forbidden:
                     self.log.info("Failed to remove role from {}".format(member.name))
 
-    async def matchnotif(self, ctx, team1, team2):
+    async def matchnotif(self, ctx, team1, team2, national = True):
         cog = self.bot.get_cog("SimLeague")
-        teams = await cog.config.guild(ctx.guild).teams()
+        if national:
+            teams = await cog.config.guild(ctx.guild).nteams()
+        else:
+            teams = await cog.config.guild(ctx.guild).teams()
         mentions = await cog.config.guild(ctx.guild).mentions()
         teamone = list(teams[team1]["members"].keys())
         teamtwo = list(teams[team2]["members"].keys())
@@ -2634,7 +2668,7 @@ class SimHelper(MixinMeta):
                             self.log.info("Failed to remove role from {}".format(member.name))
 
     async def postresults(
-        self, ctx, team1, team2, score1, score2, penscore1=None, penscore2=None, startmsg=None
+        self, ctx, national, team1, team2, score1, score2, penscore1=None, penscore2=None, startmsg=None
     ):
         cog = self.bot.get_cog("SimLeague")
         results = await cog.config.guild(ctx.guild).resultchannel()
@@ -2642,7 +2676,10 @@ class SimHelper(MixinMeta):
         role2 = False
         if results:
             result = ""
-            teams = await cog.config.guild(ctx.guild).teams()
+            if national:
+                teams = await cog.config.guild(ctx.guild).nteams()
+            else:
+                teams = await cog.config.guild(ctx.guild).teams()
             teamone = teams[team1]["members"]
             teamtwo = teams[team2]["members"]
             if teams[team1]["role"]:
@@ -3057,4 +3094,19 @@ class SimHelper(MixinMeta):
             del teams[team]
             async with cog.config.guild(ctx.guild).standings() as standings:
                 del standings[team]
+            return await ctx.send("Team successfully removed.")
+
+    async def nat_team_delete(self, ctx, team):
+        cog = self.bot.get_cog("SimLeague")
+        async with cog.config.guild(ctx.guild).nteams() as nteams:
+            if team in nteams:
+                if nteams[team]["role"] is not None:
+                    role = ctx.guild.get_role(nteams[team]["role"])
+                    if role is not None:
+                        await role.delete()
+            else:
+                return await ctx.send("Team was not found, ensure capitilization is correct.")
+            del nteams[team]
+            async with cog.config.guild(ctx.guild).nstandings() as nstandings:
+                del nstandings[team]
             return await ctx.send("Team successfully removed.")

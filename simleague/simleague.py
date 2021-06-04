@@ -27,7 +27,7 @@ from .simtheme import SimthemeMixin
 from .palmares import PalmaresMixin
 from .standings import StandingsMixin
 from .tots import TotsMixin
-from .utils import getformbonus, getformbonuspercent, mapcountrytoflag
+from .utils import getformbonus, getformbonuspercent, mapcountrytoflag, checkReacts
 
 # THANKS TO https://code.sololearn.com/ci42wd5h0UQX/#py FOR THE SIMULATION AND FIXATOR/AIKATERNA/STEVY FOR THE PILLOW HELP/LEVELER
 
@@ -82,6 +82,7 @@ class SimLeague(
             },
             "nstandings": {},
             "fixtures": [],
+            "nfixtures": [],
             "palmares": {},
             "cupgames": {},
             "cupstats": {
@@ -588,8 +589,8 @@ class SimLeague(
         teams = await self.config.guild(ctx.guild).nteams()
         standings = await self.config.guild(ctx.guild).nstandings()
         grouplist = list(ascii_uppercase)[:int(len(teams) / 4)]
-        roundsize = 2 ** math.ceil(math.log2(len(teams)))
         if len(teams) in [8, 16, 32]:
+            roundsize = len(teams)
             winners = []
             runnerups = []
             fixtures = []
@@ -609,6 +610,7 @@ class SimLeague(
                 await ctx.send("Random winner: {}".format(A))
                 ru = [x for x in runnerups if teams[x]
                       ["group"] != teams[A]["group"]]
+                # TODO: Send this nicely
                 await ctx.send("Possible runner-ups: {}".format(ru))
                 B = random.choice(ru)
                 await ctx.send("Random runner-up: {}".format(B))
@@ -627,6 +629,7 @@ class SimLeague(
             async with self.config.guild(ctx.guild).ngames() as games:
                 games[str(roundsize)] = fixtures
         elif len(teams) == 24:
+            roundsize = 16
             winners = []
             runnerups = []
             thirds = []
@@ -718,6 +721,55 @@ class SimLeague(
     @nat.command(name="fixtures")
     async def nat_fixtures(self, ctx):
         """Show national tournament fixtures."""
+        fixtures = await self.config.guild(ctx.guild).nfixtures()
+        if not fixtures:
+            return await ctx.send("No fixtures have been made.")
+        embeds = []
+        pages = ceil(len(fixtures) / 15)
+        for page in range(pages):
+            embed = discord.Embed(
+                colour=ctx.author.colour,
+                description="---------------------------- Fixtures _(page {}/{})_ ----------------------------".format(
+                    page + 1, pages
+                ),
+            )
+            page = page + 1
+            p1 = (page - 1) * 15 if page > 1 else page - 1
+            p2 = page * 15
+            for i, fixture in enumerate(fixtures[p1:p2]):
+                a = []
+                for j, game in enumerate(fixture):
+                    team1 = game['team1']
+                    team1short = team1[:3].upper()
+                    team2 = game['team2']
+                    team2short = team2[:3].upper()
+                    score1 = game['score1']
+                    score2 = game['score2']
+                    br = "\n" if j % 2 != 0 else ""
+                    if score1 is None:
+                        a.append(
+                            f"{mapcountrytoflag(team1)} {team1short} vs {team2short} {mapcountrytoflag(team2)}{br}"
+                        )  
+                    elif score1 == score2:
+                        a.append(
+                            f"{mapcountrytoflag(team1)} {team1short} {score1}-{score2} {team2short} {mapcountrytoflag(team2)}{br}"
+                        )
+                    elif score1 > score2:
+                        a.append(
+                            f"{mapcountrytoflag(team1)} **{team1short} {score1}**-{score2} {team2short} {mapcountrytoflag(team2)}{br}"
+                        )
+                    else:
+                        a.append(
+                            f"{mapcountrytoflag(team1)} {team1short} {score1}-**{score2} {team2short}** {mapcountrytoflag(team2)}{br}"
+                        )
+                embed.add_field(name="Week {}".format(
+                    i + 1 + p1), value="\n".join(a))
+            embeds.append(embed)
+        await menu(ctx, embeds, DEFAULT_CONTROLS)
+
+    @nat.command(name="bracket")
+    async def nat_bracket(self, ctx):
+        """Show national tournament bracket."""
         games = await self.config.guild(ctx.guild).ngames()
         if not games:
             return await ctx.send("No fixtures have been made.")
@@ -729,25 +781,31 @@ class SimLeague(
             fixtures = games[rd]
             a = []
             for fixture in fixtures:
-                if fixture["score1"] == fixture["score2"]:
-                    if fixture["penscore1"] == fixture["penscore2"]:
+                score1 = fixture["score1"]
+                score2 = fixture["score2"]
+                penscore1 = fixture["penscore1"]
+                penscore2 = fixture["penscore2"]
+                team1 = fixture["team1"]
+                team2 = fixture["team2"]
+                if score1 == score2:
+                    if penscore1 == penscore2:
                         a.append(
-                            f"{mapcountrytoflag(fixture['team1'])} {fixture['team1']} vs {fixture['team2']} {mapcountrytoflag(fixture['team2'])}")
-                    elif fixture["penscore1"] > fixture["penscore2"]:
+                            f"{mapcountrytoflag(team1)} {team1} vs {team2} {mapcountrytoflag(team2)}")
+                    elif penscore1 > penscore2:
                         a.append(
-                            f"{mapcountrytoflag(fixture['team1'])} **{fixture['team1']} {fixture['score1']} ({fixture['penscore1']})**-({fixture['penscore2']}) {fixture['score2']} {fixture['team2']} {mapcountrytoflag(fixture['team2'])}"
+                            f"{mapcountrytoflag(team1)} **{team1} {score1} ({penscore1})**-({penscore2}) {score2} {team2} {mapcountrytoflag(team2)}"
                         )
                     else:
                         a.append(
-                            f"{mapcountrytoflag(fixture['team1'])} {fixture['team1']} {fixture['score1']} ({fixture['penscore1']})-**({fixture['penscore2']}) {fixture['score2']} {fixture['team2']}** {mapcountrytoflag(fixture['team2'])}"
+                            f"{mapcountrytoflag(team1)} {team1} {score1} ({penscore1})-**({penscore2}) {score2} {team2}** {mapcountrytoflag(team2)}"
                         )
-                elif fixture["score1"] > fixture["score2"]:
+                elif score1 > score2:
                     a.append(
-                        f"{mapcountrytoflag(fixture['team1'])} **{fixture['team1']} {fixture['score1']}**-{fixture['score2']} {fixture['team2']} {mapcountrytoflag(fixture['team2'])}"
+                        f"{mapcountrytoflag(team1)} **{team1} {score1}**-{score2} {team2} {mapcountrytoflag(team2)}"
                     )
                 else:
                     a.append(
-                        f"{mapcountrytoflag(fixture['team1'])} {fixture['team1']} {fixture['score1']}-**{fixture['score2']} {fixture['team2']}** {mapcountrytoflag(fixture['team2'])}"
+                        f"{mapcountrytoflag(team1)} {team1} {score1}-**{score2} {team2}** {mapcountrytoflag(team2)}"
                     )
             title = ""
             if int(rd) >= 16:
@@ -765,6 +823,7 @@ class SimLeague(
     async def nat_draw_next_round(self, ctx):
         nteams = await self.config.guild(ctx.guild).nteams()
         ngames = await self.config.guild(ctx.guild).ngames()
+        # TODO: Send games like cup rounds in chat
         async with ctx.typing():
             if len(ngames):
                 keys = list(ngames.keys())
@@ -892,10 +951,16 @@ class SimLeague(
                 }
         await ctx.tick()
 
+    @nat.command(name="clearbracket")
+    async def nat_clear_bracket (self, ctx):
+        """Clear bracket."""
+        await self.config.guild(ctx.guild).ngames.set({})
+        await ctx.tick()
+
     @nat.command(name="clearfixtures")
     async def nat_clear_fixtures(self, ctx):
         """Clear fixtures."""
-        await self.config.guild(ctx.guild).ngames.set({})
+        await self.config.guild(ctx.guild).nfixtures.set([])
         await ctx.tick()
 
     @nat.command(name="cleardraft")
@@ -5012,6 +5077,13 @@ class SimLeague(
         if isgroupgame:
             if nteams[team1]["group"] != nteams[team2]["group"]:
                 return await ctx.send("These two teams are not in the same group.")
+        fixtures = await self.config.guild(ctx.guild).nfixtures()
+        fixture = [f for f in fixtures[0] if f["team1"] == team1 and f["team2"] == team2]
+        idx = fixtures[0].index(fixture[0])
+        if fixture[0]["score1"] is not None:
+            confirm = await checkReacts(self, ctx, "This game has already been played. Proceed ?")
+            if confirm == False:
+                return await ctx.send("Game has been cancelled.")                
         await asyncio.sleep(2)
         lvl1 = 1
         lvl2 = 1
@@ -5875,6 +5947,7 @@ class SimLeague(
                     (team1Stats[12], team2Stats[12]),
                     True
                 )
+                ht = await self.config.guild(ctx.guild).htbreak()
                 await ctx.send(file=image)
                 await asyncio.sleep(ht)
                 await timemsg.delete()
@@ -5970,6 +6043,32 @@ class SimLeague(
                             nstandings[team1]["played"] += 1
                             nstandings[team2]["losses"] += 1
                             nstandings[team2]["played"] += 1
+                            async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
+                                # Lookup in first legs
+                                fixture = [
+                                    f for f in nfixtures[0] if f["team1"] == team1 and f["team2"] == team2
+                                ]
+                                index = 0
+                                if not len(fixture):
+                                    # Else, grab fixture from return games
+                                    fixture = [
+                                        f for f in nfixtures[1] if f["team1"] == team1 and f["team2"] == team2
+                                    ]
+                                    index = 1
+                                fixture = fixture[0]
+
+                                idx = nfixtures[index].index(fixture)
+                                if fixture["team1"] == team1:
+                                    score1 = team1Stats[8]
+                                    score2 = team2Stats[8]
+                                    fixture["score1"] = score1
+                                    fixture["score2"] = score2
+                                else:
+                                    score1 = team2Stats[8]
+                                    score2 = team1Stats[8]
+                                    fixture["score1"] = score1
+                                    fixture["score2"] = score2
+                                nfixtures[index][idx] = fixture                            
                     t = await self.payout(ctx.guild, team1, homewin)
                 if team1Stats[8] < team2Stats[8]:
                     async with self.config.guild(ctx.guild).nstandings() as nstandings:
@@ -5987,6 +6086,32 @@ class SimLeague(
                             nstandings[team2]["played"] += 1
                             nstandings[team1]["losses"] += 1
                             nstandings[team1]["played"] += 1
+                            async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
+                                # Lookup in first legs
+                                fixture = [
+                                    f for f in nfixtures[0] if f["team1"] == team1 and f["team2"] == team2
+                                ]
+                                index = 0
+                                if not len(fixture):
+                                    # Else, grab fixture from return games
+                                    fixture = [
+                                        f for f in nfixtures[1] if f["team1"] == team1 and f["team2"] == team2
+                                    ]
+                                    index = 1
+                                fixture = fixture[0]
+
+                                idx = nfixtures[index].index(fixture)
+                                if fixture["team1"] == team1:
+                                    score1 = team1Stats[8]
+                                    score2 = team2Stats[8]
+                                    fixture["score1"] = score1
+                                    fixture["score2"] = score2
+                                else:
+                                    score1 = team2Stats[8]
+                                    score2 = team1Stats[8]
+                                    fixture["score1"] = score1
+                                    fixture["score2"] = score2
+                                nfixtures[index][idx] = fixture
                     t = await self.payout(ctx.guild, team2, awaywin)
 
                 # Handle extra time
@@ -6007,6 +6132,32 @@ class SimLeague(
                             nstandings[team1]["played"] += 1
                             nstandings[team1]["draws"] += 1
                             nstandings[team1]["points"] += 1
+                        async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
+                            # Lookup in first legs
+                            fixture = [
+                                f for f in nfixtures[0] if f["team1"] == team1 and f["team2"] == team2
+                            ]
+                            index = 0
+                            if not len(fixture):
+                                # Else, grab fixture from return games
+                                fixture = [
+                                    f for f in nfixtures[1] if f["team1"] == team1 and f["team2"] == team2
+                                ]
+                                index = 1
+                            fixture = fixture[0]
+
+                            idx = nfixtures[index].index(fixture)
+                            if fixture["team1"] == team1:
+                                score1 = team1Stats[8]
+                                score2 = team2Stats[8]
+                                fixture["score1"] = score1
+                                fixture["score2"] = score2
+                            else:
+                                score1 = team2Stats[8]
+                                score2 = team1Stats[8]
+                                fixture["score1"] = score1
+                                fixture["score2"] = score2
+                            nfixtures[index][idx] = fixture
                         t = await self.payout(ctx.guild, team2, awaywin)
                     else:
                         added = 15
@@ -6406,7 +6557,7 @@ class SimLeague(
                         if team1Stats[8] != 0:
                             nstandings[team1]["gf"] += team1Stats[8]
                             nstandings[team2]["ga"] += team1Stats[8]
-                if not isgroupgame:
+                else:
                     async with self.config.guild(ctx.guild).ngames() as ngames:
                         keys = list(ngames.keys())
                         lastround = ngames[keys[len(keys) - 1]]

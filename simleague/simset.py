@@ -7,7 +7,7 @@ import math
 import random
 import asyncio
 from .utils import checkReacts
-
+from string import ascii_uppercase
 
 class SimsetMixin(MixinMeta):
     """Simulation Settings"""
@@ -322,7 +322,7 @@ class SimsetMixin(MixinMeta):
     @simset.command()
     @commands.bot_has_permissions(manage_roles=True)
     async def setform(self, ctx, team, result: str, streak: int):
-        """Clear streak form for a team or all teams."""
+        """Set streak form for a team or all teams."""
         cog = self.bot.get_cog("SimLeague")
         async with cog.config.guild(ctx.guild).teams() as teams:
             if team not in teams:
@@ -364,6 +364,42 @@ class SimsetMixin(MixinMeta):
             a.append("----------")
 
         await self.config.guild(ctx.guild).fixtures.set(fixtures)
+        await ctx.tick()
+
+    @simset.command()
+    async def createnatfixtures(self, ctx):
+        """Create international fixtures for the current teams."""
+        nteams = await self.config.guild(ctx.guild).nteams()
+        matchs = []
+        fixtures = []
+        grouplist = list(ascii_uppercase)[:len(list(nteams.keys())) // 4]
+        for group in grouplist:
+            teams = {key: value for (key, value) in nteams.items() if value['group'] == group}
+            teams = list(teams.keys())
+            n = len(teams)
+            for fixture in range(1, n):
+                for i in range(n // 2):
+                    matchs.append({
+                        "team1": teams[i],
+                        "score1": None,
+                        "team2": teams[n - 1 - i],
+                        "score2": None
+                    })
+                teams.insert(1, teams.pop())
+            fixtures.insert(len(fixtures) // 2, matchs)
+            matchs = []
+        a = []
+        finalfixtures = []
+
+        for j in range(0, len(fixtures), 2):
+            roundfixtures = []
+            for i, fixture in enumerate(fixtures):
+                roundfixtures.append(fixture[j+0])
+                roundfixtures.append(fixture[j+1])
+        
+            random.shuffle(roundfixtures)
+            finalfixtures.append(roundfixtures)
+        await self.config.guild(ctx.guild).nfixtures.set(finalfixtures)
         await ctx.tick()
 
     @simset.command()

@@ -537,7 +537,7 @@ class SimLeague(
                                standings[x]["gd"], standings[x]["gf"]),
                 reverse=True,
             ):
-                gd = standings[x]["gd"]
+                gd = standings[x]["gf"] - standings[x]["ga"]
                 gd = f"+{gd}" if gd > 0 else gd
                 t.append(
                     [

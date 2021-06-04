@@ -76,8 +76,8 @@ class NatStatsMixin(MixinMeta):
     #     notes = await self.config.guild(ctx.guild).notes()
     #     user1id = str(user1.id)
     #     user2id = str(user2.id)
-    #     user1_team = await self.get_user_with_team(ctx, user1id)
-    #     user2_team = await self.get_user_with_team(ctx, user2id)
+    #     user1_team = await self.nat_get_user_with_team(ctx, user1id)
+    #     user2_team = await self.nat_get_user_with_team(ctx, user2id)
     #     embed = discord.Embed(
     #         title="Players Comparison",
     #         description="------------- {} vs {} -------------\n\n".format(user1.name, user2.name),
@@ -360,7 +360,7 @@ class NatStatsMixin(MixinMeta):
 
         else:
             await ctx.send_help()
-            stats = await self.config.guild(ctx.guild).stats()
+            stats = await self.config.guild(ctx.guild).nstats()
             goalscorer = sorted(stats["goals"], key=stats["goals"].get, reverse=True)
             owngoalscorer = sorted(stats["owngoals"], key=stats["owngoals"].get, reverse=True)
             assists = sorted(stats["assists"], key=stats["assists"].get, reverse=True)
@@ -416,19 +416,8 @@ class NatStatsMixin(MixinMeta):
             )
             await ctx.maybe_send_embed(msg)
 
-    async def nat_statsmention(self, ctx, stats):
-        if stats:
-            user = self.bot.get_user(int(stats[0]))
-            if not user:
-                user = await self.bot.fetch_user(int(stats[0]))
-                if not user:
-                    return "Invalid User {}".format(stats[0])
-            return f"_{user.name}_"
-        else:
-            return "None"
-
     async def nat_get_user_with_team(self, ctx, userid):
-        teams = await self.config.guild(ctx.guild).teams()
+        teams = await self.config.guild(ctx.guild).nteams()
         user = self.bot.get_user(int(userid))
         if not user:
             user = await self.bot.fetch_user(int(userid))
@@ -459,7 +448,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(notes, key=notes.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i + p1 +1}. {user_team[0].name} ({user_team[1]}) - {notes[k]}")
                 embed = discord.Embed(
                     title="Best players _({}/{})_".format(page, pages),
@@ -488,7 +477,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i + p1 + 1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
                 embed = discord.Embed(
                     title="Top goal involvements (goals + assists) _({}/{})_".format(page, pages),
@@ -514,7 +503,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i + p1 + 1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
                 embed = discord.Embed(
                     title="Top Scorers _({}/{})_".format(page, pages),
@@ -540,7 +529,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i+p1+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
                 embed = discord.Embed(
                     title="Most Own Goals _({}/{})_".format(page, pages),
@@ -550,7 +539,7 @@ class NatStatsMixin(MixinMeta):
                 embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
-    @nat_leaguestats.command(aliases=["yellowcards"])
+    @nat_leaguestats.command(name="yellows", aliases=["yellowcards"])
     async def nat_yellows(self, ctx):
         """Players with the most yellow cards."""
         stats = await self.config.guild(ctx.guild).nstats()
@@ -566,7 +555,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i+p1+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
                 embed = discord.Embed(
                     title="Most Yellow Cards _({}/{})_".format(page, pages),
@@ -576,7 +565,7 @@ class NatStatsMixin(MixinMeta):
                 embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
-    @nat_leaguestats.command(alies=["redcards"])
+    @nat_leaguestats.command(name="reds", alies=["redcards"])
     async def nat_reds(self, ctx):
         """Players with the most red cards."""
         stats = await self.config.guild(ctx.guild).nstats()
@@ -592,7 +581,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i+p1+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
                 embed = discord.Embed(
                     title="Most Red Cards _({}/{})_".format(page, pages),
@@ -602,7 +591,7 @@ class NatStatsMixin(MixinMeta):
                 embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
-    @nat_leaguestats.command(alias=["motms"])
+    @nat_leaguestats.command(name="motm", alias=["motms"])
     async def nat_motm(self, ctx):
         """Players with the most MOTMs."""
         stats = await self.config.guild(ctx.guild).nstats()
@@ -618,7 +607,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i+p1+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
                 embed = discord.Embed(
                     title="Most MOTMs _({}/{})_".format(page, pages),
@@ -644,7 +633,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i+p1+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
                 embed = discord.Embed(
                     title="Most Fouls _({}/{})_".format(page, pages),
@@ -670,7 +659,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i+p1+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
                 embed = discord.Embed(
                     title="Most Shots _({}/{})_".format(page, pages),
@@ -680,7 +669,7 @@ class NatStatsMixin(MixinMeta):
                 embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
-    @nat_leaguestats.command()
+    @nat_leaguestats.command(name="penalties")
     async def nat_penalties(self, ctx):
         """Penalties scored and missed statistics."""
         stats = await self.config.guild(ctx.guild).nstats()
@@ -691,12 +680,12 @@ class NatStatsMixin(MixinMeta):
             for i, k in enumerate(
                 sorted(stats, key=lambda x: stats[x]["scored"], reverse=True)[:10]
             ):
-                user_team = await self.get_user_with_team(ctx, k)
+                user_team = await self.nat_get_user_with_team(ctx, k)
                 a.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]['scored']}")
             for i, k in enumerate(
                 sorted(stats, key=lambda x: stats[x]["missed"], reverse=True)[:10]
             ):
-                user_team = await self.get_user_with_team(ctx, k)
+                user_team = await self.nat_get_user_with_team(ctx, k)
                 b.append(f"{i+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]['missed']}")
             embed = discord.Embed(
                 title="Penalty Statistics",
@@ -709,7 +698,7 @@ class NatStatsMixin(MixinMeta):
         else:
             await ctx.send("No stats available.")
 
-    @nat_leaguestats.command()
+    @nat_leaguestats.command(name="assists")
     async def nat_assists(self, ctx):
         """Players with the most assists."""
         stats = await self.config.guild(ctx.guild).nstats()
@@ -725,7 +714,7 @@ class NatStatsMixin(MixinMeta):
                 p2 = page * 10
                 a = []
                 for i, k in enumerate(sorted(stats, key=stats.get, reverse=True)[p1:p2]):
-                    user_team = await self.get_user_with_team(ctx, k)
+                    user_team = await self.nat_get_user_with_team(ctx, k)
                     a.append(f"{i+p1+1}. {user_team[0].name} ({user_team[1]}) - {stats[k]}")
                 embed = discord.Embed(
                     title="Most Assists _({}/{})_".format(page, pages),

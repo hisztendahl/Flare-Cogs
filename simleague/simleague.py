@@ -332,8 +332,6 @@ class SimLeague(
             }
         await ctx.tick()
 
-    # TODO: Clean users not in a team - To be tested
-    # TODO: Move command to simset group
     @commands.command(name="cleanusers")
     async def clean_users(self, ctx):
         teams = await self.config.guild(ctx.guild).teams()
@@ -605,15 +603,15 @@ class SimLeague(
                 )
                 winners.append(sortedstandings[0])
                 runnerups.append(sortedstandings[1])
+            await ctx.send("__Teams that finished first, and cannot face each other:__\n{}".format(", ".join(winners)))
+            await asyncio.sleep(5)
+            await ctx.send("Teams that finished second:\n{}".format(", ".join(runnerups)))
+            await asyncio.sleep(15)
             for i in range(int(len(teams) / 4)):
                 A = random.choice(winners)
-                await ctx.send("Random winner: {}".format(A))
                 ru = [x for x in runnerups if teams[x]
                       ["group"] != teams[A]["group"]]
-                # TODO: Send this nicely
-                await ctx.send("Possible runner-ups: {}".format(ru))
                 B = random.choice(ru)
-                await ctx.send("Random runner-up: {}".format(B))
                 fixtures.append(
                     {
                         "team1": A,
@@ -624,6 +622,8 @@ class SimLeague(
                         "penscore2": 0,
                     }
                 )
+                await ctx.send("**{}** vs **{}**".format(A, B))
+                await asyncio.sleep(10)
                 winners.remove(A)
                 runnerups.remove(B)
             async with self.config.guild(ctx.guild).ngames() as games:
@@ -657,9 +657,12 @@ class SimLeague(
             bestthirds = []
             for t in sortedstandings[:4]:
                 bestthirds.append(t)
-            await ctx.send("First-placed teams: {}".format(winners))
-            await ctx.send("Second-placed teams: {}".format(runnerups))
-            await ctx.send("Third-placed teams: {}".format(bestthirds))
+            await ctx.send("__Teams that finished first, and cannot face each other:__\n{}".format(", ".join(winners)))
+            await asyncio.sleep(5)
+            await ctx.send("__Teams that finished second:__\n{}".format(", ".join(runnerups)))
+            await asyncio.sleep(5)
+            await ctx.send("__Best third-placed teams:__\n{}".format(", ".join(bestthirds)))
+            await asyncio.sleep(15)
             for i in range(2):
                 A = random.choice(runnerups)
                 runnerups.remove(A)
@@ -674,12 +677,12 @@ class SimLeague(
                         "penscore2": 0,
                     }
                 )
-                await ctx.send("{} vs {}".format(A, B))
+                await ctx.send("**{}** vs **{}**".format(A, B))
+                await asyncio.sleep(10)
                 runnerups.remove(B)
             for i in range(6):
                 A = random.choice(winners)
-                ru = [x for x in (runnerups + bestthirds)
-                      if teams[x]["group"] != teams[A]["group"]]
+                ru = [x for x in (runnerups + bestthirds) if teams[x]["group"] != teams[A]["group"]]
                 B = random.choice(ru)
                 fixtures.append(
                     {
@@ -691,7 +694,7 @@ class SimLeague(
                         "penscore2": 0,
                     }
                 )
-                await ctx.send("{} vs {}".format(A, B))
+                await ctx.send("**{}** vs **{}**".format(A, B))
                 winners.remove(A)
                 if B in runnerups:
                     runnerups.remove(B)

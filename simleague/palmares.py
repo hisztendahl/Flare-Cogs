@@ -257,14 +257,14 @@ class PalmaresMixin(MixinMeta):
                 for uid in palmares:
                     player = await self.bot.fetch_user(uid)
                     if season1 in palmares[uid]:
-                        await self.checkReacts(
+                        await checkReacts(self, 
                             ctx,
                             "This will replace palmares for season {} for {}".format(
                                 season1, player.name
                             ),
                         )
                         if season2 in palmares[uid]:
-                            confirm = await self.checkReacts(
+                            confirm = await checkReacts(self, 
                                 ctx,
                                 "{} already has a palmares for {}. Are you sure you want to override it ?".format(
                                     player.name, season2
@@ -285,7 +285,7 @@ class PalmaresMixin(MixinMeta):
                 uid = str(user.id)
                 if uid in palmares:
                     if season1 in palmares[uid]:
-                        confirm = await self.checkReacts(
+                        confirm = await checkReacts(self, 
                             ctx,
                             "Palmares season {} will be changed to season {} for {}. Are you sure ?".format(
                                 season1, season2, user.name
@@ -338,7 +338,7 @@ class PalmaresMixin(MixinMeta):
                             )
                             pass
                         else:
-                            confirm = await self.checkReacts(
+                            confirm = await checkReacts(self, 
                                 ctx,
                                 "Palmares stat {} will be moved from season {} to season {} for {}. Are you sure ?".format(
                                     stat, season1, season2, player.name

@@ -32,10 +32,8 @@ class StatsMixin(MixinMeta):
 
     @checks.admin_or_permissions(manage_guild=True)
     @commands.command()
-    async def transferstats(self, ctx, user1: discord.Member, user2: discord.Member):
+    async def transferstats(self, ctx, user1id: str, user2id: str):
         """Transfer statistics from a player to another."""
-        user1id = str(user1.id)
-        user2id = str(user2.id)
         async with self.config.guild(ctx.guild).stats() as stats:
             for stat in stats:
                 if user1id in stats[stat]:

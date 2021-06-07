@@ -20,10 +20,14 @@ class PalmaresMixin(MixinMeta):
         cupgames = await self.config.guild(ctx.guild).cupgames()
         tots = await self.config.guild(ctx.guild).tots()
         async with self.config.guild(ctx.guild).palmares() as palmares:
-            seasonstats = ["goals", "assists", "reds", "yellows", "motm", "owngoals", "shots", "fouls"]
+            seasonstats = ["goals", "assists", "reds", "yellows", "motms", "owngoals", "shots", "fouls"]
             for s in seasonstats:
-                stat = stats[s]
-                for i, userid in list(enumerate(sorted(stat, key=stat.get, reverse=True)))[:10]:
+                if s == "motms":
+                    stat = stats["motm"]
+                else:
+                    stat = stats[s]
+                sortedstats = sorted(stat, key=stat.get, reverse=True)
+                for i, userid in list(enumerate(sortedstats))[:10]:
                     if userid in palmares:
                         if season in palmares[userid]:
                             if s in palmares[userid][season]:
@@ -93,9 +97,9 @@ class PalmaresMixin(MixinMeta):
                         palmares[userid] = {}
                         palmares[userid][season] = {}
                         palmares[userid][season]["finish"] = (t, i + 1)            
-            for i, t in enumerate(
+            for i, t in list(enumerate(
                 sorted(stats["cleansheets"], key=stats["cleansheets"].get, reverse=True)
-            ):
+            ))[:1]:
                 team = teams[t]
                 for userid in team["members"]:
                     if userid in palmares:
@@ -475,13 +479,13 @@ class PalmaresMixin(MixinMeta):
             else:
                 s = ["average note", ""]
             return "{} {} with {} {}.".format(prefix, s[0], value, s[1])
-        if stat in ["shots", "fouls"]:
+        if stat in ["shots", "fouls", "owngoals"]:
             if n == 0:
                 prefix = "Most"
             else:
                 prefix = "{} most".format(nth)            
             return "{} {} with {} {}.".format(prefix, stat, value, stat)
-        if stat in ["yellows", "reds", "motms", "owngoals"]:
+        if stat in ["yellows", "reds", "motms"]:
             if n == 0:
                 prefix = "Most"
             else:

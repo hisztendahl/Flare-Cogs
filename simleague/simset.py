@@ -951,6 +951,17 @@ class SimsetMixin(MixinMeta):
             return await ctx.send("Cancelled.")
         await self.config.guild(ctx.guild).palmares.set({})
         await ctx.tick()
+    
+    @clear.command(name="palmaresseason")
+    async def clear_palmares(self, ctx, season: str):
+        confirm = await checkReacts(self, ctx, "This will clear all palmares for season {}. Proceed ?".format(season))
+        if confirm == False:
+            return await ctx.send("Cancelled.")
+        async with self.config.guild(ctx.guild).palmares() as palmares:
+            for userid in palmares:
+                if season in palmares[userid]:
+                    del palmares[userid][season]
+        await ctx.tick()
 
     @clear.command(name="tots")
     async def clear_tots(self, ctx):

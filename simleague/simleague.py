@@ -110,7 +110,7 @@ class SimLeague(
                 "shots": {},
             },
             "notes": {},
-            # TODO: Add nat notes ? + notes commands
+            "natnotes": {},
             "users": [],
             "resultchannel": [],
             "transferchannel": [],
@@ -826,7 +826,6 @@ class SimLeague(
     async def nat_draw_next_round(self, ctx):
         nteams = await self.config.guild(ctx.guild).nteams()
         ngames = await self.config.guild(ctx.guild).ngames()
-        # TODO: Send games like cup rounds in chat
         async with ctx.typing():
             if len(ngames):
                 keys = list(ngames.keys())
@@ -863,16 +862,12 @@ class SimLeague(
                         msg = await ctx.send("Game {}:".format(i + 1))
                         rdteam1 = random.choice(drawables)
                         drawables = [x for x in drawables if x is not rdteam1]
-                        rdteam1mention = ctx.guild.get_role(
-                            nteams[rdteam1]["role"]).mention
-                        await msg.edit(content="Game {}: {} vs ...".format(i + 1, rdteam1mention))
+                        await msg.edit(content="Game {}: {} {} vs ...".format(i + 1, mapcountrytoflag(rdteam1), rdteam1))
                         rdteam2 = random.choice(drawables)
-                        rdteam2mention = ctx.guild.get_role(
-                            nteams[rdteam2]["role"]).mention
                         await asyncio.sleep(5)
                         await msg.edit(
-                            content="Game {}: {} vs {}!".format(
-                                i + 1, rdteam1mention, rdteam2mention
+                            content="Game {}: {} {} vs {} {} !".format(
+                                i + 1, mapcountrytoflag(rdteam1), rdteam1, rdteam2, mapcountrytoflag(rdteam2)
                             )
                         )
                         draw.append(
@@ -906,10 +901,7 @@ class SimLeague(
             )
             a = []
             for fixture in fixtures:
-                if fixture["team2"] == "BYE":
-                    a.append(f"**{fixture['team1']}** _(qualified directly)_")
-                else:
-                    a.append(f"{fixture['team1']} vs {fixture['team2']}")
+                a.append(f"{mapcountrytoflag(fixture['team1'])} {fixture['team1'][:3].upper()} vs {fixture['team2'][:3].upper()} {mapcountrytoflag(fixture['team2'])}")
             title = ""
             if roundsize >= 16:
                 title = "Round of {}".format(roundsize)
@@ -5070,7 +5062,9 @@ class SimLeague(
                 game for game in playedgames if game["team1"] == team1 and game["team2"] == team2
             ]
             if len(isgameplayed):
-                return await ctx.send("This game has already been played.")
+                confirm = await checkReacts(self, ctx, "This game has already been played. Proceed ?")
+                if confirm == False:
+                    return await ctx.send("Game has been cancelled.")                
             if not len(doesgameexist):
                 return await ctx.send("This game does not exist.")
         if team1 not in nteams or team2 not in nteams:
@@ -5080,13 +5074,13 @@ class SimLeague(
         if isgroupgame:
             if nteams[team1]["group"] != nteams[team2]["group"]:
                 return await ctx.send("These two teams are not in the same group.")
-        fixtures = await self.config.guild(ctx.guild).nfixtures()
-        fixture = [f for f in fixtures[0] if f["team1"] == team1 and f["team2"] == team2]
-        idx = fixtures[0].index(fixture[0])
-        if fixture[0]["score1"] is not None:
-            confirm = await checkReacts(self, ctx, "This game has already been played. Proceed ?")
-            if confirm == False:
-                return await ctx.send("Game has been cancelled.")                
+            fixtures = await self.config.guild(ctx.guild).nfixtures()
+            fixture = [f for f in fixtures[0] if f["team1"] == team1 and f["team2"] == team2]
+            idx = fixtures[0].index(fixture[0])
+            if fixture[0]["score1"] is not None:
+                confirm = await checkReacts(self, ctx, "This game has already been played. Proceed ?")
+                if confirm == False:
+                    return await ctx.send("Game has been cancelled.")                
         await asyncio.sleep(2)
         lvl1 = 1
         lvl2 = 1
@@ -6620,17 +6614,18 @@ class SimLeague(
         await ctx.send(file=image)
         if motm:
             motmwinner = sorted(motm, key=motm.get, reverse=True)[0]
-            if motmwinner.id in goals:
-                motmgoals = goals[motmwinner.id]
+            motmid = str(motmwinner.id)
+            if motmid in goals:
+                motmgoals = goals[motmid]
             else:
                 motmgoals = 0
-            if motmwinner.id in assists:
-                motmassists = assists[motmwinner.id]
+            if motmid in assists:
+                motmassists = assists[motmid]
             else:
                 motmassists = 0
             try:
                 await bank.deposit_credits(
-                    self.bot.get_user(motmwinner.id), (75 *
+                    self.bot.get_user(motmid), (75 *
                                                        motmgoals) + (30 * motmassists)
                 )
             except AttributeError:
@@ -6638,8 +6633,7 @@ class SimLeague(
             im = await self.motmpic(
                 ctx,
                 motmwinner,
-                team1 if str(
-                    motmwinner.id) in nteams[team1]["members"].keys() else team2,
+                team1 if motmid in nteams[team1]["members"].keys() else team2,
                 motmgoals,
                 motmassists,
                 True
@@ -6685,16 +6679,24 @@ class SimLeague(
                 else:
                     nstats["fouls"][f] += fouls[f]
             await ctx.send(file=im)
+        async with self.config.guild(ctx.guild).natnotes() as notes:
+            for m in motm:
+                note = motm[m] if motm[m] < 10 else 10
+                if str(m.id) not in notes:
+                    notes[str(m.id)] = [note]
+                else:
+                    notes[str(m.id)].append(note)
         a = []  # PrettyTable(["Player", "G", "A", "YC, "RC", "Note"])
         for x in sorted(motm, key=motm.get, reverse=True):
+            xid = str(x.id)
             a.append(
                 [
                     x.name[:10]
-                    + f" ({team1[:3].upper() if str(x.id) in nteams[team1]['members'].keys() else team2[:3].upper()})",
-                    goals[x.id] if x.id in goals else "-",
-                    assists[x.id] if x.id in assists else "-",
-                    yellowcards[x.id] if x.id in yellowcards else "-",
-                    redcards[x.id] if x.id in redcards else "-",
+                    + f" ({team1[:3].upper() if xid in nteams[team1]['members'].keys() else team2[:3].upper()})",
+                    goals[xid] if xid in goals else "-",
+                    assists[xid] if xid in assists else "-",
+                    yellowcards[xid] if xid in yellowcards else "-",
+                    redcards[xid] if xid in redcards else "-",
                     motm[x] if motm[x] <= 10 else 10,
                 ]
             )

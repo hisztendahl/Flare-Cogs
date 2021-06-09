@@ -332,32 +332,54 @@ class SimLeague(
             }
         await ctx.tick()
 
-    @commands.command(name="cleanusers")
-    async def clean_users(self, ctx):
-        teams = await self.config.guild(ctx.guild).teams()
-        activeusers = []
-        for team in teams:
-            for uid in teams[team]["members"]:
-                activeusers.push(uid)
+    @commands.command(name="addusers")
+    async def add_users(self, ctx, *userids):
         async with self.config.guild(ctx.guild).users() as users:
-            for uid in activeusers:
+            for uid in userids:
                 if uid not in users:
                     users.append(uid)
-            for uid in users:
-                if uid not in activeusers:
+        await ctx.tick()
+
+    @commands.command(name="removeusers")
+    async def remove_users(self, ctx, *userids):
+        async with self.config.guild(ctx.guild).users() as users:
+            for uid in userids:
+                if uid in users:
                     users.remove(uid)
         await ctx.tick()
 
+    @commands.command(name="viewusers")
+    async def view_users(self, ctx, *userids):
+        users = await self.config.guild(ctx.guild).users()
+        await ctx.send(users)
+        await ctx.tick()
+
+    @commands.command(name="cleanusers")
+    async def clean_users(self, ctx):
+        teams = await self.config.guild(ctx.guild).teams()
+        async with self.config.guild(ctx.guild).users() as users:
+            activeusers = []
+            for team in teams:
+                for uid in teams[team]["members"]:
+                    activeusers.append(uid)
+            for uid in users:
+                if uid not in activeusers:
+                    users.remove(uid)
+        await self.config.guild(ctx.guild).users.set(list(dict.fromkeys(activeusers)))
+        await ctx.tick()
+
     @nat.command(name="draft")
-    async def nat_draft(self, ctx):
+    async def nat_draft(self, ctx, teamsize = 4):
         """Assign players to national teams."""
         users = await self.config.guild(ctx.guild).users()
         await ctx.send("{} total users available to draft".format(len(users)))
         async with self.config.guild(ctx.guild).nteams() as nteams:
             c = 1
             for team in nteams:
-                await ctx.send("{} - Drafting players for {}.".format(c, team))
-                for i in range(4):
+                asyncio.sleep(10)
+                await ctx.send("{}. {} Drafting players for {}.".format(c, mapcountrytoflag(team), team))
+                teamusers = []
+                for i in range(teamsize):
                     uid = random.choice(users)
                     user = self.bot.get_user(uid)
                     if user is None:
@@ -367,81 +389,62 @@ class SimLeague(
                         nteams[team]["captain"] = name
                     nteams[team]["members"] = {
                         **nteams[team]["members"], **name}
-                    # users.remove(uid)
+                    teamusers.append(user.mention)
+                    users.remove(uid)
+                players = ", ".join(teamusers)
+                await ctx.send(f"{players} have been called up for {team}!\n")
                 c += 1
         await ctx.tick()
 
     @nat.command(name="teams")
-    async def nat_list(self, ctx, updatecache: bool = False, mobilefriendly: bool = True):
+    async def nat_list(self, ctx, updatecache: bool = False):
         """List current national teams."""
         if updatecache:
             await self.updatecacheall(ctx.guild)
         teams = await self.config.guild(ctx.guild).nteams()
         if not teams:
             return await ctx.send("No teams have been registered.")
-        if mobilefriendly:
-            embed = discord.Embed(
-                colour=ctx.author.colour,
-                description="------------ Team List ------------",
+        embed = discord.Embed(
+            colour=ctx.author.colour,
+            description="------------ Team List ------------",
+        )
+        msg = await ctx.send(
+            "This may take some time depending on the amount of teams currently registered."
+        )
+        if time.time() - self.cache >= 86400:
+            await msg.edit(
+                content="Updating the level cache, please wait. This may take some time."
             )
-            msg = await ctx.send(
-                "This may take some time depending on the amount of teams currently registered."
-            )
-            if time.time() - self.cache >= 86400:
-                await msg.edit(
-                    content="Updating the level cache, please wait. This may take some time."
-                )
-                await self.updatecacheall(ctx.guild)
-                self.cache = time.time()
-            async with ctx.typing():
-                for team in teams:
-                    mems = [x for x in teams[team]["members"].values()]
-                    lvl = teams[team]["cachedlevel"]
-                    role = ctx.guild.get_role(teams[team]["role"])
-                    embed.add_field(
-                        name="Team {}".format(team),
-                        value="{}**Members**:\n{}\n**Captain**: {}\n**Team Level**: ~{}{}{}\n**Group:** {}".format(
-                            "**Full Name**:\n{}\n".format(
-                                teams[team]["fullname"])
-                            if teams[team]["fullname"] is not None
-                            else "",
-                            "\n".join(mems),
-                            list(teams[team]["captain"].values())[0],
-                            lvl,
-                            "\n**Role**: {}".format(
-                                role.mention if role is not None else None)
-                            if teams[team]["role"] is not None
-                            else "",
-                            "\n**Stadium**: {}".format(teams[team]["stadium"])
-                            if teams[team]["stadium"] is not None
-                            else "",
-                            teams[team]["group"] if "group" in teams[team] else "",
-                        ),
-                        inline=True,
-                    )
-            await msg.edit(embed=embed, content=None)
-        else:
-            teamlen = max(*[len(str(i)) for i in teams], 5) + 3
-            rolelen = max(*[len(str(teams[i]["role"])) for i in teams], 5) + 3
-            caplen = max(*[len(list(teams[i]["captain"].values())[0])
-                           for i in teams], 5) + 3
-            lvllen = 6
-
-            msg = f"{'Team':{teamlen}} {'Level':{lvllen}} {'Captain':{caplen}} {'Role':{rolelen}} {'Members'}\n"
+            await self.updatecacheall(ctx.guild)
+            self.cache = time.time()
+        async with ctx.typing():
             for team in teams:
+                mems = [x for x in teams[team]["members"].values()]
                 lvl = teams[team]["cachedlevel"]
-                captain = list(teams[team]["captain"].values())[0]
                 role = ctx.guild.get_role(teams[team]["role"])
-                non = "None"
-                msg += (
-                    f"{f'{team}': <{teamlen}} "
-                    f"{f'{lvl}': <{lvllen}} "
-                    f"{f'{captain}': <{caplen}} "
-                    f"{f'@{role if role is not None else non}': <{rolelen}}"
-                    f"{', '.join(list(teams[team]['members'].values()))} \n"
+                embed.add_field(
+                    name="{} {}".format(mapcountrytoflag(team), team),
+                    value="{}**Members**:\n{}\n**Captain**: {}\n**Team Level**: ~{}{}{}\n**Group:** {}".format(
+                        "**Full Name**:\n{}\n".format(
+                            teams[team]["fullname"])
+                        if teams[team]["fullname"] is not None
+                        else "",
+                        "\n".join(mems),
+                        list(teams[team]["captain"].values())[0] if "captain" in teams[team] else "",
+                        lvl,
+                        "\n**Role**: {}".format(
+                            role.mention if role is not None else None)
+                        if teams[team]["role"] is not None
+                        else "",
+                        "\n**Stadium**: {}".format(teams[team]["stadium"])
+                        if teams[team]["stadium"] is not None
+                        else "",
+                        teams[team]["group"] if "group" in teams[team] else "",
+                    ),
+                    inline=True,
                 )
+        await msg.edit(embed=embed, content=None)
 
-            msg = await ctx.send(box(msg, lang="ini"))
 
     @nat.command(name="team")
     async def nat_team(self, ctx, *, team: str):
@@ -454,7 +457,8 @@ class SimLeague(
         async with ctx.typing():
             embeds = []
             embed = discord.Embed(
-                title="{} {}".format(
+                title="{} {} {}".format(
+                    mapcountrytoflag(team),
                     team,
                     "- {}".format(teams[team]["fullname"])
                     if teams[team]["fullname"] is not None
@@ -964,6 +968,7 @@ class SimLeague(
         async with self.config.guild(ctx.guild).nteams() as nteams:
             for team in nteams:
                 nteams[team]["members"] = {}
+                nteams[team]["captain"] = None
         await ctx.tick()
 
     @commands.command(name="teams")

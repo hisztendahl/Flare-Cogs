@@ -332,42 +332,6 @@ class SimLeague(
             }
         await ctx.tick()
 
-    @commands.command(name="addusers")
-    async def add_users(self, ctx, *userids):
-        async with self.config.guild(ctx.guild).users() as users:
-            for uid in userids:
-                if uid not in users:
-                    users.append(uid)
-        await ctx.tick()
-
-    @commands.command(name="removeusers")
-    async def remove_users(self, ctx, *userids):
-        async with self.config.guild(ctx.guild).users() as users:
-            for uid in userids:
-                if uid in users:
-                    users.remove(uid)
-        await ctx.tick()
-
-    @commands.command(name="viewusers")
-    async def view_users(self, ctx, *userids):
-        users = await self.config.guild(ctx.guild).users()
-        await ctx.send(users)
-        await ctx.tick()
-
-    @commands.command(name="cleanusers")
-    async def clean_users(self, ctx):
-        teams = await self.config.guild(ctx.guild).teams()
-        async with self.config.guild(ctx.guild).users() as users:
-            activeusers = []
-            for team in teams:
-                for uid in teams[team]["members"]:
-                    activeusers.append(uid)
-            for uid in users:
-                if uid not in activeusers:
-                    users.remove(uid)
-        await self.config.guild(ctx.guild).users.set(list(dict.fromkeys(activeusers)))
-        await ctx.tick()
-
     @nat.command(name="draft")
     async def nat_draft(self, ctx, teamsize = 4):
         """Assign players to national teams."""
@@ -444,7 +408,6 @@ class SimLeague(
                     inline=True,
                 )
         await msg.edit(embed=embed, content=None)
-
 
     @nat.command(name="team")
     async def nat_team(self, ctx, *, team: str):

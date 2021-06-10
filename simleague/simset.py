@@ -334,6 +334,46 @@ class SimsetMixin(MixinMeta):
             teams[team]["form"] = {"result": result, "streak": streak}
         await ctx.tick()
 
+    @checks.admin_or_permissions(manage_guild=True)
+    @simset.command(name="addusers")
+    async def add_users(self, ctx, *userids):
+        async with self.config.guild(ctx.guild).users() as users:
+            for uid in userids:
+                if uid not in users:
+                    users.append(uid)
+        await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @simset.command(name="removeusers")
+    async def remove_users(self, ctx, *userids):
+        async with self.config.guild(ctx.guild).users() as users:
+            for uid in userids:
+                if uid in users:
+                    users.remove(uid)
+        await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @simset.command(name="viewusers")
+    async def view_users(self, ctx, *userids):
+        users = await self.config.guild(ctx.guild).users()
+        await ctx.send(users)
+        await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @simset.command(name="cleanusers")
+    async def clean_users(self, ctx):
+        teams = await self.config.guild(ctx.guild).teams()
+        async with self.config.guild(ctx.guild).users() as users:
+            activeusers = []
+            for team in teams:
+                for uid in teams[team]["members"]:
+                    activeusers.append(uid)
+            for uid in users:
+                if uid not in activeusers:
+                    users.remove(uid)
+        await self.config.guild(ctx.guild).users.set(list(dict.fromkeys(activeusers)))
+        await ctx.tick()
+
     @simset.command()
     async def createfixtures(self, ctx):
         """Create the fixtures for the current teams."""

@@ -188,8 +188,7 @@ class SimLeague(
             },
         }
         defaults_user = {"notify": True}
-        self.config = Config.get_conf(
-            self, identifier=4268355870, force_registration=True)
+        self.config = Config.get_conf(self, identifier=4268355870, force_registration=True)
         self.config.register_guild(**defaults)
         self.config.register_user(**defaults_user)
         self.bot = bot
@@ -333,7 +332,7 @@ class SimLeague(
         await ctx.tick()
 
     @nat.command(name="draft")
-    async def nat_draft(self, ctx, teamsize = 4):
+    async def nat_draft(self, ctx, teamsize=4):
         """Assign players to national teams."""
         users = await self.config.guild(ctx.guild).users()
         await ctx.send("{} total users available to draft".format(len(users)))
@@ -341,7 +340,9 @@ class SimLeague(
             c = 1
             for team in nteams:
                 asyncio.sleep(10)
-                await ctx.send("{}. {} Drafting players for {}.".format(c, mapcountrytoflag(team), team))
+                await ctx.send(
+                    "{}. {} Drafting players for {}.".format(c, mapcountrytoflag(team), team)
+                )
                 teamusers = []
                 for i in range(teamsize):
                     uid = random.choice(users)
@@ -351,8 +352,7 @@ class SimLeague(
                     name = {str(user.id): user.name}
                     if i == 0:
                         nteams[team]["captain"] = name
-                    nteams[team]["members"] = {
-                        **nteams[team]["members"], **name}
+                    nteams[team]["members"] = {**nteams[team]["members"], **name}
                     teamusers.append(user.mention)
                     users.remove(uid)
                 players = ", ".join(teamusers)
@@ -389,15 +389,15 @@ class SimLeague(
                 embed.add_field(
                     name="{} {}".format(mapcountrytoflag(team), team),
                     value="{}**Members**:\n{}\n**Captain**: {}\n**Team Level**: ~{}{}{}\n**Group:** {}".format(
-                        "**Full Name**:\n{}\n".format(
-                            teams[team]["fullname"])
+                        "**Full Name**:\n{}\n".format(teams[team]["fullname"])
                         if teams[team]["fullname"] is not None
                         else "",
                         "\n".join(mems),
-                        list(teams[team]["captain"].values())[0] if "captain" in teams[team] else "",
+                        list(teams[team]["captain"].values())[0]
+                        if "captain" in teams[team]
+                        else "",
                         lvl,
-                        "\n**Role**: {}".format(
-                            role.mention if role is not None else None)
+                        "\n**Role**: {}".format(role.mention if role is not None else None)
                         if teams[team]["role"] is not None
                         else "",
                         "\n**Stadium**: {}".format(teams[team]["stadium"])
@@ -435,10 +435,8 @@ class SimLeague(
                 value="\n".join(list(teams[team]["members"].values())),
                 inline=True,
             )
-            embed.add_field(name="Captain:", value=list(
-                teams[team]["captain"].values())[0])
-            embed.add_field(
-                name="Level:", value=teams[team]["cachedlevel"], inline=True)
+            embed.add_field(name="Captain:", value=list(teams[team]["captain"].values())[0])
+            embed.add_field(name="Level:", value=teams[team]["cachedlevel"], inline=True)
             if teams[team]["role"] is not None:
                 role = ctx.guild.get_role(teams[team]["role"])
                 embed.add_field(
@@ -447,15 +445,13 @@ class SimLeague(
                     inline=True,
                 )
             if teams[team]["stadium"] is not None:
-                embed.add_field(name="Stadium:",
-                                value=teams[team]["stadium"], inline=True)
+                embed.add_field(name="Stadium:", value=teams[team]["stadium"], inline=True)
             if teams[team]["logo"] is not None:
                 embed.set_thumbnail(url=teams[team]["logo"])
             embeds.append(embed)
             for kit in teams[team]["kits"]:
                 if teams[team]["kits"][kit] is not None:
-                    embed = discord.Embed(
-                        title=f"{kit.title()} Kit", colour=ctx.author.colour)
+                    embed = discord.Embed(title=f"{kit.title()} Kit", colour=ctx.author.colour)
                     embed.set_image(url=teams[team]["kits"][kit])
                     embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
@@ -466,8 +462,12 @@ class SimLeague(
         async with self.config.guild(ctx.guild).nteams() as teams:
             async with self.config.guild(ctx.guild).nstandings() as nstandings:
                 if len(teams) % 8 != 0:
-                    return await ctx.send("The number of teams must be divisible by 8. You currently have {} teams.".format(len(teams)))
-                grouplist = list(ascii_uppercase)[:int(len(teams) / 4)]
+                    return await ctx.send(
+                        "The number of teams must be divisible by 8. You currently have {} teams.".format(
+                            len(teams)
+                        )
+                    )
+                grouplist = list(ascii_uppercase)[: int(len(teams) / 4)]
                 availableteams = teams.copy()
                 groups = {}
                 for group in grouplist:
@@ -490,16 +490,14 @@ class SimLeague(
         if standings is None:
             return await ctx.send("The table is empty.")
         group = group.upper()
-        standings = {key: value for (
-            key, value) in standings.items() if value['group'] == group}
+        standings = {key: value for (key, value) in standings.items() if value["group"] == group}
         if not standings:
             return await ctx.send("Group {} does not exist".format(group))
         if not verbose:
             t = []  # PrettyTable(["Team", "Pl", "W", "D", "L", "Pts"])
             for x in sorted(
                 standings,
-                key=lambda x: (standings[x]["points"],
-                               standings[x]["gd"], standings[x]["gf"]),
+                key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
                 reverse=True,
             ):
                 gd = standings[x]["gf"] - standings[x]["ga"]
@@ -515,15 +513,13 @@ class SimLeague(
                         gd,
                     ]
                 )
-            tab = tabulate(
-                t, headers=["Team", "Pl.", "W", "D", "L", "Pts", "Diff"])
+            tab = tabulate(t, headers=["Team", "Pl.", "W", "D", "L", "Pts", "Diff"])
             await ctx.send(box(tab))
         else:
             t = []
             for x in sorted(
                 standings,
-                key=lambda x: (standings[x]["points"],
-                               standings[x]["gd"], standings[x]["gf"]),
+                key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
                 reverse=True,
             ):
                 gd = standings[x]["gd"]
@@ -543,8 +539,7 @@ class SimLeague(
                 )
             tab = tabulate(
                 t,
-                headers=["Team", "Pl.", "W", "D",
-                         "L", "GF", "GA", "Pts", "Diff"],
+                headers=["Team", "Pl.", "W", "D", "L", "GF", "GA", "Pts", "Diff"],
             )
             await ctx.send(box(tab))
 
@@ -553,31 +548,38 @@ class SimLeague(
         """Draw knock-out bracket."""
         teams = await self.config.guild(ctx.guild).nteams()
         standings = await self.config.guild(ctx.guild).nstandings()
-        grouplist = list(ascii_uppercase)[:int(len(teams) / 4)]
+        grouplist = list(ascii_uppercase)[: int(len(teams) / 4)]
         if len(teams) in [8, 16, 32]:
             roundsize = len(teams)
             winners = []
             runnerups = []
             fixtures = []
             for group in grouplist:
-                groupstandings = {key: value for (
-                    key, value) in standings.items() if value['group'] == group}
+                groupstandings = {
+                    key: value for (key, value) in standings.items() if value["group"] == group
+                }
                 sortedstandings = sorted(
                     groupstandings,
                     key=lambda x: (
-                        groupstandings[x]["points"], groupstandings[x]["gd"], groupstandings[x]["gf"]),
+                        groupstandings[x]["points"],
+                        groupstandings[x]["gd"],
+                        groupstandings[x]["gf"],
+                    ),
                     reverse=True,
                 )
                 winners.append(sortedstandings[0])
                 runnerups.append(sortedstandings[1])
-            await ctx.send("__Teams that finished first, and cannot face each other:__\n{}".format(", ".join(winners)))
+            await ctx.send(
+                "__Teams that finished first, and cannot face each other:__\n{}".format(
+                    ", ".join(winners)
+                )
+            )
             await asyncio.sleep(5)
             await ctx.send("Teams that finished second:\n{}".format(", ".join(runnerups)))
             await asyncio.sleep(15)
             for i in range(int(len(teams) / 4)):
                 A = random.choice(winners)
-                ru = [x for x in runnerups if teams[x]
-                      ["group"] != teams[A]["group"]]
+                ru = [x for x in runnerups if teams[x]["group"] != teams[A]["group"]]
                 B = random.choice(ru)
                 fixtures.append(
                     {
@@ -602,29 +604,39 @@ class SimLeague(
             thirds = []
             fixtures = []
             for group in grouplist:
-                groupstandings = {key: value for (
-                    key, value) in standings.items() if value['group'] == group}
+                groupstandings = {
+                    key: value for (key, value) in standings.items() if value["group"] == group
+                }
                 sortedstandings = sorted(
                     groupstandings,
                     key=lambda x: (
-                        groupstandings[x]["points"], groupstandings[x]["gd"], groupstandings[x]["gf"]),
+                        groupstandings[x]["points"],
+                        groupstandings[x]["gd"],
+                        groupstandings[x]["gf"],
+                    ),
                     reverse=True,
                 )
                 winners.append(sortedstandings[0])
                 runnerups.append(sortedstandings[1])
                 thirds.append(sortedstandings[2])
-            thirdstandings = {key: value for (
-                key, value) in standings.items() if key in thirds}
+            thirdstandings = {key: value for (key, value) in standings.items() if key in thirds}
             sortedstandings = sorted(
                 thirdstandings,
                 key=lambda x: (
-                    thirdstandings[x]["points"], thirdstandings[x]["gd"], thirdstandings[x]["gf"]),
+                    thirdstandings[x]["points"],
+                    thirdstandings[x]["gd"],
+                    thirdstandings[x]["gf"],
+                ),
                 reverse=True,
             )
             bestthirds = []
             for t in sortedstandings[:4]:
                 bestthirds.append(t)
-            await ctx.send("__Teams that finished first, and cannot face each other:__\n{}".format(", ".join(winners)))
+            await ctx.send(
+                "__Teams that finished first, and cannot face each other:__\n{}".format(
+                    ", ".join(winners)
+                )
+            )
             await asyncio.sleep(5)
             await ctx.send("__Teams that finished second:__\n{}".format(", ".join(runnerups)))
             await asyncio.sleep(5)
@@ -649,7 +661,9 @@ class SimLeague(
                 runnerups.remove(B)
             for i in range(6):
                 A = random.choice(winners)
-                ru = [x for x in (runnerups + bestthirds) if teams[x]["group"] != teams[A]["group"]]
+                ru = [
+                    x for x in (runnerups + bestthirds) if teams[x]["group"] != teams[A]["group"]
+                ]
                 B = random.choice(ru)
                 fixtures.append(
                     {
@@ -670,7 +684,11 @@ class SimLeague(
             async with self.config.guild(ctx.guild).ngames() as games:
                 games[str(roundsize)] = fixtures
         else:
-            return await ctx.send("The number of teams must be divisible by 8. You currently have {} teams.".format(len(teams)))
+            return await ctx.send(
+                "The number of teams must be divisible by 8. You currently have {} teams.".format(
+                    len(teams)
+                )
+            )
         await ctx.tick()
 
     @nat.command(name="seeds")
@@ -709,17 +727,17 @@ class SimLeague(
             for i, fixture in enumerate(fixtures[p1:p2]):
                 a = []
                 for j, game in enumerate(fixture):
-                    team1 = game['team1']
+                    team1 = game["team1"]
                     team1short = team1[:3].upper()
-                    team2 = game['team2']
+                    team2 = game["team2"]
                     team2short = team2[:3].upper()
-                    score1 = game['score1']
-                    score2 = game['score2']
+                    score1 = game["score1"]
+                    score2 = game["score2"]
                     br = "\n" if j % 2 != 0 else ""
                     if score1 is None:
                         a.append(
                             f"{mapcountrytoflag(team1)} {team1short} vs {team2short} {mapcountrytoflag(team2)}{br}"
-                        )  
+                        )
                     elif score1 == score2:
                         a.append(
                             f"{mapcountrytoflag(team1)} {team1short} {score1}-{score2} {team2short} {mapcountrytoflag(team2)}{br}"
@@ -732,8 +750,7 @@ class SimLeague(
                         a.append(
                             f"{mapcountrytoflag(team1)} {team1short} {score1}-**{score2} {team2short}** {mapcountrytoflag(team2)}{br}"
                         )
-                embed.add_field(name="Week {}".format(
-                    i + 1 + p1), value="\n".join(a))
+                embed.add_field(name="Week {}".format(i + 1 + p1), value="\n".join(a))
             embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
@@ -760,7 +777,8 @@ class SimLeague(
                 if score1 == score2:
                     if penscore1 == penscore2:
                         a.append(
-                            f"{mapcountrytoflag(team1)} {team1} vs {team2} {mapcountrytoflag(team2)}")
+                            f"{mapcountrytoflag(team1)} {team1} vs {team2} {mapcountrytoflag(team2)}"
+                        )
                     elif penscore1 > penscore2:
                         a.append(
                             f"{mapcountrytoflag(team1)} **{team1} {score1} ({penscore1})**-({penscore2}) {score2} {team2} {mapcountrytoflag(team2)}"
@@ -829,12 +847,20 @@ class SimLeague(
                         msg = await ctx.send("Game {}:".format(i + 1))
                         rdteam1 = random.choice(drawables)
                         drawables = [x for x in drawables if x is not rdteam1]
-                        await msg.edit(content="Game {}: {} {} vs ...".format(i + 1, mapcountrytoflag(rdteam1), rdteam1))
+                        await msg.edit(
+                            content="Game {}: {} {} vs ...".format(
+                                i + 1, mapcountrytoflag(rdteam1), rdteam1
+                            )
+                        )
                         rdteam2 = random.choice(drawables)
                         await asyncio.sleep(5)
                         await msg.edit(
                             content="Game {}: {} {} vs {} {} !".format(
-                                i + 1, mapcountrytoflag(rdteam1), rdteam1, rdteam2, mapcountrytoflag(rdteam2)
+                                i + 1,
+                                mapcountrytoflag(rdteam1),
+                                rdteam1,
+                                rdteam2,
+                                mapcountrytoflag(rdteam2),
                             )
                         )
                         draw.append(
@@ -868,7 +894,9 @@ class SimLeague(
             )
             a = []
             for fixture in fixtures:
-                a.append(f"{mapcountrytoflag(fixture['team1'])} {fixture['team1'][:3].upper()} vs {fixture['team2'][:3].upper()} {mapcountrytoflag(fixture['team2'])}")
+                a.append(
+                    f"{mapcountrytoflag(fixture['team1'])} {fixture['team1'][:3].upper()} vs {fixture['team2'][:3].upper()} {mapcountrytoflag(fixture['team2'])}"
+                )
             title = ""
             if roundsize >= 16:
                 title = "Round of {}".format(roundsize)
@@ -914,7 +942,7 @@ class SimLeague(
         await ctx.tick()
 
     @nat.command(name="clearbracket")
-    async def nat_clear_bracket (self, ctx):
+    async def nat_clear_bracket(self, ctx):
         """Clear bracket."""
         await self.config.guild(ctx.guild).ngames.set({})
         await ctx.tick()
@@ -964,15 +992,13 @@ class SimLeague(
                     embed.add_field(
                         name="Team {}".format(team),
                         value="{}**Members**:\n{}\n**Captain**: {}\n**Team Level**: ~{}{}{}\n**Form**: {}{} - ({})".format(
-                            "**Full Name**:\n{}\n".format(
-                                teams[team]["fullname"])
+                            "**Full Name**:\n{}\n".format(teams[team]["fullname"])
                             if teams[team]["fullname"] is not None
                             else "",
                             "\n".join(mems),
                             list(teams[team]["captain"].values())[0],
                             lvl,
-                            "\n**Role**: {}".format(
-                                role.mention if role is not None else None)
+                            "\n**Role**: {}".format(role.mention if role is not None else None)
                             if teams[team]["role"] is not None
                             else "",
                             "\n**Stadium**: {}".format(teams[team]["stadium"])
@@ -980,8 +1006,7 @@ class SimLeague(
                             else "",
                             teams[team]["form"]["result"],
                             teams[team]["form"]["streak"],
-                            "{}%".format(getformbonuspercent(
-                                teams[team]["form"])),
+                            "{}%".format(getformbonuspercent(teams[team]["form"])),
                         ),
                         inline=True,
                     )
@@ -989,8 +1014,7 @@ class SimLeague(
         else:
             teamlen = max(*[len(str(i)) for i in teams], 5) + 3
             rolelen = max(*[len(str(teams[i]["role"])) for i in teams], 5) + 3
-            caplen = max(*[len(list(teams[i]["captain"].values())[0])
-                           for i in teams], 5) + 3
+            caplen = max(*[len(list(teams[i]["captain"].values())[0]) for i in teams], 5) + 3
             lvllen = 6
 
             msg = f"{'Team':{teamlen}} {'Level':{lvllen}} {'Captain':{caplen}} {'Role':{rolelen}} {'Members'}\n"
@@ -1034,12 +1058,9 @@ class SimLeague(
                 value="\n".join(list(teams[team]["members"].values())),
                 inline=True,
             )
-            embed.add_field(name="Captain:", value=list(
-                teams[team]["captain"].values())[0])
-            embed.add_field(
-                name="Level:", value=teams[team]["cachedlevel"], inline=True)
-            embed.add_field(name="Bonus %:",
-                            value=f"{teams[team]['bonus']}%", inline=True)
+            embed.add_field(name="Captain:", value=list(teams[team]["captain"].values())[0])
+            embed.add_field(name="Level:", value=teams[team]["cachedlevel"], inline=True)
+            embed.add_field(name="Bonus %:", value=f"{teams[team]['bonus']}%", inline=True)
             embed.add_field(
                 name="Form Bonus %:",
                 value=f"{getformbonuspercent(teams[team]['form'])}%",
@@ -1053,15 +1074,13 @@ class SimLeague(
                     inline=True,
                 )
             if teams[team]["stadium"] is not None:
-                embed.add_field(name="Stadium:",
-                                value=teams[team]["stadium"], inline=True)
+                embed.add_field(name="Stadium:", value=teams[team]["stadium"], inline=True)
             if teams[team]["logo"] is not None:
                 embed.set_thumbnail(url=teams[team]["logo"])
             embeds.append(embed)
             for kit in teams[team]["kits"]:
                 if teams[team]["kits"][kit] is not None:
-                    embed = discord.Embed(
-                        title=f"{kit.title()} Kit", colour=ctx.author.colour)
+                    embed = discord.Embed(title=f"{kit.title()} Kit", colour=ctx.author.colour)
                     embed.set_image(url=teams[team]["kits"][kit])
                     embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
@@ -1151,8 +1170,7 @@ class SimLeague(
                 a = []
                 for game in fixture:
                     a.append(f"{game[0]} vs {game[1]}")
-                embed.add_field(name="Week {}".format(
-                    i + 1 + p1), value="\n".join(a))
+                embed.add_field(name="Week {}".format(i + 1 + p1), value="\n".join(a))
             embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
@@ -1183,8 +1201,7 @@ class SimLeague(
                 for game in fixture:
                     if game[0] == team or game[1] == team:
                         a.append(f"{game[0]} vs {game[1]}")
-                embed.add_field(name="Week {}".format(
-                    i + 1 + p1), value="\n".join(a))
+                embed.add_field(name="Week {}".format(i + 1 + p1), value="\n".join(a))
             embeds.append(embed)
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
@@ -1676,8 +1693,7 @@ class SimLeague(
                         str(team2Stats[8]),
                         user2,
                         str(
-                            len(teams[str(str(playerYellow[0]))]
-                                ["members"]) - (int(teamStats[7]))
+                            len(teams[str(str(playerYellow[0]))]["members"]) - (int(teamStats[7]))
                         ),
                     )
                     await ctx.send(file=image)
@@ -1723,8 +1739,7 @@ class SimLeague(
                     str(team1Stats[8]),
                     str(team2Stats[8]),
                     user2,
-                    str(len(teams[str(str(playerRed[0]))]
-                            ["members"]) - (int(teamStats[7])) - 1),
+                    str(len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7])) - 1),
                 )
                 await ctx.send(file=image)
                 await asyncio.sleep(2)
@@ -2073,8 +2088,7 @@ class SimLeague(
                     events = False
                     await asyncio.sleep(gametime)
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(
-                        team2Stats[8]), "HT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
                 )
                 await ctx.send(file=im)
                 image = await self.matchstats(
@@ -2162,8 +2176,7 @@ class SimLeague(
                     events = False
                     await asyncio.sleep(gametime)
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(
-                        team2Stats[8]), "FT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "FT", logo
                 )
                 await timemsg.delete()
                 await ctx.send(file=im)
@@ -2288,15 +2301,12 @@ class SimLeague(
         if ctx.guild.id in self.bets:
             self.bets[ctx.guild.id] = {}
         motmwinner = sorted(motm, key=motm.get, reverse=True)[0]
-        motmgoals = goals[str(motmwinner.id)] if str(
-            motmwinner.id) in goals else 0
-        motmassists = assists[str(motmwinner.id)] if str(
-            motmwinner.id) in assists else 0
+        motmgoals = goals[str(motmwinner.id)] if str(motmwinner.id) in goals else 0
+        motmassists = assists[str(motmwinner.id)] if str(motmwinner.id) in assists else 0
         im = await self.motmpic(
             ctx,
             motmwinner,
-            team1 if str(
-                motmwinner.id) in teams[team1]["members"].keys() else team2,
+            team1 if str(motmwinner.id) in teams[team1]["members"].keys() else team2,
             motmgoals,
             motmassists,
         )
@@ -2356,8 +2366,7 @@ class SimLeague(
                     + f" ({team1[:3].upper() if str(x.id) in teams[team1]['members'].keys() else team2[:3].upper()})",
                     goals[str(x.id)] if str(x.id) in goals else "-",
                     assists[str(str(x.id))] if str(x.id) in assists else "-",
-                    yellowcards[str(x.id)] if str(
-                        x.id) in yellowcards else "-",
+                    yellowcards[str(x.id)] if str(x.id) in yellowcards else "-",
                     redcards[str(x.id)] if str(x.id) in redcards else "-",
                     motm[x] if motm[x] <= 10 else 10,
                 ]
@@ -2864,8 +2873,7 @@ class SimLeague(
                         str(team2Stats[8]),
                         user2,
                         str(
-                            len(teams[str(str(playerYellow[0]))]
-                                ["members"]) - (int(teamStats[7]))
+                            len(teams[str(str(playerYellow[0]))]["members"]) - (int(teamStats[7]))
                         ),
                     )
                     await ctx.send(file=image)
@@ -2916,8 +2924,7 @@ class SimLeague(
                     str(team1Stats[8]),
                     str(team2Stats[8]),
                     user2,
-                    str(len(teams[str(str(playerRed[0]))]
-                            ["members"]) - (int(teamStats[7])) - 1),
+                    str(len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7])) - 1),
                 )
                 await ctx.send(file=image)
                 await asyncio.sleep(2)
@@ -3262,8 +3269,7 @@ class SimLeague(
                     events = False
                     ht = await self.config.guild(ctx.guild).htbreak()
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(
-                        team2Stats[8]), "HT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
                 )
                 await ctx.send(file=im)
                 image = await self.matchstats(
@@ -3350,8 +3356,7 @@ class SimLeague(
                     events = False
                     await asyncio.sleep(gametime)
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(
-                        team2Stats[8]), "FT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "FT", logo
                 )
                 await timemsg.delete()
                 await ctx.send(file=im)
@@ -3634,22 +3639,18 @@ class SimLeague(
                     if team1Stats[8] == team2Stats[8]:
                         await ctx.send("Penalty Shootout!")
                         await asyncio.sleep(gametime)
-                        roster1Update = [
-                            i for i in team1players if i not in team1Stats[2]]
-                        roster2Update = [
-                            i for i in team2players if i not in team2Stats[2]]
+                        roster1Update = [i for i in team1players if i not in team1Stats[2]]
+                        roster2Update = [i for i in team2players if i not in team2Stats[2]]
 
                         async def penaltyshoutout(roster, teamPlayers, teamStats):
                             if not len(roster):
-                                roster = [
-                                    i for i in teamPlayers if i not in teamStats[2]]
+                                roster = [i for i in teamPlayers if i not in teamStats[2]]
                             playerPenalty = random.choice(roster)
                             user = self.bot.get_user(int(playerPenalty))
                             if user is None:
                                 user = await self.bot.fetch_user(int(playerPenalty))
                             image = await self.kickimg(
-                                ctx, "penalty", str(
-                                    teamStats[0]), str(emin), user
+                                ctx, "penalty", str(teamStats[0]), str(emin), user
                             )
                             await ctx.send(file=image)
                             pendelay = random.randint(2, 5)
@@ -3711,15 +3712,13 @@ class SimLeague(
                             penalty1 = await penaltyshoutout(
                                 roster1Update, team1players, team1Stats
                             )
-                            roster1Update = [
-                                p for p in roster1Update if p != penalty1[0]]
+                            roster1Update = [p for p in roster1Update if p != penalty1[0]]
                             team1Stats = penalty1[1]
 
                             penalty2 = await penaltyshoutout(
                                 roster2Update, team2players, team2Stats
                             )
-                            roster2Update = [
-                                p for p in roster2Update if p != penalty2[0]]
+                            roster2Update = [p for p in roster2Update if p != penalty2[0]]
                             team2Stats = penalty2[1]
 
                         # If tied after 5 penalties
@@ -3729,15 +3728,13 @@ class SimLeague(
                                 penalty1 = await penaltyshoutout(
                                     roster1Update, team1players, team1Stats
                                 )
-                                roster1Update = [
-                                    p for p in roster1Update if p != penalty1[0]]
+                                roster1Update = [p for p in roster1Update if p != penalty1[0]]
                                 team1Stats = penalty1[1]
 
                                 penalty2 = await penaltyshoutout(
                                     roster2Update, team2players, team2Stats
                                 )
-                                roster2Update = [
-                                    p for p in roster2Update if p != penalty2[0]]
+                                roster2Update = [p for p in roster2Update if p != penalty2[0]]
                                 team2Stats = penalty2[1]
 
                                 if team1Stats[10] != team2Stats[10]:
@@ -3760,16 +3757,14 @@ class SimLeague(
                             cupstandings[team1]["wins"] += 1
                             cupstandings[team1]["points"] += 3
                             cupstandings[team1]["played"] += 1
-                            cupstandings[team1]["yellows"] += len(
-                                team1Stats[1])
+                            cupstandings[team1]["yellows"] += len(team1Stats[1])
                             cupstandings[team1]["reds"] += len(team1Stats[2])
                             cupstandings[team1]["chances"] += team1Stats[11]
                             cupstandings[team1]["fouls"] += team1Stats[12]
 
                             cupstandings[team2]["losses"] += 1
                             cupstandings[team2]["played"] += 1
-                            cupstandings[team2]["yellows"] += len(
-                                team2Stats[1])
+                            cupstandings[team2]["yellows"] += len(team2Stats[1])
                             cupstandings[team2]["reds"] += len(team2Stats[2])
                             cupstandings[team2]["chances"] += team2Stats[11]
                             cupstandings[team2]["fouls"] += team2Stats[12]
@@ -3779,16 +3774,14 @@ class SimLeague(
                             cupstandings[team2]["points"] += 3
                             cupstandings[team2]["wins"] += 1
                             cupstandings[team2]["played"] += 1
-                            cupstandings[team2]["yellows"] += len(
-                                team2Stats[1])
+                            cupstandings[team2]["yellows"] += len(team2Stats[1])
                             cupstandings[team2]["reds"] += len(team2Stats[2])
                             cupstandings[team2]["chances"] += team2Stats[11]
                             cupstandings[team2]["fouls"] += team2Stats[12]
 
                             cupstandings[team1]["losses"] += 1
                             cupstandings[team1]["played"] += 1
-                            cupstandings[team1]["yellows"] += len(
-                                team1Stats[1])
+                            cupstandings[team1]["yellows"] += len(team1Stats[1])
                             cupstandings[team1]["reds"] += len(team1Stats[2])
                             cupstandings[team1]["chances"] += team1Stats[11]
                             cupstandings[team1]["fouls"] += team1Stats[12]
@@ -3870,16 +3863,14 @@ class SimLeague(
                 motmassists = 0
             try:
                 await bank.deposit_credits(
-                    self.bot.get_user(motmwinner.id), (75 *
-                                                       motmgoals) + (30 * motmassists)
+                    self.bot.get_user(motmwinner.id), (75 * motmgoals) + (30 * motmassists)
                 )
             except AttributeError:
                 pass
             im = await self.motmpic(
                 ctx,
                 motmwinner,
-                team1 if str(
-                    motmwinner.id) in teams[team1]["members"].keys() else team2,
+                team1 if str(motmwinner.id) in teams[team1]["members"].keys() else team2,
                 motmgoals,
                 motmassists,
             )
@@ -4331,8 +4322,7 @@ class SimLeague(
                         str(team2Stats[8]),
                         user2,
                         str(
-                            len(teams[str(str(playerYellow[0]))]
-                                ["members"]) - (int(teamStats[7]))
+                            len(teams[str(str(playerYellow[0]))]["members"]) - (int(teamStats[7]))
                         ),
                     )
                     await ctx.send(file=image)
@@ -4378,8 +4368,7 @@ class SimLeague(
                     str(team1Stats[8]),
                     str(team2Stats[8]),
                     user2,
-                    str(len(teams[str(str(playerRed[0]))]
-                            ["members"]) - (int(teamStats[7])) - 1),
+                    str(len(teams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7])) - 1),
                 )
                 await ctx.send(file=image)
                 await asyncio.sleep(2)
@@ -4705,8 +4694,7 @@ class SimLeague(
                     events = False
                     ht = await self.config.guild(ctx.guild).htbreak()
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(
-                        team2Stats[8]), "HT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
                 )
                 await ctx.send(file=im)
                 image = await self.matchstats(
@@ -4793,8 +4781,7 @@ class SimLeague(
                     events = False
                     await asyncio.sleep(gametime)
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(
-                        team2Stats[8]), "FT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "FT", logo
                 )
                 await timemsg.delete()
                 await ctx.send(file=im)
@@ -4807,15 +4794,12 @@ class SimLeague(
                 if team1Stats[8] == team2Stats[8]:
                     await ctx.send("Penalty Shootout!")
                     await asyncio.sleep(gametime)
-                    roster1Update = [
-                        i for i in team1players if i not in team1Stats[2]]
-                    roster2Update = [
-                        i for i in team2players if i not in team2Stats[2]]
+                    roster1Update = [i for i in team1players if i not in team1Stats[2]]
+                    roster2Update = [i for i in team2players if i not in team2Stats[2]]
 
                     async def penaltyshoutout(roster, teamPlayers, teamStats):
                         if not len(roster):
-                            roster = [
-                                i for i in teamPlayers if i not in teamStats[2]]
+                            roster = [i for i in teamPlayers if i not in teamStats[2]]
                         playerPenalty = random.choice(roster)
                         user = self.bot.get_user(int(playerPenalty))
                         if user is None:
@@ -4881,13 +4865,11 @@ class SimLeague(
                     # Generate penalties
                     for i in range(0, 5):
                         penalty1 = await penaltyshoutout(roster1Update, team1players, team1Stats)
-                        roster1Update = [
-                            p for p in roster1Update if p != penalty1[0]]
+                        roster1Update = [p for p in roster1Update if p != penalty1[0]]
                         team1Stats = penalty1[1]
 
                         penalty2 = await penaltyshoutout(roster2Update, team2players, team2Stats)
-                        roster2Update = [
-                            p for p in roster2Update if p != penalty2[0]]
+                        roster2Update = [p for p in roster2Update if p != penalty2[0]]
                         team2Stats = penalty2[1]
 
                     # If tied after 5 penalties
@@ -4897,15 +4879,13 @@ class SimLeague(
                             penalty1 = await penaltyshoutout(
                                 roster1Update, team1players, team1Stats
                             )
-                            roster1Update = [
-                                p for p in roster1Update if p != penalty1[0]]
+                            roster1Update = [p for p in roster1Update if p != penalty1[0]]
                             team1Stats = penalty1[1]
 
                             penalty2 = await penaltyshoutout(
                                 roster2Update, team2players, team2Stats
                             )
-                            roster2Update = [
-                                p for p in roster2Update if p != penalty2[0]]
+                            roster2Update = [p for p in roster2Update if p != penalty2[0]]
                             team2Stats = penalty2[1]
 
                             if team1Stats[10] != team2Stats[10]:
@@ -4968,16 +4948,14 @@ class SimLeague(
                 motmassists = 0
             try:
                 await bank.deposit_credits(
-                    self.bot.get_user(motmwinner.id), (75 *
-                                                       motmgoals) + (30 * motmassists)
+                    self.bot.get_user(motmwinner.id), (75 * motmgoals) + (30 * motmassists)
                 )
             except AttributeError:
                 pass
             im = await self.motmpic(
                 ctx,
                 motmwinner,
-                team1 if str(
-                    motmwinner.id) in teams[team1]["members"].keys() else team2,
+                team1 if str(motmwinner.id) in teams[team1]["members"].keys() else team2,
                 motmgoals,
                 motmassists,
             )
@@ -5030,9 +5008,11 @@ class SimLeague(
                 game for game in playedgames if game["team1"] == team1 and game["team2"] == team2
             ]
             if len(isgameplayed):
-                confirm = await checkReacts(self, ctx, "This game has already been played. Proceed ?")
+                confirm = await checkReacts(
+                    self, ctx, "This game has already been played. Proceed ?"
+                )
                 if confirm == False:
-                    return await ctx.send("Game has been cancelled.")                
+                    return await ctx.send("Game has been cancelled.")
             if not len(doesgameexist):
                 return await ctx.send("This game does not exist.")
         if team1 not in nteams or team2 not in nteams:
@@ -5046,9 +5026,11 @@ class SimLeague(
             fixture = [f for f in fixtures[0] if f["team1"] == team1 and f["team2"] == team2]
             idx = fixtures[0].index(fixture[0])
             if fixture[0]["score1"] is not None:
-                confirm = await checkReacts(self, ctx, "This game has already been played. Proceed ?")
+                confirm = await checkReacts(
+                    self, ctx, "This game has already been played. Proceed ?"
+                )
                 if confirm == False:
-                    return await ctx.send("Game has been cancelled.")                
+                    return await ctx.send("Game has been cancelled.")
         await asyncio.sleep(2)
         lvl1 = 1
         lvl2 = 1
@@ -5069,7 +5051,9 @@ class SimLeague(
         bettoggle = await self.config.guild(ctx.guild).bettoggle()
         stadium = nteams[team1]["stadium"] if nteams[team1]["stadium"] is not None else None
         weather = random.choice(WEATHER)
-        im = await self.matchinfo(ctx, [team1, team2], weather, stadium, homewin, awaywin, draw, True)
+        im = await self.matchinfo(
+            ctx, [team1, team2], weather, stadium, homewin, awaywin, draw, True
+        )
         await ctx.send(file=im)
 
         await self.matchnotif(ctx, team1, team2, True)
@@ -5382,7 +5366,7 @@ class SimLeague(
             if player[2] not in fouls:
                 fouls[player[2]] = 1
             else:
-                fouls[player[2]] += 1            
+                fouls[player[2]] += 1
             teamStats[11] += 1
             if teamStats[0] == team1:
                 team1Stats[12] += 1
@@ -5429,7 +5413,7 @@ class SimLeague(
             if player[1] not in goals:
                 goals[player[1]] = 1
             else:
-                goals[player[1]] += 1            
+                goals[player[1]] += 1
             async with self.config.guild(ctx.guild).nstats() as nstats:
                 if player[1] not in nstats["penalties"]:
                     nstats["penalties"][player[1]] = {
@@ -5500,8 +5484,7 @@ class SimLeague(
                         str(team2Stats[8]),
                         user2,
                         str(
-                            len(nteams[str(str(playerYellow[0]))]
-                                ["members"]) - (int(teamStats[7]))
+                            len(nteams[str(str(playerYellow[0]))]["members"]) - (int(teamStats[7]))
                         ),
                     )
                     await ctx.send(file=image)
@@ -5547,8 +5530,7 @@ class SimLeague(
                     str(team1Stats[8]),
                     str(team2Stats[8]),
                     user2,
-                    str(len(nteams[str(str(playerRed[0]))]
-                            ["members"]) - (int(teamStats[7])) - 1),
+                    str(len(nteams[str(str(playerRed[0]))]["members"]) - (int(teamStats[7])) - 1),
                 )
                 await ctx.send(file=image)
                 await asyncio.sleep(2)
@@ -5604,7 +5586,9 @@ class SimLeague(
                 user2 = self.bot.get_user(int(playerCorner[2]))
                 if user2 is None:
                     user2 = await self.bot.fetch_user(int(playerCorner[2]))
-                image = await self.kickimg(ctx, "corner", str(playerCorner[0]), str(min), user, True)
+                image = await self.kickimg(
+                    ctx, "corner", str(playerCorner[0]), str(min), user, True
+                )
                 await ctx.send(file=image)
                 await asyncio.sleep(2)
                 cB = await self.cornerBlock(ctx.guild, probability)
@@ -5676,7 +5660,9 @@ class SimLeague(
             user = self.bot.get_user(int(playerFreekick[1]))
             if user is None:
                 user = await self.bot.fetch_user(int(playerFreekick[1]))
-            image = await self.kickimg(ctx, "freekick", str(playerFreekick[0]), str(min), user, True)
+            image = await self.kickimg(
+                ctx, "freekick", str(playerFreekick[0]), str(min), user, True
+            )
             await ctx.send(file=image)
             await asyncio.sleep(2)
             if playerFreekick[1] not in shots:
@@ -5897,8 +5883,7 @@ class SimLeague(
                     events = False
                     await asyncio.sleep(gametime)
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(
-                        team2Stats[8]), "HT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "HT", logo
                 )
                 await ctx.send(file=im)
                 image = await self.matchstats(
@@ -5910,7 +5895,7 @@ class SimLeague(
                     (len(team1Stats[2]), len(team2Stats[2])),
                     (team1Stats[11], team2Stats[11]),
                     (team1Stats[12], team2Stats[12]),
-                    True
+                    True,
                 )
                 ht = await self.config.guild(ctx.guild).htbreak()
                 await ctx.send(file=image)
@@ -5987,13 +5972,12 @@ class SimLeague(
                     events = False
                     await asyncio.sleep(gametime)
                 im = await self.timepic(
-                    ctx, team1, team2, str(team1Stats[8]), str(
-                        team2Stats[8]), "FT", logo
+                    ctx, team1, team2, str(team1Stats[8]), str(team2Stats[8]), "FT", logo
                 )
                 await timemsg.delete()
                 await ctx.send(file=im)
                 if team1Stats[8] > team2Stats[8]:
-                    async with self.config.guild(ctx.guild).nstandings() as nstandings:                        
+                    async with self.config.guild(ctx.guild).nstandings() as nstandings:
                         nstandings[team1]["yellows"] += len(team1Stats[1])
                         nstandings[team1]["reds"] += len(team1Stats[2])
                         nstandings[team1]["chances"] += team1Stats[11]
@@ -6011,13 +5995,17 @@ class SimLeague(
                             async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
                                 # Lookup in first legs
                                 fixture = [
-                                    f for f in nfixtures[0] if f["team1"] == team1 and f["team2"] == team2
+                                    f
+                                    for f in nfixtures[0]
+                                    if f["team1"] == team1 and f["team2"] == team2
                                 ]
                                 index = 0
                                 if not len(fixture):
                                     # Else, grab fixture from return games
                                     fixture = [
-                                        f for f in nfixtures[1] if f["team1"] == team1 and f["team2"] == team2
+                                        f
+                                        for f in nfixtures[1]
+                                        if f["team1"] == team1 and f["team2"] == team2
                                     ]
                                     index = 1
                                 fixture = fixture[0]
@@ -6033,7 +6021,7 @@ class SimLeague(
                                     score2 = team1Stats[8]
                                     fixture["score1"] = score1
                                     fixture["score2"] = score2
-                                nfixtures[index][idx] = fixture                            
+                                nfixtures[index][idx] = fixture
                     t = await self.payout(ctx.guild, team1, homewin)
                 if team1Stats[8] < team2Stats[8]:
                     async with self.config.guild(ctx.guild).nstandings() as nstandings:
@@ -6054,13 +6042,17 @@ class SimLeague(
                             async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
                                 # Lookup in first legs
                                 fixture = [
-                                    f for f in nfixtures[0] if f["team1"] == team1 and f["team2"] == team2
+                                    f
+                                    for f in nfixtures[0]
+                                    if f["team1"] == team1 and f["team2"] == team2
                                 ]
                                 index = 0
                                 if not len(fixture):
                                     # Else, grab fixture from return games
                                     fixture = [
-                                        f for f in nfixtures[1] if f["team1"] == team1 and f["team2"] == team2
+                                        f
+                                        for f in nfixtures[1]
+                                        if f["team1"] == team1 and f["team2"] == team2
                                     ]
                                     index = 1
                                 fixture = fixture[0]
@@ -6100,13 +6092,17 @@ class SimLeague(
                         async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
                             # Lookup in first legs
                             fixture = [
-                                f for f in nfixtures[0] if f["team1"] == team1 and f["team2"] == team2
+                                f
+                                for f in nfixtures[0]
+                                if f["team1"] == team1 and f["team2"] == team2
                             ]
                             index = 0
                             if not len(fixture):
                                 # Else, grab fixture from return games
                                 fixture = [
-                                    f for f in nfixtures[1] if f["team1"] == team1 and f["team2"] == team2
+                                    f
+                                    for f in nfixtures[1]
+                                    if f["team1"] == team1 and f["team2"] == team2
                                 ]
                                 index = 1
                             fixture = fixture[0]
@@ -6214,14 +6210,18 @@ class SimLeague(
                                 if events is False:
                                     pC = await self.penaltyChance(ctx.guild, probability)
                                     if pC is True:
-                                        await handlePenalty(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handlePenalty(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 # Yellow card chance
                                 if events is False:
                                     yC = await self.yCardChance(ctx.guild, probability)
                                     if yC is True:
-                                        await handleYellowCard(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handleYellowCard(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 # Red card chance
@@ -6245,21 +6245,27 @@ class SimLeague(
                                 if events is False:
                                     cC = await self.commentChance(ctx.guild, probability)
                                     if cC is True:
-                                        await handleCommentary(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handleCommentary(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 # Freekick chance
                                 if events is False:
                                     freekickC = await self.freekickChance(ctx.guild, probability)
                                     if freekickC is True:
-                                        await handleFreeKick(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handleFreeKick(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 # Own Goal chance
                                 if events is False:
                                     owngoalC = await self.owngoalChance(ctx.guild, probability)
                                     if owngoalC is True:
-                                        await handleOwnGoal(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handleOwnGoal(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 if events is False:
@@ -6299,14 +6305,18 @@ class SimLeague(
                                 if events is False:
                                     pC = await self.penaltyChance(ctx.guild, probability)
                                     if pC is True:
-                                        await handlePenalty(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handlePenalty(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 # Yellow card chance
                                 if events is False:
                                     yC = await self.yCardChance(ctx.guild, probability)
                                     if yC is True:
-                                        await handleYellowCard(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handleYellowCard(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 # Red card chance
@@ -6330,21 +6340,27 @@ class SimLeague(
                                 if events is False:
                                     cC = await self.commentChance(ctx.guild, probability)
                                     if cC is True:
-                                        await handleCommentary(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handleCommentary(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 # Freekick chance
                                 if events is False:
                                     freekickC = await self.freekickChance(ctx.guild, probability)
                                     if freekickC is True:
-                                        await handleFreeKick(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handleFreeKick(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 # Own Goal chance
                                 if events is False:
                                     owngoalC = await self.owngoalChance(ctx.guild, probability)
                                     if owngoalC is True:
-                                        await handleOwnGoal(self, ctx, str(emin) + "+" + str(i + 1))
+                                        await handleOwnGoal(
+                                            self, ctx, str(emin) + "+" + str(i + 1)
+                                        )
                                         events = True
 
                                 if events is False:
@@ -6367,22 +6383,18 @@ class SimLeague(
                         if team1Stats[8] == team2Stats[8]:
                             await ctx.send("Penalty Shootout!")
                             await asyncio.sleep(gametime)
-                            roster1Update = [
-                                i for i in team1players if i not in team1Stats[2]]
-                            roster2Update = [
-                                i for i in team2players if i not in team2Stats[2]]
+                            roster1Update = [i for i in team1players if i not in team1Stats[2]]
+                            roster2Update = [i for i in team2players if i not in team2Stats[2]]
 
                             async def penaltyshoutout(roster, teamPlayers, teamStats):
                                 if not len(roster):
-                                    roster = [
-                                        i for i in teamPlayers if i not in teamStats[2]]
+                                    roster = [i for i in teamPlayers if i not in teamStats[2]]
                                 playerPenalty = random.choice(roster)
                                 user = self.bot.get_user(int(playerPenalty))
                                 if user is None:
                                     user = await self.bot.fetch_user(int(playerPenalty))
                                 image = await self.kickimg(
-                                    ctx, "penalty", str(
-                                        teamStats[0]), str(emin), user, True
+                                    ctx, "penalty", str(teamStats[0]), str(emin), user, True
                                 )
                                 await ctx.send(file=image)
                                 pendelay = random.randint(2, 5)
@@ -6444,15 +6456,13 @@ class SimLeague(
                                 penalty1 = await penaltyshoutout(
                                     roster1Update, team1players, team1Stats
                                 )
-                                roster1Update = [
-                                    p for p in roster1Update if p != penalty1[0]]
+                                roster1Update = [p for p in roster1Update if p != penalty1[0]]
                                 team1Stats = penalty1[1]
 
                                 penalty2 = await penaltyshoutout(
                                     roster2Update, team2players, team2Stats
                                 )
-                                roster2Update = [
-                                    p for p in roster2Update if p != penalty2[0]]
+                                roster2Update = [p for p in roster2Update if p != penalty2[0]]
                                 team2Stats = penalty2[1]
 
                             # If tied after 5 penalties
@@ -6462,15 +6472,13 @@ class SimLeague(
                                     penalty1 = await penaltyshoutout(
                                         roster1Update, team1players, team1Stats
                                     )
-                                    roster1Update = [
-                                        p for p in roster1Update if p != penalty1[0]]
+                                    roster1Update = [p for p in roster1Update if p != penalty1[0]]
                                     team1Stats = penalty1[1]
 
                                     penalty2 = await penaltyshoutout(
                                         roster2Update, team2players, team2Stats
                                     )
-                                    roster2Update = [
-                                        p for p in roster2Update if p != penalty2[0]]
+                                    roster2Update = [p for p in roster2Update if p != penalty2[0]]
                                     team2Stats = penalty2[1]
 
                                     if team1Stats[10] != team2Stats[10]:
@@ -6490,26 +6498,22 @@ class SimLeague(
                             await ctx.send(file=im)
                         if (team1Stats[8] + team1Stats[10]) > (team2Stats[8] + team2Stats[10]):
                             async with self.config.guild(ctx.guild).nstandings() as nstandings:
-                                nstandings[team1]["yellows"] += len(
-                                    team1Stats[1])
+                                nstandings[team1]["yellows"] += len(team1Stats[1])
                                 nstandings[team1]["reds"] += len(team1Stats[2])
                                 nstandings[team1]["chances"] += team1Stats[11]
                                 nstandings[team1]["fouls"] += team1Stats[12]
-                                nstandings[team2]["yellows"] += len(
-                                    team2Stats[1])
+                                nstandings[team2]["yellows"] += len(team2Stats[1])
                                 nstandings[team2]["reds"] += len(team2Stats[2])
                                 nstandings[team2]["chances"] += team2Stats[11]
                                 nstandings[team2]["fouls"] += team2Stats[12]
                             t = await self.payout(ctx.guild, team1, homewin)
                         if (team1Stats[8] + team1Stats[10]) < (team2Stats[8] + team2Stats[10]):
                             async with self.config.guild(ctx.guild).nstandings() as nstandings:
-                                nstandings[team2]["yellows"] += len(
-                                    team2Stats[1])
+                                nstandings[team2]["yellows"] += len(team2Stats[1])
                                 nstandings[team2]["reds"] += len(team2Stats[2])
                                 nstandings[team2]["chances"] += team2Stats[11]
                                 nstandings[team2]["fouls"] += team2Stats[12]
-                                nstandings[team1]["yellows"] += len(
-                                    team1Stats[1])
+                                nstandings[team1]["yellows"] += len(team1Stats[1])
                                 nstandings[team1]["reds"] += len(team1Stats[2])
                                 nstandings[team1]["chances"] += team1Stats[11]
                                 nstandings[team1]["fouls"] += team1Stats[12]
@@ -6577,7 +6581,7 @@ class SimLeague(
             (len(team1Stats[2]), len(team2Stats[2])),
             (team1Stats[11], team2Stats[11]),
             (team1Stats[12], team2Stats[12]),
-            True
+            True,
         )
         await ctx.send(file=image)
         if motm:
@@ -6593,8 +6597,7 @@ class SimLeague(
                 motmassists = 0
             try:
                 await bank.deposit_credits(
-                    self.bot.get_user(motmid), (75 *
-                                                       motmgoals) + (30 * motmassists)
+                    self.bot.get_user(motmid), (75 * motmgoals) + (30 * motmassists)
                 )
             except AttributeError:
                 pass
@@ -6604,7 +6607,7 @@ class SimLeague(
                 team1 if motmid in nteams[team1]["members"].keys() else team2,
                 motmgoals,
                 motmassists,
-                True
+                True,
             )
         async with self.config.guild(ctx.guild).nstats() as nstats:
             if str(motmwinner.id) not in nstats["motm"]:
@@ -6737,8 +6740,7 @@ class SimLeague(
         for better in self.bets[guild.id]:
             for team, bet in self.bets[guild.id][better]["Bets"]:
                 if team == winner:
-                    bet_winners.append(
-                        f"{better.mention} - Winnings: {int(bet + (bet * odds))}")
+                    bet_winners.append(f"{better.mention} - Winnings: {int(bet + (bet * odds))}")
                     await bank.deposit_credits(better, int(bet + (bet * odds)))
         return "\n".join(bet_winners) if bet_winners else None
 

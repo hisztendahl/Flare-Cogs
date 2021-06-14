@@ -74,8 +74,7 @@ async def checkReacts(self, ctx, message):
     await msg.add_reaction(cancel_emoji)
     try:
         reaction, user = await asyncio.wait_for(
-            ctx.bot.wait_for("reaction_add", check=lambda r,
-                             u: u.id == ctx.author.id), 30
+            ctx.bot.wait_for("reaction_add", check=lambda r, u: u.id == ctx.author.id), 30
         )
     except:
         await msg.clear_reactions()

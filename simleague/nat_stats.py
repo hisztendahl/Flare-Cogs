@@ -15,7 +15,7 @@ class NatStatsMixin(MixinMeta):
     @commands.group(autohelp=True)
     async def nat(self, ctx):
         """National teams commands."""
-    
+
     @nat.group(autohelp=True, name="stats")
     async def nat_stats(self, ctx):
         """Nat Stats."""
@@ -59,7 +59,10 @@ class NatStatsMixin(MixinMeta):
             ]
             user_team = await self.nat_get_user_with_team(ctx, userid, False)
             embed = discord.Embed(
-                color=ctx.author.color, title="Statistics for {} {}".format(user.display_name, mapcountrytoflag(user_team[1]))
+                color=ctx.author.color,
+                title="Statistics for {} {}".format(
+                    user.display_name, mapcountrytoflag(user_team[1])
+                ),
             )
             for i, stat in enumerate(statistics):
                 if stat is not None:
@@ -427,7 +430,7 @@ class NatStatsMixin(MixinMeta):
     #         embed.add_field(name=member, value=stat)
     #     await ctx.send(embed=embed)
 
-    async def nat_get_user_with_team(self, ctx, userid, trim = True):
+    async def nat_get_user_with_team(self, ctx, userid, trim=True):
         teams = await self.config.guild(ctx.guild).nteams()
         user = self.bot.get_user(int(userid))
         if not user:

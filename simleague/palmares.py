@@ -20,7 +20,16 @@ class PalmaresMixin(MixinMeta):
         cupgames = await self.config.guild(ctx.guild).cupgames()
         tots = await self.config.guild(ctx.guild).tots()
         async with self.config.guild(ctx.guild).palmares() as palmares:
-            seasonstats = ["goals", "assists", "reds", "yellows", "motms", "owngoals", "shots", "fouls"]
+            seasonstats = [
+                "goals",
+                "assists",
+                "reds",
+                "yellows",
+                "motms",
+                "owngoals",
+                "shots",
+                "fouls",
+            ]
             for s in seasonstats:
                 if s == "motms":
                     stat = stats["motm"]
@@ -96,10 +105,10 @@ class PalmaresMixin(MixinMeta):
                     else:
                         palmares[userid] = {}
                         palmares[userid][season] = {}
-                        palmares[userid][season]["finish"] = (t, i + 1)            
-            for i, t in list(enumerate(
-                sorted(stats["cleansheets"], key=stats["cleansheets"].get, reverse=True)
-            ))[:1]:
+                        palmares[userid][season]["finish"] = (t, i + 1)
+            for i, t in list(
+                enumerate(sorted(stats["cleansheets"], key=stats["cleansheets"].get, reverse=True))
+            )[:1]:
                 team = teams[t]
                 for userid in team["members"]:
                     if userid in palmares:
@@ -217,7 +226,7 @@ class PalmaresMixin(MixinMeta):
             "finish",
             "cupfinish",
             "communityshield",
-            "cleansheets"
+            "cleansheets",
         ]
         if stat not in validstats:
             return await ctx.send("Invalid stat. Must be one of {}".format(", ".join(validstats)))
@@ -261,14 +270,16 @@ class PalmaresMixin(MixinMeta):
                 for uid in palmares:
                     player = await self.bot.fetch_user(uid)
                     if season1 in palmares[uid]:
-                        await checkReacts(self, 
+                        await checkReacts(
+                            self,
                             ctx,
                             "This will replace palmares for season {} for {}".format(
                                 season1, player.name
                             ),
                         )
                         if season2 in palmares[uid]:
-                            confirm = await checkReacts(self, 
+                            confirm = await checkReacts(
+                                self,
                                 ctx,
                                 "{} already has a palmares for {}. Are you sure you want to override it ?".format(
                                     player.name, season2
@@ -289,7 +300,8 @@ class PalmaresMixin(MixinMeta):
                 uid = str(user.id)
                 if uid in palmares:
                     if season1 in palmares[uid]:
-                        confirm = await checkReacts(self, 
+                        confirm = await checkReacts(
+                            self,
                             ctx,
                             "Palmares season {} will be changed to season {} for {}. Are you sure ?".format(
                                 season1, season2, user.name
@@ -342,7 +354,8 @@ class PalmaresMixin(MixinMeta):
                             )
                             pass
                         else:
-                            confirm = await checkReacts(self, 
+                            confirm = await checkReacts(
+                                self,
                                 ctx,
                                 "Palmares stat {} will be moved from season {} to season {} for {}. Are you sure ?".format(
                                     stat, season1, season2, player.name
@@ -390,7 +403,11 @@ class PalmaresMixin(MixinMeta):
             yellows = palmares[season]["yellows"] if "yellows" in palmares[season].keys() else None
             reds = palmares[season]["reds"] if "reds" in palmares[season].keys() else None
             fouls = palmares[season]["fouls"] if "fouls" in palmares[season].keys() else None
-            cleansheets = palmares[season]["cleansheets"] if "cleansheets" in palmares[season].keys() else None
+            cleansheets = (
+                palmares[season]["cleansheets"]
+                if "cleansheets" in palmares[season].keys()
+                else None
+            )
             tots = palmares[season]["tots"] if "tots" in palmares[season].keys() else None
             pots = palmares[season]["pots"] if "pots" in palmares[season].keys() else None
             communityshield = (
@@ -483,7 +500,7 @@ class PalmaresMixin(MixinMeta):
             if n == 0:
                 prefix = "Most"
             else:
-                prefix = "{} most".format(nth)            
+                prefix = "{} most".format(nth)
             return "{} {} with {} {}.".format(prefix, stat, value, stat)
         if stat in ["yellows", "reds", "motms"]:
             if n == 0:

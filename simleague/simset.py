@@ -9,6 +9,7 @@ import asyncio
 from .utils import checkReacts
 from string import ascii_uppercase
 
+
 class SimsetMixin(MixinMeta):
     """Simulation Settings"""
 
@@ -288,6 +289,26 @@ class SimsetMixin(MixinMeta):
 
     @simset.command()
     @commands.bot_has_permissions(manage_roles=True)
+    async def createnatroles(self, ctx):
+        """Create roles for national teams."""
+        roles = await ctx.guild.fetch_roles()
+        async with self.config.guild(ctx.guild).nteams() as nteams:
+            for team in nteams:
+                if nteams[team]["role"] is None:
+                    role = await ctx.guild.create_role(name=team)
+                    nteams[team]["role"] = role.id
+                else:
+                    role = ctx.guild.get_role(nteams[team]["role"])
+                for user in nteams[team]["members"]:
+                    member = ctx.guild.get_member(int(user))
+                    if member is None:
+                        await ctx.send("Could not find user {}.".format(user))
+                    else:
+                        await member.add_roles(role)
+        await ctx.tick()
+
+    @simset.command()
+    @commands.bot_has_permissions(manage_roles=True)
     async def updateroles(self, ctx):
         """Update roles for teammembers."""
         teams = await self.config.guild(ctx.guild).teams()
@@ -412,19 +433,21 @@ class SimsetMixin(MixinMeta):
         nteams = await self.config.guild(ctx.guild).nteams()
         matchs = []
         fixtures = []
-        grouplist = list(ascii_uppercase)[:len(list(nteams.keys())) // 4]
+        grouplist = list(ascii_uppercase)[: len(list(nteams.keys())) // 4]
         for group in grouplist:
-            teams = {key: value for (key, value) in nteams.items() if value['group'] == group}
+            teams = {key: value for (key, value) in nteams.items() if value["group"] == group}
             teams = list(teams.keys())
             n = len(teams)
             for fixture in range(1, n):
                 for i in range(n // 2):
-                    matchs.append({
-                        "team1": teams[i],
-                        "score1": None,
-                        "team2": teams[n - 1 - i],
-                        "score2": None
-                    })
+                    matchs.append(
+                        {
+                            "team1": teams[i],
+                            "score1": None,
+                            "team2": teams[n - 1 - i],
+                            "score2": None,
+                        }
+                    )
                 teams.insert(1, teams.pop())
             fixtures.insert(len(fixtures) // 2, matchs)
             matchs = []
@@ -434,9 +457,9 @@ class SimsetMixin(MixinMeta):
         for j in range(0, len(fixtures), 2):
             roundfixtures = []
             for i, fixture in enumerate(fixtures):
-                roundfixtures.append(fixture[j+0])
-                roundfixtures.append(fixture[j+1])
-        
+                roundfixtures.append(fixture[j + 0])
+                roundfixtures.append(fixture[j + 1])
+
             random.shuffle(roundfixtures)
             finalfixtures.append(roundfixtures)
         await self.config.guild(ctx.guild).nfixtures.set(finalfixtures)
@@ -873,8 +896,8 @@ class SimsetMixin(MixinMeta):
     @clear.command(name="stats")
     async def clear_stats(self, ctx):
         """Clear standings and player stats."""
-        confirm = await checkReacts(self, 
-            ctx, "This will clear standings, teams stats, and player stats. Proceed ?"
+        confirm = await checkReacts(
+            self, ctx, "This will clear standings, teams stats, and player stats. Proceed ?"
         )
         if confirm == False:
             return await ctx.send("Cancelled.")
@@ -911,8 +934,10 @@ class SimsetMixin(MixinMeta):
     @clear.command(name="cupstats")
     async def clear_cupstats(self, ctx):
         """Clear cup stats."""
-        confirm = await checkReacts(self, 
-            ctx, "This will clear cup standings, teams cup stats, and player cup stats. Proceed ?"
+        confirm = await checkReacts(
+            self,
+            ctx,
+            "This will clear cup standings, teams cup stats, and player cup stats. Proceed ?",
         )
         if confirm == False:
             return await ctx.send("Cancelled.")
@@ -939,8 +964,8 @@ class SimsetMixin(MixinMeta):
 
     @clear.command(name="transfers")
     async def clear_transfers(self, ctx):
-        confirm = await checkReacts(self, 
-            ctx, "This will clear transfers for the current window. Proceed ?"
+        confirm = await checkReacts(
+            self, ctx, "This will clear transfers for the current window. Proceed ?"
         )
         if confirm == False:
             return await ctx.send("Cancelled.")
@@ -949,8 +974,8 @@ class SimsetMixin(MixinMeta):
 
     @clear.command(name="lock")
     async def clear_lock(self, ctx, team=None):
-        confirm = await checkReacts(self, 
-            ctx, "This will clear contract extensions for the current window. Proceed ?"
+        confirm = await checkReacts(
+            self, ctx, "This will clear contract extensions for the current window. Proceed ?"
         )
         if confirm == False:
             return await ctx.send("Cancelled.")
@@ -975,8 +1000,8 @@ class SimsetMixin(MixinMeta):
 
     @clear.command(name="cup")
     async def clear_cup(self, ctx):
-        confirm = await checkReacts(self, 
-            ctx, "This will clear cup fixtures, and cup stats. Proceed ?"
+        confirm = await checkReacts(
+            self, ctx, "This will clear cup fixtures, and cup stats. Proceed ?"
         )
         if confirm == False:
             return await ctx.send("Cancelled.")
@@ -991,10 +1016,12 @@ class SimsetMixin(MixinMeta):
             return await ctx.send("Cancelled.")
         await self.config.guild(ctx.guild).palmares.set({})
         await ctx.tick()
-    
+
     @clear.command(name="palmaresseason")
     async def clear_palmares(self, ctx, season: str):
-        confirm = await checkReacts(self, ctx, "This will clear all palmares for season {}. Proceed ?".format(season))
+        confirm = await checkReacts(
+            self, ctx, "This will clear all palmares for season {}. Proceed ?".format(season)
+        )
         if confirm == False:
             return await ctx.send("Cancelled.")
         async with self.config.guild(ctx.guild).palmares() as palmares:

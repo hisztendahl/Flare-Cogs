@@ -1619,7 +1619,7 @@ class SimHelper(MixinMeta):
         text_color = list_to_tuple(theme["chances"]["header_text_col"])
         level = teams[team1]["cachedlevel"]
         teamname = self._truncate_text(team1, 10)
-        bonus = teams[team1]["bonus"] if 'bonus' in teams[team1] else 0
+        bonus = teams[team1]["bonus"] if "bonus" in teams[team1] else 0
         _write_unicode(
             "Team: {} | Total Level: {} | Bonus %: {}".format(teamname, level, bonus),
             10,
@@ -1962,7 +1962,9 @@ class SimHelper(MixinMeta):
         image = discord.File(file, filename="playerstats.png")
         return image
 
-    async def matchinfo(self, ctx, teamlist, weather, stadium, homeodds, awayodds, drawodds, national=False):
+    async def matchinfo(
+        self, ctx, teamlist, weather, stadium, homeodds, awayodds, drawodds, national=False
+    ):
         width = 500
         height = 160
         theme = await self.config.guild(ctx.guild).theme()
@@ -2036,7 +2038,9 @@ class SimHelper(MixinMeta):
             # draw_thumb.ellipse((0, 0) + (50, 50), fill=255, outline=0)
 
             # mask = mask.resize((server_border_size, server_border_size), Image.ANTIALIAS)
-            profile_image = server_icon_image.resize((server_border_size, server_border_size), Image.ANTIALIAS)
+            profile_image = server_icon_image.resize(
+                (server_border_size, server_border_size), Image.ANTIALIAS
+            )
             process.paste(draw_server_border, (x + 8, content_top + 12), draw_server_border)
             # process.paste(profile_image, (x + 10, content_top + 14), mask)
             process.paste(server_icon_image, (x + 10, content_top + 14), server_icon_image)
@@ -2590,7 +2594,7 @@ class SimHelper(MixinMeta):
                 except discord.Forbidden:
                     self.log.info("Failed to remove role from {}".format(member.name))
 
-    async def matchnotif(self, ctx, team1, team2, national = True):
+    async def matchnotif(self, ctx, team1, team2, national=True):
         cog = self.bot.get_cog("SimLeague")
         if national:
             teams = await cog.config.guild(ctx.guild).nteams()
@@ -2668,7 +2672,16 @@ class SimHelper(MixinMeta):
                             self.log.info("Failed to remove role from {}".format(member.name))
 
     async def postresults(
-        self, ctx, national, team1, team2, score1, score2, penscore1=None, penscore2=None, startmsg=None
+        self,
+        ctx,
+        national,
+        team1,
+        team2,
+        score1,
+        score2,
+        penscore1=None,
+        penscore2=None,
+        startmsg=None,
     ):
         cog = self.bot.get_cog("SimLeague")
         results = await cog.config.guild(ctx.guild).resultchannel()

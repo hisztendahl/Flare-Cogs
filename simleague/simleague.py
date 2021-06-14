@@ -361,10 +361,8 @@ class SimLeague(
         await ctx.tick()
 
     @nat.command(name="teams")
-    async def nat_list(self, ctx, updatecache: bool = False):
+    async def nat_list(self, ctx):
         """List current national teams."""
-        if updatecache:
-            await self.updatecacheall(ctx.guild)
         teams = await self.config.guild(ctx.guild).nteams()
         if not teams:
             return await ctx.send("No teams have been registered.")
@@ -375,15 +373,9 @@ class SimLeague(
         msg = await ctx.send(
             "This may take some time depending on the amount of teams currently registered."
         )
-        if time.time() - self.cache >= 86400:
-            await msg.edit(
-                content="Updating the level cache, please wait. This may take some time."
-            )
-            await self.updatecacheall(ctx.guild)
-            self.cache = time.time()
         async with ctx.typing():
             for team in teams:
-                mems = [x for x in teams[team]["members"].values()]
+                mems = [x for x in teams[team]["members"].values()] if len(teams[team]["members"].keys()) else []
                 lvl = teams[team]["cachedlevel"]
                 role = ctx.guild.get_role(teams[team]["role"])
                 embed.add_field(
@@ -394,7 +386,7 @@ class SimLeague(
                         else "",
                         "\n".join(mems),
                         list(teams[team]["captain"].values())[0]
-                        if "captain" in teams[team]
+                        if teams[team]["captain"] is not None
                         else "",
                         lvl,
                         "\n**Role**: {}".format(role.mention if role is not None else None)
@@ -710,49 +702,54 @@ class SimLeague(
     async def nat_fixtures(self, ctx):
         """Show national tournament fixtures."""
         fixtures = await self.config.guild(ctx.guild).nfixtures()
+        nteams = await self.config.guild(ctx.guild).nteams()
         if not fixtures:
             return await ctx.send("No fixtures have been made.")
-        embeds = []
-        pages = ceil(len(fixtures) / 15)
-        for page in range(pages):
-            embed = discord.Embed(
-                colour=ctx.author.colour,
-                description="---------------------------- Fixtures _(page {}/{})_ ----------------------------".format(
-                    page + 1, pages
-                ),
-            )
-            page = page + 1
-            p1 = (page - 1) * 15 if page > 1 else page - 1
-            p2 = page * 15
-            for i, fixture in enumerate(fixtures[p1:p2]):
-                a = []
+        embed = discord.Embed(
+            colour=ctx.author.colour,
+            description="---------------------------- Fixtures ----------------------------",
+        )
+        grouplist = list(ascii_uppercase)[:len(nteams) // 4]
+        orderedfixtures = []
+        for group in grouplist:
+            groupgames = []
+            for i, fixture in enumerate(fixtures):
                 for j, game in enumerate(fixture):
-                    team1 = game["team1"]
-                    team1short = team1[:3].upper()
-                    team2 = game["team2"]
-                    team2short = team2[:3].upper()
-                    score1 = game["score1"]
-                    score2 = game["score2"]
-                    br = "\n" if j % 2 != 0 else ""
-                    if score1 is None:
-                        a.append(
-                            f"{mapcountrytoflag(team1)} {team1short} vs {team2short} {mapcountrytoflag(team2)}{br}"
-                        )
-                    elif score1 == score2:
-                        a.append(
-                            f"{mapcountrytoflag(team1)} {team1short} {score1}-{score2} {team2short} {mapcountrytoflag(team2)}{br}"
-                        )
-                    elif score1 > score2:
-                        a.append(
-                            f"{mapcountrytoflag(team1)} **{team1short} {score1}**-{score2} {team2short} {mapcountrytoflag(team2)}{br}"
-                        )
-                    else:
-                        a.append(
-                            f"{mapcountrytoflag(team1)} {team1short} {score1}-**{score2} {team2short}** {mapcountrytoflag(team2)}{br}"
-                        )
-                embed.add_field(name="Week {}".format(i + 1 + p1), value="\n".join(a))
-            embeds.append(embed)
-        await menu(ctx, embeds, DEFAULT_CONTROLS)
+                    if nteams[game['team1']]['group'] == group:
+                        groupgames.append(game)
+            orderedfixtures.append(groupgames)
+        for i, fixture in enumerate(orderedfixtures):
+            a = []
+            week = 1
+            for j, game in enumerate(fixture):
+                if j % 2 == 0:
+                    a.append(f"**Week {week}**")
+                    week += 1
+                team1 = game["team1"]
+                team1short = team1[:3].upper()
+                team2 = game["team2"]
+                team2short = team2[:3].upper()
+                score1 = game["score1"]
+                score2 = game["score2"]
+                br = "\n" if j % 2 != 0 else ""
+                if score1 is None:
+                    a.append(
+                        f"{mapcountrytoflag(team1)} {team1short} vs {team2short} {mapcountrytoflag(team2)}{br}"
+                    )
+                elif score1 == score2:
+                    a.append(
+                        f"{mapcountrytoflag(team1)} {team1short} {score1}-{score2} {team2short} {mapcountrytoflag(team2)}{br}"
+                    )
+                elif score1 > score2:
+                    a.append(
+                        f"{mapcountrytoflag(team1)} **{team1short} {score1}**-{score2} {team2short} {mapcountrytoflag(team2)}{br}"
+                    )
+                else:
+                    a.append(
+                        f"{mapcountrytoflag(team1)} {team1short} {score1}-**{score2} {team2short}** {mapcountrytoflag(team2)}{br}"
+                    )
+            embed.add_field(name="GROUP {}".format(grouplist[i]), value="\n".join(a))
+        await ctx.send(embed=embed)
 
     @nat.command(name="bracket")
     async def nat_bracket(self, ctx):

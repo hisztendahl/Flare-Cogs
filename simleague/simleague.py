@@ -487,6 +487,7 @@ class SimLeague(
             return await ctx.send("Group {} does not exist".format(group))
         if not verbose:
             t = []  # PrettyTable(["Team", "Pl", "W", "D", "L", "Pts"])
+            # TODO: Fix standings sorting
             for x in sorted(
                 standings,
                 key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
@@ -5020,12 +5021,14 @@ class SimLeague(
             if nteams[team1]["group"] != nteams[team2]["group"]:
                 return await ctx.send("These two teams are not in the same group.")
             fixtures = await self.config.guild(ctx.guild).nfixtures()
-            fixture = [f for f in fixtures[0] if f["team1"] == team1 and f["team2"] == team2]
-            idx = fixtures[0].index(fixture[0])
-            if fixture[0]["score1"] is not None:
-                confirm = await checkReacts(
-                    self, ctx, "This game has already been played. Proceed ?"
-                )
+            game = None
+            for i in range(len(fixtures)):
+                fixture = [f for f in fixtures[i] if f["team1"] == team1 and f["team2"] == team2]
+                if len(fixture):
+                    game = fixture
+                    idx = fixtures[i].index(fixture[0])
+            if game[0]["score1"] is not None:
+                confirm = await checkReacts(self, ctx, "This game has already been played. Proceed ?")
                 if confirm == False:
                     return await ctx.send("Game has been cancelled.")
         await asyncio.sleep(2)

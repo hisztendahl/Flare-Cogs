@@ -476,65 +476,91 @@ class SimLeague(
         await ctx.tick()
 
     @nat.command(name="standings", alias=["group", "groups", "table"])
-    async def nat_standings(self, ctx, group: str = "A", verbose: bool = False):
+    async def nat_standings(self, ctx, group: str = None, verbose: bool = False):
         """Show national competition standings."""
         standings = await self.config.guild(ctx.guild).nstandings()
+        teams = await self.config.guild(ctx.guild).nteams()
         if standings is None:
             return await ctx.send("The table is empty.")
-        group = group.upper()
-        standings = {key: value for (key, value) in standings.items() if value["group"] == group}
-        if not standings:
-            return await ctx.send("Group {} does not exist".format(group))
-        if not verbose:
-            t = []  # PrettyTable(["Team", "Pl", "W", "D", "L", "Pts"])
-            # TODO: Fix standings sorting
-            for x in sorted(
-                standings,
-                key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
-                reverse=True,
-            ):
-                gd = standings[x]["gf"] - standings[x]["ga"]
-                gd = f"+{gd}" if gd > 0 else gd
-                t.append(
-                    [
-                        x,
-                        standings[x]["played"],
-                        standings[x]["wins"],
-                        standings[x]["draws"],
-                        standings[x]["losses"],
-                        standings[x]["points"],
-                        gd,
-                    ]
-                )
-            tab = tabulate(t, headers=["Team", "Pl.", "W", "D", "L", "Pts", "Diff"])
-            await ctx.send(box(tab))
+        if group is None:
+            grouplist = list(ascii_uppercase)[: int(len(teams) / 4)]
+            for g in grouplist:
+                gstandings = {key: value for (key, value) in standings.items() if value["group"] == g}
+                t = []  # PrettyTable(["Team", "Pl", "W", "D", "L", "Pts"])
+                for x in sorted(
+                    gstandings,
+                    key=lambda x: (gstandings[x]["points"], gstandings[x]["gd"], gstandings[x]["gf"]),
+                    reverse=True,
+                ):
+                    gd = gstandings[x]["gf"] - gstandings[x]["ga"]
+                    gd = f"+{gd}" if gd > 0 else gd
+                    t.append(
+                        [
+                            x,
+                            gstandings[x]["played"],
+                            gstandings[x]["wins"],
+                            gstandings[x]["draws"],
+                            gstandings[x]["losses"],
+                            gstandings[x]["points"],
+                            gd,
+                        ]
+                    )
+                tab = tabulate(t, headers=["Team", "Pl.", "W", "D", "L", "Pts", "Diff"])
+                await ctx.send(box(tab))
         else:
-            t = []
-            for x in sorted(
-                standings,
-                key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
-                reverse=True,
-            ):
-                gd = standings[x]["gd"]
-                gd = f"+{gd}" if gd > 0 else gd
-                t.append(
-                    [
-                        x,
-                        standings[x]["played"],
-                        standings[x]["wins"],
-                        standings[x]["draws"],
-                        standings[x]["losses"],
-                        standings[x]["gf"],
-                        standings[x]["ga"],
-                        standings[x]["points"],
-                        gd,
-                    ]
+            group = group.upper()
+            standings = {key: value for (key, value) in standings.items() if value["group"] == group}
+            if not standings:
+                return await ctx.send("Group {} does not exist".format(group))
+            if not verbose:
+                t = []  # PrettyTable(["Team", "Pl", "W", "D", "L", "Pts"])
+                for x in sorted(
+                    standings,
+                    key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
+                    reverse=True,
+                ):
+                    gd = standings[x]["gf"] - standings[x]["ga"]
+                    gd = f"+{gd}" if gd > 0 else gd
+                    t.append(
+                        [
+                            x,
+                            standings[x]["played"],
+                            standings[x]["wins"],
+                            standings[x]["draws"],
+                            standings[x]["losses"],
+                            standings[x]["points"],
+                            gd,
+                        ]
+                    )
+                tab = tabulate(t, headers=["Team", "Pl.", "W", "D", "L", "Pts", "Diff"])
+                await ctx.send(box(tab))
+            else:
+                t = []
+                for x in sorted(
+                    standings,
+                    key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
+                    reverse=True,
+                ):
+                    gd = standings[x]["gd"]
+                    gd = f"+{gd}" if gd > 0 else gd
+                    t.append(
+                        [
+                            x,
+                            standings[x]["played"],
+                            standings[x]["wins"],
+                            standings[x]["draws"],
+                            standings[x]["losses"],
+                            standings[x]["gf"],
+                            standings[x]["ga"],
+                            standings[x]["points"],
+                            gd,
+                        ]
+                    )
+                tab = tabulate(
+                    t,
+                    headers=["Team", "Pl.", "W", "D", "L", "GF", "GA", "Pts", "Diff"],
                 )
-            tab = tabulate(
-                t,
-                headers=["Team", "Pl.", "W", "D", "L", "GF", "GA", "Pts", "Diff"],
-            )
-            await ctx.send(box(tab))
+                await ctx.send(box(tab))
 
     @nat.command(name="drawbracket")
     async def nat_draw_bracket(self, ctx):

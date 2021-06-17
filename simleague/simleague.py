@@ -6019,23 +6019,13 @@ class SimLeague(
                             nstandings[team2]["losses"] += 1
                             nstandings[team2]["played"] += 1
                             async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
-                                # Lookup in first legs
-                                fixture = [
-                                    f
-                                    for f in nfixtures[0]
-                                    if f["team1"] == team1 and f["team2"] == team2
-                                ]
                                 index = 0
-                                if not len(fixture):
-                                    # Else, grab fixture from return games
-                                    fixture = [
-                                        f
-                                        for f in nfixtures[1]
-                                        if f["team1"] == team1 and f["team2"] == team2
-                                    ]
-                                    index = 1
+                                for i in range(len(nfixtures)):
+                                    fixture = [f for f in nfixtures[i] if f["team1"] == team1 and f["team2"] == team2]
+                                    if len(fixture):
+                                        index = i
+                                        pass
                                 fixture = fixture[0]
-
                                 idx = nfixtures[index].index(fixture)
                                 if fixture["team1"] == team1:
                                     score1 = team1Stats[8]
@@ -6066,23 +6056,13 @@ class SimLeague(
                             nstandings[team1]["losses"] += 1
                             nstandings[team1]["played"] += 1
                             async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
-                                # Lookup in first legs
-                                fixture = [
-                                    f
-                                    for f in nfixtures[0]
-                                    if f["team1"] == team1 and f["team2"] == team2
-                                ]
                                 index = 0
-                                if not len(fixture):
-                                    # Else, grab fixture from return games
-                                    fixture = [
-                                        f
-                                        for f in nfixtures[1]
-                                        if f["team1"] == team1 and f["team2"] == team2
-                                    ]
-                                    index = 1
+                                for i in range(len(nfixtures)):
+                                    fixture = [f for f in nfixtures[i] if f["team1"] == team1 and f["team2"] == team2]
+                                    if len(fixture):
+                                        index = i
+                                        pass
                                 fixture = fixture[0]
-
                                 idx = nfixtures[index].index(fixture)
                                 if fixture["team1"] == team1:
                                     score1 = team1Stats[8]
@@ -6116,23 +6096,13 @@ class SimLeague(
                             nstandings[team1]["draws"] += 1
                             nstandings[team1]["points"] += 1
                         async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
-                            # Lookup in first legs
-                            fixture = [
-                                f
-                                for f in nfixtures[0]
-                                if f["team1"] == team1 and f["team2"] == team2
-                            ]
-                            index = 0
-                            if not len(fixture):
-                                # Else, grab fixture from return games
-                                fixture = [
-                                    f
-                                    for f in nfixtures[1]
-                                    if f["team1"] == team1 and f["team2"] == team2
-                                ]
-                                index = 1
+                            for i in range(len(nfixtures)):
+                                index = 0
+                                fixture = [f for f in nfixtures[i] if f["team1"] == team1 and f["team2"] == team2]
+                                if len(fixture):
+                                    index = i
+                                    pass
                             fixture = fixture[0]
-
                             idx = nfixtures[index].index(fixture)
                             if fixture["team1"] == team1:
                                 score1 = team1Stats[8]

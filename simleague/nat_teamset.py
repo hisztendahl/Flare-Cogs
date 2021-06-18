@@ -13,7 +13,6 @@ class NationalTeamsetMixin(MixinMeta):
     async def nat_teamset(self, ctx):
         """Team Settings."""
 
-    # ! Probably not needed
     @nat_teamset.command()
     async def nat_role(self, ctx, team: str, *, role: discord.Role):
         """Set a national team's role."""

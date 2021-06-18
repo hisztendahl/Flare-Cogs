@@ -1125,6 +1125,21 @@ class SimLeague(
                     pass
         await ctx.tick()
 
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def addnatresult(self, ctx, team1, team2, score1, score2):
+        """Add result for a nat game"""
+        async with self.config.guild(ctx.guild).nfixtures() as nfixtures:
+            for i in range(len(nfixtures)):
+                fixture = [f for f in nfixtures[i] if f["team1"] == team1 and f["team2"] == team2]
+                if len(fixture):
+                    fixture = fixture[0]
+                    idx = nfixtures[i].index(fixture)
+                    fixture["score1"] = int(score1)
+                    fixture["score2"] = int(score2)
+                    nfixtures[i][idx] = fixture
+                    return await ctx.tick()
+
     @commands.command(name="cupfixtures")
     async def cupfixtures(self, ctx):
         """Show all cup fixtures."""

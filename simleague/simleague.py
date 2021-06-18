@@ -834,27 +834,29 @@ class SimLeague(
                 penscore1 = fixture["penscore1"]
                 penscore2 = fixture["penscore2"]
                 team1 = fixture["team1"]
+                team1short = team1[:3].upper()
                 team2 = fixture["team2"]
+                team2short = team2[:3].upper()
                 if score1 == score2:
                     if penscore1 == penscore2:
                         a.append(
-                            f"{mapcountrytoflag(team1)} {team1} vs {team2} {mapcountrytoflag(team2)}"
+                            f"{mapcountrytoflag(team1)} {team1short} vs {team2short} {mapcountrytoflag(team2)}"
                         )
                     elif penscore1 > penscore2:
                         a.append(
-                            f"{mapcountrytoflag(team1)} **{team1} {score1} ({penscore1})**-({penscore2}) {score2} {team2} {mapcountrytoflag(team2)}"
+                            f"{mapcountrytoflag(team1)} **{team1short} {score1} ({penscore1})**-({penscore2}) {score2} {team2short} {mapcountrytoflag(team2)}"
                         )
                     else:
                         a.append(
-                            f"{mapcountrytoflag(team1)} {team1} {score1} ({penscore1})-**({penscore2}) {score2} {team2}** {mapcountrytoflag(team2)}"
+                            f"{mapcountrytoflag(team1)} {team1short} {score1} ({penscore1})-**({penscore2}) {score2} {team2short}** {mapcountrytoflag(team2)}"
                         )
                 elif score1 > score2:
                     a.append(
-                        f"{mapcountrytoflag(team1)} **{team1} {score1}**-{score2} {team2} {mapcountrytoflag(team2)}"
+                        f"{mapcountrytoflag(team1)} **{team1short} {score1}**-{score2} {team2short} {mapcountrytoflag(team2)}"
                     )
                 else:
                     a.append(
-                        f"{mapcountrytoflag(team1)} {team1} {score1}-**{score2} {team2}** {mapcountrytoflag(team2)}"
+                        f"{mapcountrytoflag(team1)} {team1short} {score1}-**{score2} {team2short}** {mapcountrytoflag(team2)}"
                     )
             title = ""
             if int(rd) >= 16:
@@ -863,6 +865,8 @@ class SimLeague(
                 title = "Quarter Finals"
             elif rd == "4":
                 title = "Semi Finals"
+            elif rd == "3":
+                title = "Third Place"
             else:
                 title = "Final"
             embed.add_field(name=title, value="\n".join(a))
@@ -873,6 +877,10 @@ class SimLeague(
         nteams = await self.config.guild(ctx.guild).nteams()
         ngames = await self.config.guild(ctx.guild).ngames()
         async with ctx.typing():
+            embed = discord.Embed(
+                color=0xFF0000,
+                description="------------------------- Tournament Draw -------------------------",
+            )
             if len(ngames):
                 keys = list(ngames.keys())
                 if [keys[len(keys) - 1]][0] == "2":
@@ -882,7 +890,6 @@ class SimLeague(
                     game
                     for game in lastround
                     if (game["score1"] + game["penscore1"]) == (game["score2"] + game["penscore2"])
-                    and game["team2"] != "BYE"
                 ]
                 isroundover = False if len(unplayedgames) else True
                 if not isroundover:
@@ -892,32 +899,84 @@ class SimLeague(
                 winners = [
                     game["team1"]
                     if (game["score1"] + game["penscore1"]) > (game["score2"] + game["penscore2"])
-                    or game["team2"] == "BYE"
                     else game["team2"]
                     for game in lastround
                 ]
+                thirdplace = []
+                tteams = nteams
                 nteams = {k: v for k, v in nteams.items() if k in winners}
+                if len(winners) == 2:
+                    thirdplace = [
+                    game["team1"]
+                    if (game["score1"] + game["penscore1"]) < (game["score2"] + game["penscore2"])
+                    else game["team2"]
+                    for game in lastround
+                ]
+                tteams = {k: v for k, v in tteams.items() if k in thirdplace}
+            if len(thirdplace):
+                roundsize = 2
+                drawables = list(tteams)
+                n = len(drawables)
+                draw = []
+                msg = await ctx.send("Third-place game:")
+                rdteam1 = random.choice(drawables)
+                drawables = [x for x in drawables if x is not rdteam1]
+                rdteam2 = random.choice(drawables)
+                await msg.edit(
+                    content="Third-place game: {} {} vs {} {} !".format(
+                        mapcountrytoflag(rdteam1),
+                        rdteam1,
+                        rdteam2,
+                        mapcountrytoflag(rdteam2),
+                    )
+                )
+                draw.append(
+                    {
+                        "team1": rdteam1,
+                        "score1": 0,
+                        "penscore1": 0,
+                        "team2": rdteam2,
+                        "score2": 0,
+                        "penscore2": 0,
+                    }
+                )
+                fixture = {
+                    "team1": rdteam1,
+                    "score1": 0,
+                    "penscore1": 0,
+                    "team2": rdteam2,
+                    "score2": 0,
+                    "penscore2": 0,
+                }
+                drawables = [x for x in drawables if x is not rdteam2]
+                await asyncio.sleep(5)
+                async with self.config.guild(ctx.guild).ngames() as ngames:
+                    ngames[3] = [fixture]
+                a = f"{mapcountrytoflag(fixture['team1'])} {fixture['team1'][:3].upper()} vs {fixture['team2'][:3].upper()} {mapcountrytoflag(fixture['team2'])}"
+                title = "Third-place"
+                embed.add_field(name=title, value=a)
                 if len(nteams):
                     roundsize = 2 ** math.ceil(math.log2(len(nteams)))
                     drawables = [x for x in nteams]
-
                     n = len(drawables)
                     fixtures = []
                     for i in range(n // 2):
                         draw = []
-                        msg = await ctx.send("Game {}:".format(i + 1))
+                        if len(thirdplace):
+                            basemsg = "Final:"
+                        else:
+                            basemsg = f"Game {i + 1}:"
+                        msg = await ctx.send(basemsg)
                         rdteam1 = random.choice(drawables)
                         drawables = [x for x in drawables if x is not rdteam1]
                         await msg.edit(
-                            content="Game {}: {} {} vs ...".format(
-                                i + 1, mapcountrytoflag(rdteam1), rdteam1
-                            )
+                            content="{} {} {} vs ...".format(basemsg, mapcountrytoflag(rdteam1), rdteam1)
                         )
                         rdteam2 = random.choice(drawables)
                         await asyncio.sleep(5)
                         await msg.edit(
-                            content="Game {}: {} {} vs {} {} !".format(
-                                i + 1,
+                            content="{} {} {} vs {} {} !".format(
+                                basemsg,
                                 mapcountrytoflag(rdteam1),
                                 rdteam1,
                                 rdteam2,
@@ -949,10 +1008,6 @@ class SimLeague(
 
                     async with self.config.guild(ctx.guild).ngames() as ngames:
                         ngames[str(roundsize)] = fixtures
-            embed = discord.Embed(
-                color=0xFF0000,
-                description="------------------------- Tournament Draw -------------------------",
-            )
             a = []
             for fixture in fixtures:
                 a.append(
@@ -1176,6 +1231,22 @@ class SimLeague(
                     fixture["score2"] = int(score2)
                     nfixtures[i][idx] = fixture
                     return await ctx.tick()
+
+    @checks.admin_or_permissions(manage_guild=True)
+    @commands.command()
+    async def addnatbracketresult(self, ctx, team1, team2, score1, score2):
+        """Add result for a nat KO game. (only works for games in the last round available)"""
+        async with self.config.guild(ctx.guild).ngames() as ngames:
+            keys = list(ngames.keys())
+            lastround = ngames[keys[len(keys) - 1]]
+            for game in lastround:
+                if game["team1"] == team1 and game["team2"] == team2:
+                    game["score1"] = int(score1)
+                    game["score2"] = int(score2)
+                    return await ctx.tick()
+                else:
+                    pass
+        await ctx.tick()
 
     @commands.command(name="cupfixtures")
     async def cupfixtures(self, ctx):

@@ -516,7 +516,7 @@ class SimLeague(
                 t = []  # PrettyTable(["Team", "Pl", "W", "D", "L", "Pts"])
                 for x in sorted(
                     standings,
-                    key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
+                    key=lambda x: (standings[x]["points"], (standings[x]["gf"] - standings[x]["ga"]), standings[x]["gf"]),
                     reverse=True,
                 ):
                     gd = standings[x]["gf"] - standings[x]["ga"]
@@ -538,10 +538,10 @@ class SimLeague(
                 t = []
                 for x in sorted(
                     standings,
-                    key=lambda x: (standings[x]["points"], standings[x]["gd"], standings[x]["gf"]),
+                    key=lambda x: (standings[x]["points"], (standings[x]["gf"] - standings[x]["ga"]), standings[x]["gf"]),
                     reverse=True,
                 ):
-                    gd = standings[x]["gd"]
+                    gd = standings[x]["gf"] - standings[x]["ga"]
                     gd = f"+{gd}" if gd > 0 else gd
                     t.append(
                         [
@@ -581,20 +581,26 @@ class SimLeague(
                     groupstandings,
                     key=lambda x: (
                         groupstandings[x]["points"],
-                        groupstandings[x]["gd"],
+                        (standings[x]["gf"] - standings[x]["ga"]),
                         groupstandings[x]["gf"],
                     ),
                     reverse=True,
                 )
                 winners.append(sortedstandings[0])
                 runnerups.append(sortedstandings[1])
-            await ctx.send(
-                "__Teams that finished first, and cannot face each other:__\n{}".format(
-                    ", ".join(winners)
-                )
-            )
+            await ctx.send("__Teams that finished first, and cannot face each other:__\n")
+            for w in winners:
+                await asyncio.sleep(2)
+                gd = standings[w]["gf"] - standings[w]["ga"]
+                gd = f"+{gd}" if gd > 0 else gd
+                await ctx.send("Group {} - {} **{}** ({}pts / {})".format(standings[w]["group"],mapcountrytoflag(w), w, standings[w]["points"], gd))
             await asyncio.sleep(5)
-            await ctx.send("Teams that finished second:\n{}".format(", ".join(runnerups)))
+            await ctx.send("__Teams that finished second:__\n")
+            for ru in runnerups:
+                await asyncio.sleep(2)
+                gd = standings[ru]["gf"] - standings[ru]["ga"]
+                gd = f"+{gd}" if gd > 0 else gd
+                await ctx.send("Group {} - {} **{}** ({}pts / {})".format(standings[ru]["group"],mapcountrytoflag(ru),  ru, standings[ru]["points"], gd))
             await asyncio.sleep(15)
             for i in range(int(len(teams) / 4)):
                 A = random.choice(winners)
@@ -610,7 +616,11 @@ class SimLeague(
                         "penscore2": 0,
                     }
                 )
-                await ctx.send("**{}** vs **{}**".format(A, B))
+                mentionA = ctx.guild.get_role(teams[A]["role"]).mention if teams[A]["role"] is not None else A
+                mentionB = ctx.guild.get_role(teams[B]["role"]).mention if teams[B]["role"] is not None else B
+                posA = f"2{teams[A]['group']}"
+                posB = f"2{teams[B]['group']}"
+                await ctx.send("{} **{}** _({})_ vs _({})_ **{}** {}".format(mapcountrytoflag(A), mentionA, posA, posB, mentionB, mapcountrytoflag(B)))
                 await asyncio.sleep(10)
                 winners.remove(A)
                 runnerups.remove(B)
@@ -630,7 +640,7 @@ class SimLeague(
                     groupstandings,
                     key=lambda x: (
                         groupstandings[x]["points"],
-                        groupstandings[x]["gd"],
+                        (groupstandings[x]["gf"] - groupstandings[x]["ga"]),
                         groupstandings[x]["gf"],
                     ),
                     reverse=True,
@@ -639,31 +649,46 @@ class SimLeague(
                 runnerups.append(sortedstandings[1])
                 thirds.append(sortedstandings[2])
             thirdstandings = {key: value for (key, value) in standings.items() if key in thirds}
-            sortedstandings = sorted(
+            sortedthirdstandings = sorted(
                 thirdstandings,
                 key=lambda x: (
                     thirdstandings[x]["points"],
-                    thirdstandings[x]["gd"],
+                    (thirdstandings[x]["gf"] - thirdstandings[x]["ga"]),
                     thirdstandings[x]["gf"],
                 ),
                 reverse=True,
             )
             bestthirds = []
-            for t in sortedstandings[:4]:
+            for t in sortedthirdstandings[:4]:
                 bestthirds.append(t)
-            await ctx.send(
-                "__Teams that finished first, and cannot face each other:__\n{}".format(
-                    ", ".join(winners)
-                )
-            )
+            await ctx.send("__Teams that finished first, and cannot face each other:__\n")
+            for w in winners:
+                await asyncio.sleep(2)
+                gd = standings[w]["gf"] - standings[w]["ga"]
+                gd = f"+{gd}" if gd > 0 else gd
+                await ctx.send("Group {} - {} **{}** ({}pts / {})".format( standings[w]["group"],mapcountrytoflag(w), w, standings[w]["points"], gd))
             await asyncio.sleep(5)
-            await ctx.send("__Teams that finished second:__\n{}".format(", ".join(runnerups)))
+            await ctx.send("__Teams that finished second:__\n")
+            for ru in runnerups:
+                await asyncio.sleep(2)
+                gd = standings[ru]["gf"] - standings[ru]["ga"]
+                gd = f"+{gd}" if gd > 0 else gd
+                await ctx.send("Group {} - {} **{}** ({}pts / {})".format( standings[ru]["group"],mapcountrytoflag(ru), ru, standings[ru]["points"], gd))
             await asyncio.sleep(5)
-            await ctx.send("__Best third-placed teams:__\n{}".format(", ".join(bestthirds)))
+            await ctx.send("__Best third-placed teams:__\n")
+            thirdsgroups = []
+            for bt in bestthirds:
+                await asyncio.sleep(2)
+                thirdsgroups.append(teams[bt]["group"])
+                gd = standings[bt]["gf"] - standings[bt]["ga"]
+                gd = f"+{gd}" if gd > 0 else gd
+                await ctx.send("Group {} - {} **{}** ({}pts / {})".format( standings[bt]["group"],mapcountrytoflag(bt), bt, standings[bt]["points"], gd))
             await asyncio.sleep(15)
             for i in range(2):
-                A = random.choice(runnerups)
+                prioru = [r for r in runnerups if teams[r]["group"] in thirdsgroups]
+                A = random.choice(prioru)
                 runnerups.remove(A)
+                thirdsgroups.remove(teams[A]["group"])
                 B = random.choice(runnerups)
                 fixtures.append(
                     {
@@ -675,11 +700,18 @@ class SimLeague(
                         "penscore2": 0,
                     }
                 )
-                await ctx.send("**{}** vs **{}**".format(A, B))
+                mentionA = ctx.guild.get_role(teams[A]["role"]).mention if teams[A]["role"] is not None else A
+                mentionB = ctx.guild.get_role(teams[B]["role"]).mention if teams[B]["role"] is not None else B
+                posA = f"2{teams[A]['group']}"
+                posB = f"2{teams[B]['group']}"
+                await ctx.send("{} **{}** _({})_ vs _({})_ **{}** {}".format(mapcountrytoflag(A), mentionA, posA, posB, mentionB, mapcountrytoflag(B)))
                 await asyncio.sleep(10)
                 runnerups.remove(B)
             for i in range(6):
-                A = random.choice(winners)
+                prioru = [w for w in winners if teams[w]["group"] in thirdsgroups]
+                A = random.choice(prioru) if len(prioru) else random.choice(winners)
+                if len(prioru):
+                    thirdsgroups.remove(teams[A]["group"])
                 ru = [
                     x for x in (runnerups + bestthirds) if teams[x]["group"] != teams[A]["group"]
                 ]
@@ -694,7 +726,12 @@ class SimLeague(
                         "penscore2": 0,
                     }
                 )
-                await ctx.send("**{}** vs **{}**".format(A, B))
+                mentionA = ctx.guild.get_role(teams[A]["role"]).mention if teams[A]["role"] is not None else A
+                mentionB = ctx.guild.get_role(teams[B]["role"]).mention if teams[B]["role"] is not None else B
+                posA = f"1{teams[A]['group']}"
+                posB = 2 if B in runnerups else 3
+                posB = f"{posB}{teams[B]['group']}"
+                await ctx.send("{} **{}** _({})_ vs _({})_ **{}** {}".format(mapcountrytoflag(A), mentionA, posA, posB, mentionB, mapcountrytoflag(B)))
                 winners.remove(A)
                 if B in runnerups:
                     runnerups.remove(B)

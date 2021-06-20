@@ -44,6 +44,15 @@ class NationalTeamsetMixin(MixinMeta):
             nteams[team]["logo"] = logo
         await ctx.tick()
 
+    @nat_teamset.command(name="bonus")
+    async def nat_bonus(self, ctx, team: str, *, amount: int):
+        """Set a nat team's bonus multiplier."""
+        async with self.config.guild(ctx.guild).nteams() as teams:
+            if team not in teams:
+                return await ctx.send("Not a valid team.")
+            teams[team]["bonus"] = amount
+        await ctx.tick()
+
     @nat_teamset.command(usage="<current name> <new name>", name="name")
     async def nat_name(self, ctx, team: str, newname: str):
         """Set a national team's name. Try to keep names to one word if possible."""

@@ -312,6 +312,7 @@ class SimLeague(
                 "fullname": None,
                 "kits": {"home": None, "away": None, "third": None},
                 "stadium": None,
+                "bonus": 0,
             }
         async with self.config.guild(ctx.guild).nstandings() as nstandings:
             nstandings[teamname] = {
@@ -489,7 +490,7 @@ class SimLeague(
                 t = []  # PrettyTable(["Team", "Pl", "W", "D", "L", "Pts"])
                 for x in sorted(
                     gstandings,
-                    key=lambda x: (gstandings[x]["points"], gstandings[x]["gd"], gstandings[x]["gf"]),
+                    key=lambda x: (gstandings[x]["points"], (gstandings[x]["gf"] - gstandings[x]["ga"]), gstandings[x]["gf"]),
                     reverse=True,
                 ):
                     gd = gstandings[x]["gf"] - gstandings[x]["ga"]
@@ -5181,10 +5182,10 @@ class SimLeague(
                 if confirm == False:
                     return await ctx.send("Game has been cancelled.")
         await asyncio.sleep(2)
-        lvl1 = 1
-        lvl2 = 1
-        bonuslvl1 = 0
-        bonuslvl2 = 0
+        bonuslvl1 = nteams[team1]["bonus"]
+        bonuslvl2 = nteams[team2]["bonus"]
+        lvl1 = 1 * (1 + (bonuslvl1 / 100))
+        lvl2 = 1 * (1 + (bonuslvl2 / 100))
         homewin = lvl2 / lvl1
         awaywin = lvl1 / lvl2
         try:

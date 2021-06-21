@@ -5137,31 +5137,21 @@ class SimLeague(
         isgroupgame = True
         if len(ngames):
             isgroupgame = False
-            keys = list(ngames.keys())
-            lastround = ngames[keys[len(keys) - 1]]
-            unplayedgames = [
-                game
-                for game in lastround
-                if (game["score1"] + game["penscore1"]) == (game["score2"] + game["penscore2"])
-                and game["team2"] != "BYE"
-            ]
-            playedgames = [x for x in lastround if x not in unplayedgames]
-            isroundover = False if len(unplayedgames) else True
-            if isroundover:
-                return await ctx.send("There is no game left to play!")
-            doesgameexist = [
-                game for game in unplayedgames if game["team1"] == team1 and game["team2"] == team2
-            ]
-            isgameplayed = [
-                game for game in playedgames if game["team1"] == team1 and game["team2"] == team2
-            ]
-            if len(isgameplayed):
-                confirm = await checkReacts(
-                    self, ctx, "This game has already been played. Proceed ?"
-                )
-                if confirm == False:
-                    return await ctx.send("Game has been cancelled.")
-            if not len(doesgameexist):
+            fixture = None
+            for rd in list(ngames):
+                for game in ngames[rd]:
+                    if game["team1"] == team1 and game["team2"] == team2:
+                        if (game["score1"] + game["penscore1"]) == (game["score2"] + game["penscore2"]):
+                            fixture = game
+                        else:
+                            confirm = await checkReacts(
+                                self, ctx, "This game has already been played. Proceed ?"
+                            )
+                            if confirm == False:
+                                return await ctx.send("Game has been cancelled.")
+                            else:
+                                fixture = game
+            if fixture is None:
                 return await ctx.send("This game does not exist.")
         if team1 not in nteams or team2 not in nteams:
             return await ctx.send("One of those teams do not exist.")
@@ -5182,8 +5172,8 @@ class SimLeague(
                 if confirm == False:
                     return await ctx.send("Game has been cancelled.")
         await asyncio.sleep(2)
-        bonuslvl1 = nteams[team1]["bonus"]
-        bonuslvl2 = nteams[team2]["bonus"]
+        bonuslvl1 = nteams[team1]["bonus"] if "bonus" in nteams[team1] else 0
+        bonuslvl2 = nteams[team2]["bonus"] if "bonus" in nteams[team2] else 0
         lvl1 = 1 * (1 + (bonuslvl1 / 100))
         lvl2 = 1 * (1 + (bonuslvl2 / 100))
         homewin = lvl2 / lvl1
@@ -6648,14 +6638,20 @@ class SimLeague(
                             nstandings[team2]["ga"] += team1Stats[8]
                 else:
                     async with self.config.guild(ctx.guild).ngames() as ngames:
-                        keys = list(ngames.keys())
-                        lastround = ngames[keys[len(keys) - 1]]
-                        fixture = [
-                            item
-                            for item in lastround
-                            if item["team1"] == team1 or item["team2"] == team1
-                        ][0]
-                        idx = lastround.index(fixture)
+                        fixture = None
+                        for rd in list(ngames):
+                            for game in ngames[rd]:
+                                if game["team1"] == team1 and game["team2"] == team2:
+                                    if (game["score1"] + game["penscore1"]) == (game["score2"] + game["penscore2"]):
+                                        fixture = game
+                                    else:
+                                        confirm = await checkReacts(
+                                            self, ctx, "This game has already been played. Proceed ?"
+                                        )
+                                        if confirm == False:
+                                            return await ctx.send("Game has been cancelled.")
+                                        else:
+                                            fixture = game
                         if fixture["team1"] == team1:
                             score1 = team1Stats[8]
                             penscore1 = team1Stats[10]
@@ -6674,7 +6670,6 @@ class SimLeague(
                             fixture["penscore1"] = penscore1
                             fixture["score2"] = score2
                             fixture["penscore2"] = penscore2
-                        lastround[idx] = fixture
 
         await self.postresults(
             ctx,

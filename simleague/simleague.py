@@ -956,59 +956,59 @@ class SimLeague(
                 a = f"{mapcountrytoflag(fixture['team1'])} {fixture['team1'][:3].upper()} vs {fixture['team2'][:3].upper()} {mapcountrytoflag(fixture['team2'])}"
                 title = "Third-place"
                 embed.add_field(name=title, value=a)
-                if len(nteams):
-                    roundsize = 2 ** math.ceil(math.log2(len(nteams)))
-                    drawables = [x for x in nteams]
-                    n = len(drawables)
-                    fixtures = []
-                    for i in range(n // 2):
-                        draw = []
-                        if len(thirdplace):
-                            basemsg = "Final:"
-                        else:
-                            basemsg = f"Game {i + 1}:"
-                        msg = await ctx.send(basemsg)
-                        rdteam1 = random.choice(drawables)
-                        drawables = [x for x in drawables if x is not rdteam1]
-                        await msg.edit(
-                            content="{} {} {} vs ...".format(basemsg, mapcountrytoflag(rdteam1), rdteam1)
+            if len(nteams):
+                roundsize = 2 ** math.ceil(math.log2(len(nteams)))
+                drawables = [x for x in nteams]
+                n = len(drawables)
+                fixtures = []
+                for i in range(n // 2):
+                    draw = []
+                    if len(thirdplace):
+                        basemsg = "Final:"
+                    else:
+                        basemsg = f"Game {i + 1}:"
+                    msg = await ctx.send(basemsg)
+                    rdteam1 = random.choice(drawables)
+                    drawables = [x for x in drawables if x is not rdteam1]
+                    await msg.edit(
+                        content="{} {} {} vs ...".format(basemsg, mapcountrytoflag(rdteam1), rdteam1)
+                    )
+                    rdteam2 = random.choice(drawables)
+                    await asyncio.sleep(5)
+                    await msg.edit(
+                        content="{} {} {} vs {} {} !".format(
+                            basemsg,
+                            mapcountrytoflag(rdteam1),
+                            rdteam1,
+                            rdteam2,
+                            mapcountrytoflag(rdteam2),
                         )
-                        rdteam2 = random.choice(drawables)
-                        await asyncio.sleep(5)
-                        await msg.edit(
-                            content="{} {} {} vs {} {} !".format(
-                                basemsg,
-                                mapcountrytoflag(rdteam1),
-                                rdteam1,
-                                rdteam2,
-                                mapcountrytoflag(rdteam2),
-                            )
-                        )
-                        draw.append(
-                            {
-                                "team1": rdteam1,
-                                "score1": 0,
-                                "penscore1": 0,
-                                "team2": rdteam2,
-                                "score2": 0,
-                                "penscore2": 0,
-                            }
-                        )
-                        fixtures.append(
-                            {
-                                "team1": rdteam1,
-                                "score1": 0,
-                                "penscore1": 0,
-                                "team2": rdteam2,
-                                "score2": 0,
-                                "penscore2": 0,
-                            }
-                        )
-                        drawables = [x for x in drawables if x is not rdteam2]
-                        await asyncio.sleep(5)
+                    )
+                    draw.append(
+                        {
+                            "team1": rdteam1,
+                            "score1": 0,
+                            "penscore1": 0,
+                            "team2": rdteam2,
+                            "score2": 0,
+                            "penscore2": 0,
+                        }
+                    )
+                    fixtures.append(
+                        {
+                            "team1": rdteam1,
+                            "score1": 0,
+                            "penscore1": 0,
+                            "team2": rdteam2,
+                            "score2": 0,
+                            "penscore2": 0,
+                        }
+                    )
+                    drawables = [x for x in drawables if x is not rdteam2]
+                    await asyncio.sleep(5)
 
-                    async with self.config.guild(ctx.guild).ngames() as ngames:
-                        ngames[str(roundsize)] = fixtures
+                async with self.config.guild(ctx.guild).ngames() as ngames:
+                    ngames[str(roundsize)] = fixtures
             a = []
             for fixture in fixtures:
                 a.append(
